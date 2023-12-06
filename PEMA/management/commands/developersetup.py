@@ -13,11 +13,11 @@ class Command(BaseCommand):
     SUPERUSER_PASSWORD = '123'
 
     class ErrorMessages:
-        ENVIROMENT = 'No se puede ejecutar este comando en entornos de producción'
+        ENVIRONMENT = 'No se puede ejecutar este comando en entornos de producción'
 
     def handle(self, **options):
         if not settings.DEBUG:
-            self.stdout.write(self.style.ERROR(Command.ErrorMessages.ENVIROMENT))
+            self.stdout.write(self.style.ERROR(Command.ErrorMessages.ENVIRONMENT))
             return
 
         user = User.objects.create_user(
