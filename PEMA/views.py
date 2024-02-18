@@ -1,12 +1,20 @@
 from django.shortcuts import render
+from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
 
 
-# Create your views here.
+class IndexView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="test.html"
+        )
+
+
 def test(request):
-    """send_mail(
+    send_mail(
         subject="Email de prueba",
         message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
                 "prueba fue exitosa. Atentamente, Galindo.",
@@ -15,5 +23,6 @@ def test(request):
         recipient_list=[
             "egalindo54@uabc.edu.mx"
         ]
-    )"""
+    )
+
     return HttpResponse("OK")
