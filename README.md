@@ -20,6 +20,9 @@ pip install -r requirements.txt
 # actualizar modelos
 python manage.py makemigrations PEMA
 python manage.py migrate
+
+# ejecutar el servidor
+python manage.py runserver
 ```
 
 Puedes encontrar instrucciones más detalladas [aquí](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki/Entorno-de-desarrollo).
