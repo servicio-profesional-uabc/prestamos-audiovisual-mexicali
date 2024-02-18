@@ -6,7 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Importar bootstrap -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
 
     <title>Vista de prueba</title>
 </head>
@@ -16,7 +18,25 @@
         <h1>Bienvenido a la vista de prueba</h1>
         <p>Si puedes ver esto el sistema de plantillas esta preparado</p>
 
-        <button class="btn btn-primary my-3">Este botón debe ser verde</button>
+        <button class="btn btn-primary my-3"  data-bs-toggle="modal" data-bs-target="#exampleModal">Este botón debe ser verde</button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog ">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Test de javascript</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            Si puedes ver esto javascript funciona.
+          </div>
+
+        </div>
+      </div>
     </div>
 </body>
 </html>
