@@ -225,7 +225,19 @@ class Reporte(models.Model):
 
 
 class Articulo(models.Model):
+    class Meta:
+        unique_together = (
+            ('nombre', 'codigo')
+        )
+
+
     nombre = models.CharField(
+        blank=False,
+        null=False,
+        max_length=250
+    )
+
+    codigo = models.CharField(
         blank=False,
         null=False,
         max_length=250

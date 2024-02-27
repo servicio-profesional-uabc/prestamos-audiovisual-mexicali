@@ -13,7 +13,7 @@ class ArticuloTestCase(TestCase):
 
         unidad = Unidad.objects.create(
             articulo=articulo,
-            codigo="1243234",
+            num_control="1243234",
             estado=Unidad.Estado.ACTIVO
         )
 
