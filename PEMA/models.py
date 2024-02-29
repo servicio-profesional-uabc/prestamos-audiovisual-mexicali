@@ -51,7 +51,7 @@ class Orden(models.Model):
     class Estado(models.TextChoices):
         PENDIENTE = "PN", _("PENDIENTE")
         RECHAZADA = "RE", _("RECHAZADA")
-        APROVADA = "AP", _("APROVADA")
+        APROBADA = "AP", _("APROBADA")
 
     class Tipo(models.TextChoices):
         ORDINARIA = "OR", _("ORDINARIA")
