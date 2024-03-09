@@ -3,20 +3,11 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.models import User
 from django.db import models
-
-
-class PrestatarioManager(models.Manager):
-    def get_queryset(self, *args, **kwargs):
-        """Limita los resultados de prestatarios unicamente a los
-        usuarios en ese grupo"""
-
-        return super().get_queryset(*args, **kwargs).filter(
-            groups__name='prestatarios'
-        )
 
 
 class Prestatario(User):
@@ -27,40 +18,44 @@ class Prestatario(User):
             ("puede_ser_corresponsable", "puede ser corresponsable de una orden"),
         )
 
+    class PrestatarioManager(models.Manager):
+        def get_queryset(self, *args, **kwargs):
+            return super().get_queryset(*args, **kwargs).filter(
+                groups__name='prestatarios'
+            )
+
     objects = PrestatarioManager()
 
-    @staticmethod
-    def crear_grupo():
+    @classmethod
+    def crear_grupo(cls):
         """Crea el 'Permission Group' para el usuario prestatario
         los permisos están en 'Prestatario.Meta.permissions'"""
 
-        try:
-            group, created = Group.objects.get_or_create(
-                name='prestatarios'
-            )
+        # crear grupo prestatario
+        group, created = Group.objects.get_or_create(
+            name='prestatarios'
+        )
 
-            # permisos definidos en 'Prestatario.Meta.permissions'
-            permisos_prestatario = Permission.objects.filter(
-                content_type__model='prestatario'
-            )
+        # permisos del prestatario
+        solicitar_equipo = Permission.objects.get(
+            codename='puede_solicitar_equipo'
+        )
 
-            # si el grupo ya existe no se vuleve a crear
-            if not created:
-                print("Info: El grupo 'prestatarios' ya existe.")
+        corresponsable = Permission.objects.get(
+            codename='puede_ser_corresponsable'
+        )
 
-            # agregar los permisos al usuarios
-            for permiso in permisos_prestatario:
-                print(permiso)
-                group.permissions.add(permiso)
-
-        except Exception as e:
-            print(f"Error in Prestatario.crear_grupo: {e}")
+        # agregar permisos al grupo prestatario
+        group.permissions.add(solicitar_equipo)
+        group.permissions.add(corresponsable)
 
     def save(self, *args, **kwargs):
         """Crea un usuario y lo agrega al grupo prestatario"""
 
         try:
-            group = Group.objects.get(name="prestatarios")
+            group = Group.objects.get(
+                name="prestatarios"
+            )
 
             super().save(*args, **kwargs)
             self.groups.add(group)
