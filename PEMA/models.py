@@ -1,19 +1,71 @@
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Permission
+
+from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.models import User
+from django.db import models
 
 
-class Prestatario(models.Model):
-    user = models.OneToOneField(
-        to=User,
-        on_delete=models.CASCADE
-    )
+class PrestatarioManager(models.Manager):
+    def get_queryset(self, *args, **kwargs):
+        """Limita los resultados de prestatarios unicamente a los
+        usuarios en ese grupo"""
 
-    num_telefono = models.CharField(
-        max_length=10,
-        blank=False
-    )
+        return super().get_queryset(*args, **kwargs).filter(
+            groups__name='prestatarios'
+        )
+
+
+class Prestatario(User):
+    class Meta:
+        proxy = True
+        permissions = (
+            ("puede_solicitar_equipo", "puede solicitar equipos del almacén"),
+            ("puede_ser_corresponsable", "puede ser corresponsable de una orden"),
+        )
+
+    objects = PrestatarioManager()
+
+    @staticmethod
+    def crear_grupo():
+        """Crea el 'Permission Group' para el usuario prestatario
+        los permisos están en 'Prestatario.Meta.permissions'"""
+
+        try:
+            group, created = Group.objects.get_or_create(
+                name='prestatarios'
+            )
+
+            # permisos definidos en 'Prestatario.Meta.permissions'
+            permisos_prestatario = Permission.objects.filter(
+                content_type__model='prestatario'
+            )
+
+            # si el grupo ya existe no se vuleve a crear
+            if not created:
+                print("Info: El grupo 'prestatarios' ya existe.")
+
+            # agregar los permisos al usuarios
+            for permiso in permisos_prestatario:
+                print(permiso)
+                group.permissions.add(permiso)
+
+        except Exception as e:
+            print(f"Error in Prestatario.crear_grupo: {e}")
+
+    def save(self, *args, **kwargs):
+        """Crea un usuario y lo agrega al grupo prestatario"""
+
+        try:
+            group = Group.objects.get(name="prestatarios")
+
+            super().save(*args, **kwargs)
+            self.groups.add(group)
+        except Group.DoesNotExist:
+            print("Error in Prestatario.save: El grupo 'prestatarios' no existe.")
 
     def ordenes(self):
         """Órdenes de prestatario"""
@@ -37,17 +89,6 @@ class Prestatario(models.Model):
 
 
 class Orden(models.Model):
-    """
-    Attributes
-    ----------
-    emision: models.DateTimeField
-        Fecha y hora a la que se emitio la orden
-    recepcion: models.DateTimeField
-        Fecha y hora a la que se recogió la orden del almacen
-    devolucion: models.DateTimeField
-        Fecha y hora a la que se devolvio la orden al almacen
-    """
-
     class Estado(models.TextChoices):
         PENDIENTE = "PN", _("PENDIENTE")
         RECHAZADA = "RE", _("RECHAZADA")
@@ -170,17 +211,6 @@ class Materia(models.Model):
         pass
 
 
-class Coordinador(models.Model):
-    user = models.OneToOneField(
-        to=User,
-        on_delete=models.CASCADE
-    )
-
-    def autorizar(self, Orden):
-        """Autorizar una orden extraordinaria"""
-        pass
-
-
 class Almacen(models.Model):
     user = models.OneToOneField(
         User,
@@ -229,7 +259,6 @@ class Articulo(models.Model):
         unique_together = (
             ('nombre', 'codigo')
         )
-
 
     nombre = models.CharField(
         blank=False,
@@ -326,6 +355,17 @@ class AutorizacionAlmacen(models.Model):
     autorizar = models.BooleanField(
         default=False
     )
+
+
+class Coordinador(models.Model):
+    user = models.OneToOneField(
+        to=User,
+        on_delete=models.CASCADE
+    )
+
+    def autorizar(self, Orden):
+        """Autorizar una orden extraordinaria"""
+        pass
 
 
 class AutorizacionCoordinador(models.Model):
