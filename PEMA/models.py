@@ -1,4 +1,3 @@
-from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User, Group
@@ -53,9 +52,7 @@ class Prestatario(User):
         """Crea un usuario y lo agrega al grupo prestatario"""
 
         try:
-            group = Group.objects.get(
-                name="prestatarios"
-            )
+            group = Group.objects.get(name="prestatarios")
 
             super().save(*args, **kwargs)
             self.groups.add(group)
@@ -87,7 +84,7 @@ class Orden(models.Model):
     class Estado(models.TextChoices):
         PENDIENTE = "PN", _("PENDIENTE")
         RECHAZADA = "RE", _("RECHAZADA")
-        APROVADA = "AP", _("APROVADA")
+        APROBADA = "AP", _("APROBADA")
 
     class Tipo(models.TextChoices):
         ORDINARIA = "OR", _("ORDINARIA")
@@ -288,7 +285,7 @@ class Articulo(models.Model):
 
     def unidades(self):
         """
-        Lista de unidades de un articulo
+        Lista de unidades de un artículo
         """
         pass
 
@@ -358,7 +355,7 @@ class Coordinador(models.Model):
         on_delete=models.CASCADE
     )
 
-    def autorizar(self, Orden):
+    def autorizar(self, orden):
         """Autorizar una orden extraordinaria"""
         pass
 
@@ -388,6 +385,12 @@ class AutorizacionCoordinador(models.Model):
 # -----
 
 class PrestatarioMateria(models.Model):
+
+    class Meta:
+        unique_together = (
+            ('materia', 'prestatario')
+        )
+
     materia = models.OneToOneField(
         to=Carrito,
         on_delete=models.CASCADE
@@ -412,6 +415,12 @@ class ArticuloMateria(models.Model):
 
 
 class ArticuloCarrito(models.Model):
+
+    class Meta:
+        unique_together = (
+            ('articulo', 'carrito')
+        )
+
     articulo = models.OneToOneField(
         to=Articulo,
         on_delete=models.CASCADE
