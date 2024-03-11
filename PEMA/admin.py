@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import *
 
-admin.site.register(Prestatario)
+
 admin.site.register(Carrito)
 admin.site.register(Materia)
 admin.site.register(Coordinador)

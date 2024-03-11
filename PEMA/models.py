@@ -4,7 +4,8 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -19,6 +20,8 @@ class Prestatario(User):
 
     class PrestatarioManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
+            # filtra los resultados para que únicamente aparezcan
+            # los que están en el grupo "prestatarios"
             return super().get_queryset(*args, **kwargs).filter(
                 groups__name='prestatarios'
             )
@@ -28,7 +31,7 @@ class Prestatario(User):
     @classmethod
     def crear_grupo(cls):
         """Crea el 'Permission Group' para el usuario prestatario
-        los permisos están en 'Prestatario.Meta.permissions'"""
+        los permisos están en la clase Meta"""
 
         # crear grupo prestatario
         group, created = Group.objects.get_or_create(
@@ -50,7 +53,6 @@ class Prestatario(User):
 
     def save(self, *args, **kwargs):
         """Crea un usuario y lo agrega al grupo prestatario"""
-
         try:
             group = Group.objects.get(name="prestatarios")
 
@@ -199,7 +201,8 @@ class Materia(models.Model):
         pass
 
     def articulos(self):
-        """Lista de articulos que se pueden solicitar si se lleva esta clase"""
+        """Lista de articulos que se pueden solicitar si se lleva
+        esta clase"""
         pass
 
 
@@ -385,7 +388,6 @@ class AutorizacionCoordinador(models.Model):
 # -----
 
 class PrestatarioMateria(models.Model):
-
     class Meta:
         unique_together = (
             ('materia', 'prestatario')
@@ -415,7 +417,6 @@ class ArticuloMateria(models.Model):
 
 
 class ArticuloCarrito(models.Model):
-
     class Meta:
         unique_together = (
             ('articulo', 'carrito')
