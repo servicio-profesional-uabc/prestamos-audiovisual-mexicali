@@ -195,7 +195,7 @@ class Orden(models.Model):
 
 class Carrito(models.Model):
     prestatario = models.OneToOneField(
-        to=Prestatario,
+        to=User,
         on_delete=models.CASCADE
     )
 
