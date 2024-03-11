@@ -11,6 +11,9 @@ from django.db import models
 
 
 class Prestatario(User):
+    """Clase que representa a cualquier persona que pueda sacar
+    equipo del almacen"""
+
     class Meta:
         proxy = True
         permissions = (
@@ -79,6 +82,52 @@ class Prestatario(User):
 
     def materias(self):
         """Materias de prestatario"""
+        pass
+
+
+class Maestro(User):
+    """Clase que representa el usuario Maestro"""
+
+    class MaestroManager(models.Manager):
+        def get_queryset(self, *args, **kwargs):
+            # filtra los resultados para que únicamente aparezcan
+            # los que están en el grupo "prestatarios"
+            return super().get_queryset(*args, **kwargs).filter(
+                groups__name='maestro'
+            )
+
+    objects = MaestroManager()
+
+    class Meta:
+        proxy = True
+        permissions = (
+            ("puede_autorizar_ordinaria", "puede autorizar ordenes ordinarias"),
+        )
+
+    @classmethod
+    def crear_grupo(cls):
+        """Crea el 'Permission Group' para el usuario prestatario
+        los permisos están en la clase Meta"""
+
+        # crear grupo prestatario
+        group, created = Group.objects.get_or_create(
+            name='maestro'
+        )
+
+        # permisos del prestatario
+        puede_autorizar_ordinaria = Permission.objects.get(
+            codename='puede_autorizar_ordinaria'
+        )
+
+        # agregar permisos al grupo prestatario
+        group.permissions.add(puede_autorizar_ordinaria)
+
+    def autorizar(self, orden):
+        """Autoriza órdenes ordinarias"""
+        pass
+
+    def materias(self):
+        """Materias que supervisa el maestro"""
         pass
 
 
