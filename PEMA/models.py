@@ -11,8 +11,10 @@ from django.db import models
 
 
 class Prestatario(User):
-    """Clase que representa a cualquier persona que pueda sacar
-    equipo del almacen"""
+    """
+    Clase que representa a cualquier persona que pueda sacar
+    equipo del almacen
+    """
 
     class Meta:
         proxy = True
@@ -42,17 +44,13 @@ class Prestatario(User):
         )
 
         # permisos del prestatario
-        solicitar_equipo = Permission.objects.get(
+        group.permissions.add(Permission.objects.get(
             codename='puede_solicitar_equipo'
-        )
+        ))
 
-        corresponsable = Permission.objects.get(
+        group.permissions.add(Permission.objects.get(
             codename='puede_ser_corresponsable'
-        )
-
-        # agregar permisos al grupo prestatario
-        group.permissions.add(solicitar_equipo)
-        group.permissions.add(corresponsable)
+        ))
 
     def ordenes(self):
         """Órdenes de prestatario"""
@@ -76,12 +74,12 @@ class Prestatario(User):
 
 
 class Maestro(User):
-    """Clase que representa el usuario Maestro"""
+    """
+    Clase que representa el usuario Maestro
+    """
 
     class MaestroManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            # filtra los resultados para que únicamente aparezcan
-            # los que están en el grupo "prestatarios"
             return super().get_queryset(*args, **kwargs).filter(
                 groups__name='maestro'
             )
@@ -91,7 +89,7 @@ class Maestro(User):
     class Meta:
         proxy = True
         permissions = (
-            ("puede_autorizar_ordinaria", "puede autorizar ordenes ordinarias"),
+            ("puede_autorizar_ordinarias", "puede autorizar ordenes ordinarias"),
         )
 
     @classmethod
@@ -104,13 +102,10 @@ class Maestro(User):
             name='maestro'
         )
 
-        # permisos del prestatario
-        puede_autorizar_ordinaria = Permission.objects.get(
-            codename='puede_autorizar_ordinaria'
-        )
-
-        # agregar permisos al grupo prestatario
-        group.permissions.add(puede_autorizar_ordinaria)
+        # permisos
+        group.permissions.add(Permission.objects.get(
+            codename='puede_autorizar_ordinarias'
+        ))
 
     def autorizar(self, orden):
         """Autoriza órdenes ordinarias"""
@@ -118,6 +113,65 @@ class Maestro(User):
 
     def materias(self):
         """Materias que supervisa el maestro"""
+        pass
+
+
+class Almacen(User):
+
+    class AlmacenManager(models.Manager):
+        def get_queryset(self, *args, **kwargs):
+            return super().get_queryset(*args, **kwargs).filter(
+                groups__name='almacen'
+            )
+
+    objects = AlmacenManager()
+
+    class Meta:
+        proxy = True
+        permissions = (
+            ("puede_recibir_equipo", "puede recibir equipo al almacén"),
+            ("puede_entregar_equipo", "puede entregar equipo a los prestatarios"),
+            ("puede_hacer_ordenes", "puede hacer ordenes ordinarias para otros usuarios"),
+            ("puede_ver_ordenes", "puede ver las ordenes de los prestatarios"),
+            ("puede_ver_reportes", "puede ver los reportes de los prestatarios"),
+        )
+
+    @classmethod
+    def crear_grupo(cls):
+        """Crea el 'Permission Group' para el usuario"""
+
+        # crear grupo prestatario
+        group, created = Group.objects.get_or_create(
+            name='almacen'
+        )
+
+        # permisos
+        group.permissions.add(Permission.objects.get(
+            codename='puede_recibir_equipo'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='puede_entregar_equipo'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='puede_hacer_ordenes'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='puede_ver_ordenes'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='puede_ver_reportes'
+        ))
+
+    def autorizar(self, orden):
+        """Autorizar una orden ordinaria"""
+        pass
+
+    def reportar(self, orden):
+        """Reportar una orden"""
         pass
 
 
@@ -242,21 +296,6 @@ class Materia(models.Model):
     def articulos(self):
         """Lista de articulos que se pueden solicitar si se lleva
         esta clase"""
-        pass
-
-
-class Almacen(models.Model):
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE
-    )
-
-    def autorizar(self, orden):
-        """Autorizar una orden ordinaria"""
-        pass
-
-    def reportar(self, orden):
-        """Reportar una orden"""
         pass
 
 
