@@ -54,16 +54,6 @@ class Prestatario(User):
         group.permissions.add(solicitar_equipo)
         group.permissions.add(corresponsable)
 
-    def save(self, *args, **kwargs):
-        """Crea un usuario y lo agrega al grupo prestatario"""
-        try:
-            group = Group.objects.get(name="prestatarios")
-
-            super().save(*args, **kwargs)
-            self.groups.add(group)
-        except Group.DoesNotExist:
-            print("Error in Prestatario.save: El grupo 'prestatarios' no existe.")
-
     def ordenes(self):
         """Órdenes de prestatario"""
         pass
