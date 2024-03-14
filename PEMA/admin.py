@@ -1,11 +1,14 @@
 from django.contrib import admin
 from .models import *
 
+
 admin.site.register(Prestatario)
+admin.site.register(Almacen)
+admin.site.register(Maestro)
+
+
 admin.site.register(Carrito)
 admin.site.register(Materia)
-admin.site.register(Coordinador)
-admin.site.register(Almacen)
 admin.site.register(Orden)
 admin.site.register(Reporte)
 admin.site.register(Articulo)
