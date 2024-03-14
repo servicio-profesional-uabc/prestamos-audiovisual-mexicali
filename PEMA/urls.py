@@ -9,7 +9,19 @@ urlpatterns = [
     ),
     path(
         route='test/',
-        name='test',
-        view=views.test
+        view=views.test,
+        name='test'
+    ),
+
+    path(
+        route='prestatario.html',
+        view=views.PrestatarioView.as_view(),
+        name='prestatario_html'
+    ),
+    
+    path(
+        route='carrito.html',
+        view=views.CarritoView.as_view(),
+        name='carrito_html'
     ),
 ]

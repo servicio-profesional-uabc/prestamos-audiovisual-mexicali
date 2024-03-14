@@ -12,6 +12,21 @@ class IndexView(View):
             template_name="test.html"
         )
 
+class PrestatarioView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="prestatario.html"
+        )   
+
+class CarritoView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="carrito.html"
+        )   
+
+
 
 def test(request):
     send_mail(
