@@ -393,6 +393,10 @@ class Articulo(models.Model):
             ('nombre', 'codigo')
         )
 
+    imagen = models.ImageField(
+        default='default.png'
+    )
+
     nombre = models.CharField(
         blank=False,
         null=False,
