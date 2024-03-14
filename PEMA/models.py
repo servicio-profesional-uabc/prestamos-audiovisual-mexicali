@@ -239,29 +239,18 @@ class Orden(models.Model):
         max_length=2
     )
 
-    fecha_emision = models.DateTimeField(
-        default=timezone.now
-    )
-
-    fecha_recepcion = models.DateTimeField(
-        null=True
-    )
-
-    fecha_devolucion = models.DateTimeField(
-        null=True
-    )
-
-    inicio_prestamo = models.DateTimeField(
-        null=True
-    )
-
-    final_prestamo = models.DateTimeField(
-        null=True
-    )
-
     lugar = models.CharField(
         default="",
+        null="",
         max_length=250
+    )
+
+    inicio = models.DateTimeField(
+        null=False
+    )
+
+    final = models.DateTimeField(
+        null=False
     )
 
     def unidades(self):
@@ -278,35 +267,6 @@ class Orden(models.Model):
 
     def reporte(self):
         """Retorna el reporte de la Orden o nada"""
-        pass
-
-
-class Carrito(models.Model):
-    prestatario = models.OneToOneField(
-        to=User,
-        on_delete=models.CASCADE
-    )
-
-    inicio_prestamo = models.DateTimeField(
-        default=timezone.now,
-        null=False
-    )
-
-    final_prestamo = models.DateTimeField(
-        default=timezone.now,
-        null=False
-    )
-
-    def agregar(self, articulo):
-        """Agrega un articulo al carrito"""
-        pass
-
-    def articulos(self):
-        """Articulos en la solicitud"""
-        pass
-
-    def ordenar(self):
-        """Convierte el carrito en una orden (Transaccion)"""
         pass
 
 
@@ -343,6 +303,40 @@ class Materia(models.Model):
         pass
 
 
+class Carrito(models.Model):
+    prestatario = models.OneToOneField(
+        to=User,
+        on_delete=models.CASCADE
+    )
+
+    materia = models.OneToOneField(
+        to=Materia,
+        on_delete=models.DO_NOTHING
+    )
+
+    inicio = models.DateTimeField(
+        default=timezone.now,
+        null=False
+    )
+
+    final = models.DateTimeField(
+        default=timezone.now,
+        null=False
+    )
+
+    def agregar(self, articulo):
+        """Agrega un articulo al carrito"""
+        pass
+
+    def articulos(self):
+        """Articulos en la solicitud"""
+        pass
+
+    def ordenar(self):
+        """Convierte el carrito en una orden (Transaccion)"""
+        pass
+
+
 class Reporte(models.Model):
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
@@ -370,6 +364,10 @@ class Reporte(models.Model):
         on_delete=models.CASCADE
     )
 
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
 
 class Articulo(models.Model):
     class Meta:
@@ -386,6 +384,12 @@ class Articulo(models.Model):
     codigo = models.CharField(
         blank=False,
         null=False,
+        max_length=250
+    )
+
+    descripcion = models.TextField(
+        null=True,
+        blank=True,
         max_length=250
     )
 
@@ -413,6 +417,43 @@ class Articulo(models.Model):
         Lista de unidades de un artículo
         """
         pass
+
+
+class Entrega(models.Model):
+    orden = models.OneToOneField(
+        to=Orden,
+        on_delete=models.CASCADE,
+        primary_key=True
+    )
+
+    almacen = models.OneToOneField(
+        to=Almacen,
+        on_delete=models.CASCADE
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
+
+class Devolucion(models.Model):
+    orden = models.OneToOneField(
+        to=Orden,
+        on_delete=models.CASCADE,
+        primary_key=True
+    )
+
+    almacen = models.OneToOneField(
+        to=Almacen,
+        on_delete=models.CASCADE
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
+
+
 
 
 class Unidad(models.Model):
@@ -453,10 +494,10 @@ class Categoria(models.Model):
         pass
 
 
-class AutorizacionAlmacen(models.Model):
+class AutorizacionOrdinaria(models.Model):
     class Meta:
         unique_together = (
-            ('orden', 'almacen')
+            ('orden', 'maestro')
         )
 
     orden = models.OneToOneField(
@@ -464,7 +505,7 @@ class AutorizacionAlmacen(models.Model):
         on_delete=models.CASCADE
     )
 
-    almacen = models.OneToOneField(
+    maestro = models.OneToOneField(
         to=Almacen,
         on_delete=models.CASCADE
     )
@@ -474,7 +515,7 @@ class AutorizacionAlmacen(models.Model):
     )
 
 
-class AutorizacionCoordinador(models.Model):
+class AutorizacionExtraordinaria(models.Model):
     class Meta:
         unique_together = (
             ('orden', 'coordinador')
@@ -494,6 +535,26 @@ class AutorizacionCoordinador(models.Model):
         default=False
     )
 
+
+class CorresponsableOrden(models.Model):
+    class Meta:
+        unique_together = (
+            ('orden', 'prestatario')
+        )
+
+    prestatario = models.OneToOneField(
+        to=Prestatario,
+        on_delete=models.CASCADE,
+    )
+
+    orden = models.OneToOneField(
+        to=Orden,
+        on_delete=models.CASCADE
+    )
+
+    aceptado = models.BooleanField(
+        default=False,
+    )
 
 # Relaciones
 # -----
