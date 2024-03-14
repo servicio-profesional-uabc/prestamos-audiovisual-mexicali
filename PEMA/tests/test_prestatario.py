@@ -11,7 +11,6 @@ from datetime import datetime
 
 class TestUsers(TestCase):
     def setUp(self):
-        Prestatario.crear_grupo()
 
         self.user_normal = User.objects.create_user(
             id=0,

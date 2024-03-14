@@ -27,4 +27,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
+        python manage.py makemigrations
+        python manage.py migrate
+        python manage.py crear_roles
         python manage.py test PEMA/tests
