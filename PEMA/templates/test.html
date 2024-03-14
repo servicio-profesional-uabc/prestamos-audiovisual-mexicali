@@ -14,13 +14,64 @@
 </head>
 <body>
     <div class="container text-center mt-5">
-        <img class="my-4" src="{% static 'img/uabc-logo.png' %}" height="125px">
-        <h1>Bienvenido a la vista de prueba</h1>
-        <p>Si puedes ver esto el sistema de plantillas esta preparado</p>
 
-        <button class="btn btn-primary my-3"  data-bs-toggle="modal" data-bs-target="#exampleModal">Este botón debe ser verde</button>
+          <style>
+            .image-container {
+              display: flex;
+              justify-content: flex-start;
+              padding: 1px;
+
+              body {
+                font-family: "Minion Pro", sans-serif;
+            }
+            }
+          </style>
+
+          <!--Funcion para validar que el ususario haya ingresado algo en la caja de entrada de texto
+          <script>
+            function validarMatricula() {
+              var matricula = document.getElementById("matricula").value;
+              if (matricula == "") {
+                alert("Por favor ingrese su matrícula.");
+                return false;
+              }
+              return true;
+            }
+            </script>
+
+            <script>
+              function validarContra() {
+                var matricula = document.getElementById("contraseña").value;
+                if (matricula == "") {
+                  alert("Por favor ingrese su matrícula.");
+                  return false;
+                }
+                return true;
+              }
+              </script>-->
 
 
+        <div class="image-container">
+            <img class="my-4" src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="80px" style="position: absolute; top: 0; left: 0;">
+        </div>
+
+
+        <!--Palabras de incio-->
+        <h1 style="font-family: 'Minion Pro', sans-serif;">PEMA</h1>
+        <h3 style="font-family: 'Minion Pro', sans-serif;">Prestamos de Equipo y Material Audiovisual</h3><br><br>
+
+        <!--form onsubmit="return validarMatricula()"-->
+          <label for="matricula" style="font-family: 'Minion Pro', sans-serif;">Ingrese su matrícula:</label><br><br>
+          <input type="text" id="matricula" name="matricula" style="font-family: 'Minion Pro', sans-serif;" placeholder="Ingrese su matrícula"><br><br>
+
+
+        <!--Se pide contraseña-->
+        <!--form onsubmit="return validarContra"-->
+        <label for="nombre" style="font-family: 'Minion Pro', sans-serif;" >Ingrese su contraseña:</label><br><br>
+        <input type="text" id="contraseña" name="contraseña" style="font-family: 'Minion Pro', sans-serif;" placeholder="Ingrese su contraseña"><br><br>
+
+        <!--Boton para iniciar secion -->
+        <button class="btn btn-primary my-3"  data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-family: 'Minion Pro', sans-serif;">Iniciar Sesion</button>
     </div>
 
     <!-- Modal -->
@@ -29,12 +80,46 @@
         <div class="modal-content">
 
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Test de javascript</h5>
+             <!--Reglamento-->
+            <h5 class="modal-title" id="exampleModalLabel">Reglamento</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
 
           <div class="modal-body">
-            Si puedes ver esto javascript funciona.
+
+            <!--Para mostrar el reglamento en cerrarPDF-->
+            <embed id="pdfViewer" src="{% static 'img/Meta.pdf' %}" type="application/pdf" width="100%" height="600px">
+
+            <!--Crea un checkbox para cerrar el reglamento-->
+            <input type="checkbox" id="cerrarPDF">
+
+            <!--Etiqueta del checkbox y texto del mismo checkbox-->
+            <label for="cerrarPDF">He leído términos y condiciones</label><br><br>
+
+            <!--Boton para continuar una hez que haya aceptado los terminos y condiciones-->
+            <button id="botonContinuar" class="btn btn-primary my-3" data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-family: 'Minion Pro', sans-serif;" disabled>Continuar</button>
+
+            <script>
+              <!-- Toma la referencia del checkbox "cerrarPDF"-->
+              var checkbox = document.getElementById('cerrarPDF');
+
+              var botonContinuar = document.getElementById('botonContinuar');
+
+              checkbox.addEventListener('change', function() {
+                  if (this.checked) {
+                      botonContinuar.disabled = false;
+                  } else {
+                      botonContinuar.disabled = true;
+                  }
+              });
+
+              // Escuchar clics en el botón de continuar
+              botonContinuar.addEventListener('click', function() {
+                // Redirigir a otra página
+                window.location.href = "prestatario.html";
+            });
+
+            </script>
           </div>
 
         </div>
