@@ -5,6 +5,11 @@ from django.contrib.auth.models import User
 
 
 class Prestatario(models.Model):
+    """
+    Relacionado con la clase `User` de Django, representa a un usuario
+    que puede solicitar equipo del Almacen.
+    """
+
     user = models.OneToOneField(
         to=User,
         on_delete=models.CASCADE
@@ -38,13 +43,19 @@ class Prestatario(models.Model):
 
 class Orden(models.Model):
     """
+    Description
+    -----------
+    Representa una orden de préstamo con detalles como tipo, lugar,
+    emisión, recepción y devolución.
+
+
     Attributes
     ----------
-    emision: models.DateTimeField
+    emision: models DateTimeField
         Fecha y hora a la que se emitio la orden
-    recepcion: models.DateTimeField
+    recepcion: models DateTimeField
         Fecha y hora a la que se recogió la orden del almacen
-    devolucion: models.DateTimeField
+    devolucion: models DateTimeField
         Fecha y hora a la que se devolvio la orden al almacen
     """
 
@@ -109,7 +120,15 @@ class Orden(models.Model):
         pass
 
 
+# Modelos
+
+
 class Carrito(models.Model):
+    """
+    Representa el carrito de un prestatario con detalles como la fecha de
+    inicio y finalización del préstamo.
+    """
+
     prestatario = models.OneToOneField(
         to=Prestatario,
         on_delete=models.CASCADE
@@ -139,6 +158,11 @@ class Carrito(models.Model):
 
 
 class Materia(models.Model):
+    """
+    Representa una materia académica con un nombre y un período
+    asociado.
+    """
+
     class Meta:
         unique_together = (
             ('nombre', 'periodo')
@@ -171,17 +195,25 @@ class Materia(models.Model):
 
 
 class Coordinador(models.Model):
+    """
+    Representa a un coordinador.
+    """
+
     user = models.OneToOneField(
         to=User,
         on_delete=models.CASCADE
     )
 
-    def autorizar(self, Orden):
+    def autorizar(self, orden):
         """Autorizar una orden extraordinaria"""
         pass
 
 
 class Almacen(models.Model):
+    """
+    Representa un almacen
+    """
+
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE
@@ -197,6 +229,10 @@ class Almacen(models.Model):
 
 
 class Reporte(models.Model):
+    """
+    Reporte del estado del equipo en caso de daños.
+    """
+
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
@@ -229,7 +265,6 @@ class Articulo(models.Model):
         unique_together = (
             ('nombre', 'codigo')
         )
-
 
     nombre = models.CharField(
         blank=False,
