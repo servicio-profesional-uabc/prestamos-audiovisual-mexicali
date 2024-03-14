@@ -73,6 +73,51 @@ class Prestatario(User):
         pass
 
 
+class Coordinador(User):
+    """
+    Clase que representa el coordenador
+    """
+
+    class CoordinadorManager(models.Manager):
+        def get_queryset(self, *args, **kwargs):
+            return super().get_queryset(*args, **kwargs).filter(
+                groups__name='coordinador'
+            )
+
+    objects = CoordinadorManager()
+
+    class Meta:
+        proxy = True
+        permissions = (
+            ("puede_autorizar_extraordinarias", "puede autorizar ordenes extraordinarias"),
+            ("puede_eliminar_ordenes", "puede eliminar ordenes de prestatario"),
+            ("puede_desactivar_reportes", "puede desactivar reportes de los prestatarios"),
+        )
+
+    @classmethod
+    def crear_grupo(cls):
+        # crear grupo prestatario
+        group, created = Group.objects.get_or_create(
+            name='coordinador'
+        )
+
+        # permisos
+        group.permissions.add(Permission.objects.get(
+            codename='puede_autorizar_extraordinarias'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='puede_eliminar_ordenes'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='puede_desactivar_reportes'
+        ))
+
+    def autorizar(self, orden):
+        pass
+
+
 class Maestro(User):
     """
     Clase que representa el usuario Maestro
@@ -117,7 +162,6 @@ class Maestro(User):
 
 
 class Almacen(User):
-
     class AlmacenManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
             return super().get_queryset(*args, **kwargs).filter(
@@ -428,17 +472,6 @@ class AutorizacionAlmacen(models.Model):
     autorizar = models.BooleanField(
         default=False
     )
-
-
-class Coordinador(models.Model):
-    user = models.OneToOneField(
-        to=User,
-        on_delete=models.CASCADE
-    )
-
-    def autorizar(self, orden):
-        """Autorizar una orden extraordinaria"""
-        pass
 
 
 class AutorizacionCoordinador(models.Model):
