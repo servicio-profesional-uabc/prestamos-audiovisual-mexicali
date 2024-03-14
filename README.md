@@ -5,6 +5,8 @@ PEMA es un programa diseñado para facilitar la gestión de préstamos de materi
 
 ## Configuración del Entorno de Desarrollo
 ### Linux (Ubuntu)
+Puedes encontrar instrucciones más detalladas [aquí](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki/Entorno-de-desarrollo).
+
 ```sh
 # clonar el repositorio
 git clone https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali.git
@@ -30,8 +32,6 @@ python manage.py developer_setup
 # ejecutar el servidor
 python manage.py runserver
 ```
-
-Puedes encontrar instrucciones más detalladas [aquí](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki/Entorno-de-desarrollo).
 
 ## Documentación Completa
 Toda la información detallada sobre el proyecto está disponible en la [sección de wiki](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki). Esta documentación proporciona una guía completa para comprender y utilizar el sistema PEMA.
