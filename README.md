@@ -21,6 +21,12 @@ pip install -r requirements.txt
 python manage.py makemigrations PEMA
 python manage.py migrate
 
+# crear los grupos de permisos
+python manage.py crear_roles
+
+# crea un usuario 'admin' con contraseña '123'
+python manage.py developer_setup
+
 # ejecutar el servidor
 python manage.py runserver
 ```
