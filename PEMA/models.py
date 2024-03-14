@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from phonenumber_field.modelfields import PhoneNumberField
 
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import Group
@@ -217,6 +218,23 @@ class Almacen(User):
     def reportar(self, orden):
         """Reportar una orden"""
         pass
+
+
+class DetallesUsuario(models.Model):
+    """Informacion adicional del usuario"""
+
+    usuario = models.OneToOneField(
+        to=User,
+        on_delete=models.CASCADE
+    )
+
+    imagen = models.ImageField(
+        default='default.png'
+    )
+
+    phone = PhoneNumberField(
+        null=True
+    )
 
 
 class Orden(models.Model):
@@ -453,9 +471,6 @@ class Devolucion(models.Model):
     )
 
 
-
-
-
 class Unidad(models.Model):
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
@@ -469,6 +484,7 @@ class Unidad(models.Model):
     estado = models.CharField(
         max_length=2,
         choices=Estado.choices,
+        null=False,
         default=Estado.ACTIVO
     )
 
@@ -555,6 +571,7 @@ class CorresponsableOrden(models.Model):
     aceptado = models.BooleanField(
         default=False,
     )
+
 
 # Relaciones
 # -----

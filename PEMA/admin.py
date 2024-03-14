@@ -7,6 +7,8 @@ admin.site.register(Almacen)
 admin.site.register(Maestro)
 admin.site.register(Coordinador)
 
+admin.site.register(DetallesUsuario)
+
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
 
