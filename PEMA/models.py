@@ -453,9 +453,6 @@ class Devolucion(models.Model):
     )
 
 
-
-
-
 class Unidad(models.Model):
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
@@ -555,6 +552,7 @@ class CorresponsableOrden(models.Model):
     aceptado = models.BooleanField(
         default=False,
     )
+
 
 # Relaciones
 # -----
