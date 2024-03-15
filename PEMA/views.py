@@ -3,14 +3,30 @@ from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
+from django.template import loader
 
 
 class IndexView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="test.html"
+            template_name="index.html"
         )
+
+class PrestatarioView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="prestatario.html"
+        )   
+
+class CarritoView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="carrito.html"
+        )   
+
 
 
 def test(request):
