@@ -8,28 +8,18 @@ PEMA es un programa diseñado para facilitar la gestión de préstamos de materi
 Puedes encontrar instrucciones más detalladas [aquí](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki/Entorno-de-desarrollo).
 
 ```sh
-# clonar el repositorio
 git clone https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali.git
 cd prestamos-audiovisual-mexicali/
 
-# crear el entorno virtual
 python3.10 -m venv .venv
 source .venv/bin/activate
-
-# instalar las dependencias
 pip install -r requirements.txt
 
-# actualizar modelos
 python manage.py makemigrations PEMA
 python manage.py migrate
-
-# crear los grupos de permisos
 python manage.py crear_roles
-
-# crea un usuario 'admin' con contraseña '123'
 python manage.py developer_setup
 
-# ejecutar el servidor
 python manage.py runserver
 ```
 

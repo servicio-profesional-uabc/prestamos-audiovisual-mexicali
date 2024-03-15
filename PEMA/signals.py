@@ -8,11 +8,6 @@ from PEMA.models import Perfil
 def user_post_save(sender, instance, created, **kwargs):
     """
     Se crea un perfil para cada usuario
-    :param sender:
-    :param instance:
-    :param created:
-    :param kwargs:
-    :return:
     """
     if created:
         Perfil.objects.create(
