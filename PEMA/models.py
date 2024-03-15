@@ -1,13 +1,13 @@
 from phonenumber_field.modelfields import PhoneNumberField
 
-from django.db import models
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
+from django.utils import timezone
+from django.db import models
 
 
 class Prestatario(User):
