@@ -220,7 +220,7 @@ class Almacen(User):
         pass
 
 
-class DetallesUsuario(models.Model):
+class Perfil(models.Model):
     """Informacion adicional del usuario"""
 
     usuario = models.OneToOneField(
