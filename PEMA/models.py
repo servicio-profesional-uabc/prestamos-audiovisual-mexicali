@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
 from django.utils import timezone
-from django.db import models
+from django.db import models, transaction
 
 
 class Prestatario(User):
@@ -354,8 +354,18 @@ class Perfil(models.Model):
 
 
 class Orden(models.Model):
-    """
-    Clase que representa una orden del almacén.
+    """Clase que representa una orden del almacén.
+
+    Una orden es un conjunto de Unidades de cada Artículo definido
+    el Carrito, para que el encargado del Almacén sepa
+    específicamente que entregar.
+
+    Attributes:
+        prestatario (Prestatario): Usuario que solicita los articulos.
+        lugar (String): Lugar donde se usara el material.
+        inicio (DateTime): Fecha de inicio de la orden.
+        final (DateTime): Fecha de devolución de la orden.
+        tipo (Enum): Tipo de Orden (Ordinaria, Extraordinaria).
     """
 
     class Estado(models.TextChoices):
@@ -489,8 +499,16 @@ class Materia(models.Model):
 
 
 class Carrito(models.Model):
-    """
-    Clase que representa un carrito de compras.
+    """Clase que representa un carrito de compras.
+
+    Se usa para seleccionar los artículos del cátalogo, cuando los
+    artículos ya se han seleccionado se puede convertir en una Orden.
+
+    Attributes:
+       prestatario (Prestatario): Usuario dueño del carrito
+       materia (Materia): materia a la que está ligado el equipo del carrito.
+       inicio (DateTime): fecha de inicio del préstamo.
+       final (DateTime): fecha de devolución del préstamo.
     """
 
     prestatario = models.OneToOneField(
@@ -513,26 +531,34 @@ class Carrito(models.Model):
         null=False
     )
 
-    def agregar(self, articulo) -> None:
+    def agregar(self, articulo: 'Articulo') -> None:
         """
         Agrega un artículo al carrito.
 
         Args:
             articulo: El artículo que se va a agregar al carrito.
-
-        Returns:
-            None
         """
-        pass
+        ArticuloCarrito.objects.create(
+            articulo=articulo,
+            carrito=self
+        ).save()
 
-    def articulos(self) -> 'QuerySet[Articulo]':
+    def articulos(self) -> '[Articulo]':
         """
         Devuelve los artículos en el carrito.
 
         Returns:
-            QuerySet[Articulo]: Artículos en el carrito.
+            [Articulo]: Artículos en el carrito.
         """
-        pass
+
+        # TODO: que hacer con las ordenes repetidas
+
+        ids_articulos = ArticuloCarrito.objects\
+            .filter(carrito=self)\
+            .values_list('articulo', flat=True)
+
+        return Articulo.objects\
+            .filter(id__in=ids_articulos)
 
     def ordenar(self) -> None:
         """
@@ -541,7 +567,22 @@ class Carrito(models.Model):
         Returns:
             None
         """
-        pass
+
+        # TODO: Verificar si la orden es Ordinaria o Extraordinaria
+        # TODO: Como identificar el 'lugar' de la orden
+
+        with transaction.atomic():
+            Orden.objects.create(
+                prestatario=self.prestatario,
+                tipo=Orden.Tipo.ORDINARIA,
+                lugar='',
+                inicio=self.inicio,
+                final=self.final
+            ).save()
+
+            # TODO: convertir los ArticuloCarrito a UnidadOrden
+
+            self.delete()
 
 
 class Reporte(models.Model):
@@ -872,8 +913,11 @@ class ArticuloMateria(models.Model):
 
 
 class ArticuloCarrito(models.Model):
-    """
-    Clase que representa la relación entre un artículo y un carrito.
+    """Relación entre un Artículo y un Carrito.
+
+    Attributes:
+        articulo (Articulo): Articulo que se encuentra en el carrito
+        carrito (Carrito): Carrito de un usuario
     """
 
     class Meta:
