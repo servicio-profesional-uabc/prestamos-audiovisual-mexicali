@@ -531,19 +531,29 @@ class Carrito(models.Model):
         null=False
     )
 
-    def agregar(self, articulo: 'Articulo') -> None:
+    def agregar(self, articulo: 'Articulo', unidades: int = 1) -> tuple['ArticuloCarrito', bool]:
         """
         Agrega un artículo al carrito.
 
         Args:
-            articulo: El artículo que se va a agregar al carrito.
-        """
-        ArticuloCarrito.objects.create(
-            articulo=articulo,
-            carrito=self
-        ).save()
+            articulo: El artículo que se va a agregar.
+            unidades: Unidades que se va a agregar del Artículo.
 
-    def articulos(self) -> '[Articulo]':
+        Return:
+            Relación al artículo al carrito y si se agregó
+        """
+
+        objeto, creado = ArticuloCarrito.objects \
+            .get_or_create(articulo=articulo, carrito=self)
+
+        if not creado and objeto.unidades != unidades:
+            # Actualizar unidades
+            objeto.unidades = unidades
+            objeto.save()
+
+        return objeto, creado
+
+    def articulos(self) -> 'QuerySet[Articulo]':
         """
         Devuelve los artículos en el carrito.
 
@@ -962,6 +972,10 @@ class ArticuloCarrito(models.Model):
     carrito = models.OneToOneField(
         to=Carrito,
         on_delete=models.CASCADE
+    )
+
+    unidades = models.IntegerField(
+        default=1,
     )
 
 

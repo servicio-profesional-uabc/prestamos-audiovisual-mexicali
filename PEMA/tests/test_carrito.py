@@ -46,6 +46,12 @@ class TestCarrito(TestCase):
         )
 
     def test_agregar(self):
+        self.assertEquals(
+            len(self.carrito.articulos()),
+            0,
+            msg="El Carrito No está vació"
+        )
+
         self.carrito.agregar(
             articulo=self.articulo
         )
@@ -54,6 +60,37 @@ class TestCarrito(TestCase):
             len(self.carrito.articulos()),
             1,
             msg="No se agrego ningún articulo"
+        )
+
+        # volver a agregar
+        self.carrito.agregar(
+            articulo=self.articulo
+        )
+
+        self.assertEquals(
+            len(self.carrito.articulos()),
+            1,
+            msg="Se duplicaron artículos"
+        )
+
+    def test_actualizar_unidades(self):
+        foo, _ = self.carrito.agregar(
+            articulo=self.articulo
+        )
+
+        prev = foo.unidades
+
+        bar, _ = self.carrito.agregar(
+            articulo=self.articulo,
+            unidades=3
+        )
+
+        post = bar.unidades
+
+        self.assertNotEquals(
+            prev,
+            post,
+            msg="No se actualizó la cantidad de unidades"
         )
 
     def test_ordenar(self):
