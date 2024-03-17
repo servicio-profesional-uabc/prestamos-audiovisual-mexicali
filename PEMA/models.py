@@ -551,13 +551,13 @@ class Carrito(models.Model):
             [Articulo]: Artículos en el carrito.
         """
 
-        # TODO: que hacer con las ordenes repetidas
+        # TODO: ¿qué hacer con las ordenes repetidas?
 
-        ids_articulos = ArticuloCarrito.objects\
-            .filter(carrito=self)\
+        ids_articulos = ArticuloCarrito.objects \
+            .filter(carrito=self) \
             .values_list('articulo', flat=True)
 
-        return Articulo.objects\
+        return Articulo.objects \
             .filter(id__in=ids_articulos)
 
     def ordenar(self) -> None:
@@ -578,7 +578,7 @@ class Carrito(models.Model):
                 lugar='',
                 inicio=self.inicio,
                 final=self.final
-            ).save()
+            )
 
             # TODO: convertir los ArticuloCarrito a UnidadOrden
 
@@ -630,8 +630,13 @@ class Reporte(models.Model):
 
 
 class Articulo(models.Model):
-    """
-    Clase que representa un artículo.
+    """Clase que representa un artículo.
+
+    Attributes:
+        nombre (str): Nombre
+        codigo (str): Código
+        descripcion (str): Descripcion
+        imagen (Image): Imagen
     """
 
     class Meta:
@@ -687,7 +692,7 @@ class Articulo(models.Model):
         """
         pass
 
-    def materias(self) -> QuerySet[Materia]:
+    def materias(self) -> 'QuerySet[Materia]':
         """
         Devuelve la lista de materias en las que se encuentra el artículo.
 
@@ -784,8 +789,10 @@ class Unidad(models.Model):
 
 
 class Categoria(models.Model):
-    """
-    Clase que representa una categoría.
+    """Clase que representa una categoría.
+
+    Attributes:
+        nombre (str): Nombre de la categoría
     """
 
     nombre = models.CharField(
@@ -793,11 +800,33 @@ class Categoria(models.Model):
         max_length=250
     )
 
-    def articulos(self):
+    def articulos(self) -> QuerySet[Articulo]:
+        """Devuelve los artículos que pertenecen a esta categoría.
+
+        Return:
+            QuerySet: Artículos que pertenecen a la Categoría
         """
-        Devuelve los artículos que pertenecen a esta categoría.
+
+        ids_articulos = CategoriaArticulo.objects \
+            .filter(categoria=self) \
+            .values_list('articulo', flat=True)
+
+        return Articulo.objects \
+            .filter(id__in=ids_articulos)
+
+    def agregar(self, articulo: 'Articulo') -> tuple['CategoriaArticulo', bool]:
+        """Agrega un Articulo a la Categoría
+
+        Args:
+            articulo (Articulo): Articulo que se agregará
+
+        Return:
+            Relación del Articulo con la Categoría y si el Articulo
+            ha sido creado
         """
-        pass
+
+        return CategoriaArticulo.objects \
+            .get_or_create(categoria=self, articulo=articulo)
 
 
 class AutorizacionOrdinaria(models.Model):
@@ -937,9 +966,18 @@ class ArticuloCarrito(models.Model):
 
 
 class CategoriaArticulo(models.Model):
+    """ Clase que representa la relación entre una categoría y un
+    artículo.
+
+    Attributes:
+        categoria (Categoria): Categoría a la que pertenece Artículo
+        articulo (Articulo): Artículo que se encuentra en la Categoría
     """
-    Clase que representa la relación entre una categoría y un artículo.
-    """
+
+    class Meta:
+        unique_together = (
+            ('categoria', 'articulo')
+        )
 
     articulo = models.OneToOneField(
         to=Articulo,

@@ -7,7 +7,7 @@ from django.utils.timezone import make_aware
 from PEMA.models import Prestatario, Materia, Carrito, Articulo, Orden
 
 
-class CarritoTestCase(TestCase):
+class TestCarrito(TestCase):
     def setUp(self):
         # crear usuario Prestatario
         # -----
