@@ -160,14 +160,17 @@ class Coordinador(User):
     def autorizar(self, orden: 'Orden') -> None:
         """
         Autoriza una orden específica.
-
-        Args:
-            orden (Orden): La orden que se va a autorizar.
-
-        Returns:
-            None
         """
-        pass
+
+        # crear la autorizacion extraordinaria
+        autorizacion, created = AutorizacionExtraordinaria.objects.get_or_create(
+            orden=orden,
+            coordinador=self
+        )
+
+        # actualizar el estado de autorizacion
+        autorizacion.autorizar = True
+        
 
 
 class Maestro(User):
