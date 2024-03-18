@@ -6,7 +6,7 @@ from PEMA.models import Prestatario
 class TestUsers(TestCase):
     def setUp(self):
 
-        Prestatario.crear_grupo()
+        grupo, _ = Prestatario.crear_grupo()
 
         self.user_normal = User.objects.create_user(
             id=0,
@@ -14,17 +14,11 @@ class TestUsers(TestCase):
             password="<PASSWORD>"
         )
 
-        self.user_prestatario = User.objects.create(
+        self.user_prestatario = Prestatario.crear_usuario(
             id=1,
             username="prestatario",
             password="<PASSWORD>"
         )
-
-        my_group = Group.objects.get(name='prestatarios')
-        my_group.user_set.add(self.user_prestatario)
-
-        self.user_normal.save()
-        self.user_prestatario.save()
 
     def test_crear_prestatario(self):
         # verificar que el prestatario está en el grupo prestatario
