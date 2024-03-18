@@ -33,6 +33,16 @@ class Prestatario(User):
     objects = PrestatarioManager()
 
     @classmethod
+    def crear_usuario(cls,  *args, **kwargs) -> User:
+        """Crea un usuario de tipo prestatario"""
+
+        grupo, _ = Prestatario.crear_grupo()
+        user = User.objects.create_user(*args, **kwargs)
+        grupo.user_set.add(user)
+
+        return user
+
+    @classmethod
     def crear_grupo(cls):
         """
         Crea el 'Permission Group' para el usuario prestatario.
@@ -695,12 +705,14 @@ class Articulo(models.Model):
             QuerySet[Unidad]: Unidades disponibles en el rango especificado.
         """
 
-        unidades = Unidad.objects.get(articulo=self)
+        unidades = Unidad.objects.filter(articulo=self)
         ordenes_id = UnidadOrden.objects\
             .filter(id__in=unidades)\
             .values_list('orden', flat=True)
 
-        orden = Orden.objects.filter(id__in=ordenes_id)
+        orden = Orden.objects\
+            .filter(id__in=ordenes_id)\
+            .filter()
 
         return orden
 
