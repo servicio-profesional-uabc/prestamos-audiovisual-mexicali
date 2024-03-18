@@ -1,13 +1,7 @@
-from django.test import TestCase
 from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
 from PEMA.models import Prestatario
-from PEMA.models import Carrito
-
-from django.utils.timezone import make_aware
-from datetime import datetime
-
 
 class TestUsers(TestCase):
     def setUp(self):

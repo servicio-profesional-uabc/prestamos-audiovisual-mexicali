@@ -51,6 +51,8 @@ class Prestatario(User):
             codename='puede_ser_corresponsable'
         ))
 
+        return group, created
+
     def ordenes(self) -> 'QuerySet[Orden]':
         """
         Devuelve las órdenes del prestatario.
@@ -383,9 +385,10 @@ class Orden(models.Model):
         ORDINARIA = "OR", _("ORDINARIA")
         EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
 
-    prestatario = models.OneToOneField(
+    prestatario = models.ForeignKey(
         to=Prestatario,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE
+    )
 
     tipo = models.CharField(
         choices=Tipo.choices,
@@ -691,7 +694,30 @@ class Articulo(models.Model):
         Returns:
             QuerySet[Unidad]: Unidades disponibles en el rango especificado.
         """
-        pass
+
+        unidades = Unidad.objects.get(articulo=self)
+        ordenes_id = UnidadOrden.objects\
+            .filter(id__in=unidades)\
+            .values_list('orden', flat=True)
+
+        orden = Orden.objects.filter(id__in=ordenes_id)
+
+        return orden
+
+
+       #
+
+        #unidades_ordenadas = UnidadOrden.objects \
+         #   .filter(id__in=unidades)
+
+    # ids_articulos = CategoriaArticulo.objects \
+    #   .filter(categoria=self) \
+    #  .values_list('articulo', flat=True)
+
+    # return Articulo.objects \
+    #   .filter(id__in=ids_articulos)
+
+    #        ordenes = Orden.objects.get(inicio=inicio)
 
     def categorias(self) -> 'QuerySet[Categoria]':
         """
@@ -764,14 +790,16 @@ class Devolucion(models.Model):
 
 
 class Unidad(models.Model):
-    """
-    Clase que representa una unidad de un artículo.
+    """Clase que representa una unidad de un artículo.
+
+    Attributes:
+        articulo (Articulo): al que pertenece la unidad
+        estado (Estado): de la unidad
+        num_control (Str): para identificar la unidad
+        num_serie (Str): de la unidad
     """
 
     class Estado(models.TextChoices):
-        """
-        Opciones para el estado de la unidad.
-        """
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
@@ -796,6 +824,14 @@ class Unidad(models.Model):
     num_serie = models.CharField(
         max_length=250
     )
+
+    def ordenes(self):
+        ids_orden = UnidadOrden.objects \
+            .filter(unidad=self) \
+            .values_list('orden', flat=True)
+
+        return Orden.objects \
+            .filter(id__in=ids_orden)
 
 
 class Categoria(models.Model):
@@ -914,38 +950,22 @@ class CorresponsableOrden(models.Model):
     )
 
 
-class PrestatarioMateria(models.Model):
-    """
-    Clase que representa la relación entre un prestatario y una materia.
-    """
-
-    class Meta:
-        unique_together = (
-            ('materia', 'prestatario')
-        )
-
-    materia = models.OneToOneField(
-        to=Carrito,
-        on_delete=models.CASCADE
-    )
-
-    prestatario = models.OneToOneField(
-        to=Prestatario,
-        on_delete=models.CASCADE
-    )
-
-
 class ArticuloMateria(models.Model):
     """
     Clase que representa la relación entre un artículo y una materia.
     """
 
-    materia = models.OneToOneField(
+    class Meta:
+        unique_together = (
+            ('materia', 'articulo')
+        )
+
+    materia = models.ForeignKey(
         to=Materia,
         on_delete=models.CASCADE
     )
 
-    articulo = models.OneToOneField(
+    articulo = models.ForeignKey(
         to=Articulo,
         on_delete=models.CASCADE
     )
@@ -964,12 +984,12 @@ class ArticuloCarrito(models.Model):
             ('articulo', 'carrito')
         )
 
-    articulo = models.OneToOneField(
+    articulo = models.ForeignKey(
         to=Articulo,
         on_delete=models.CASCADE
     )
 
-    carrito = models.OneToOneField(
+    carrito = models.ForeignKey(
         to=Carrito,
         on_delete=models.CASCADE
     )
@@ -993,12 +1013,12 @@ class CategoriaArticulo(models.Model):
             ('categoria', 'articulo')
         )
 
-    articulo = models.OneToOneField(
+    articulo = models.ForeignKey(
         to=Articulo,
         on_delete=models.CASCADE
     )
 
-    categoria = models.OneToOneField(
+    categoria = models.ForeignKey(
         to=Categoria,
         on_delete=models.CASCADE
     )
@@ -1008,13 +1028,17 @@ class UnidadOrden(models.Model):
     """
     Clase que representa la relación entre una unidad y una orden.
     """
+    class Meta:
+        unique_together = (
+            ('unidad', 'orden')
+        )
 
-    unidad = models.OneToOneField(
+    unidad = models.ForeignKey(
         to=Unidad,
         on_delete=models.CASCADE
     )
 
-    orden = models.OneToOneField(
+    orden = models.ForeignKey(
         to=Orden,
         on_delete=models.CASCADE
     )
