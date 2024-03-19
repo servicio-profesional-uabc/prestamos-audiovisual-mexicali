@@ -183,16 +183,6 @@ class Maestro(User):
         """
 
         def get_queryset(self, *args, **kwargs):
-            """
-            Obtiene el queryset filtrado por grupos de maestros.
-
-            Args:
-                *args: Argumentos adicionales posicionales.
-                **kwargs: Argumentos adicionales de palabras clave.
-
-            Returns:
-                queryset: Queryset filtrado de maestros.
-            """
             return super().get_queryset(*args, **kwargs).filter(
                 groups__name='maestro'
             )
@@ -249,16 +239,6 @@ class Almacen(User):
 
     class AlmacenManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            """
-            Obtiene el queryset filtrado por grupos de almacén.
-
-            Args:
-                *args: Argumentos adicionales posicionales.
-                **kwargs: Argumentos adicionales de palabras clave.
-
-            Returns:
-                queryset: Queryset filtrado del almacén.
-            """
             return super().get_queryset(*args, **kwargs).filter(
                 groups__name='almacen'
             )
@@ -807,7 +787,7 @@ class Entrega(models.Model):
 
 class Devolucion(models.Model):
     """
-    Clase que representa una devolución.
+    Clase que representa una devolució del equipo al almacen
     """
 
     orden = models.OneToOneField(
