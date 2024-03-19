@@ -459,6 +459,17 @@ class Orden(models.Model):
         """
         pass
 
+    def agregar(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
+        """Agrega una unidad especifíca a la orden
+
+         Attributes:
+             unidad (Unidad): Unidad que se agregará
+        """
+        return UnidadOrden.objects.get_or_create(
+            orden=self,
+            unidad=unidad
+        )
+
 
 class Materia(models.Model):
     """
@@ -486,7 +497,7 @@ class Materia(models.Model):
         blank=False
     )
 
-    def alumnos(self) -> QuerySet[User]:
+    def alumnos(self) -> 'QuerySet[User]':
         """
         Devuelve la lista de alumnos en la clase.
 
@@ -495,7 +506,7 @@ class Materia(models.Model):
         """
         pass
 
-    def profesores(self) -> QuerySet[User]:
+    def profesores(self) -> 'QuerySet[User]':
         """
         Devuelve la lista de profesores en la clase.
 
@@ -666,9 +677,6 @@ class Articulo(models.Model):
     """
 
     class Meta:
-        """
-        Metadatos de la clase Artículo.
-        """
         unique_together = (
             ('nombre', 'codigo')
         )
@@ -695,6 +703,19 @@ class Articulo(models.Model):
         max_length=250
     )
 
+    def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
+        """registrar una unidad de un articulo
+
+        Attribute:
+            num_control (str): numero de control de la unidad
+            num_serie (str): numero de series de la unidad
+        """
+        return Unidad.objects.get_or_create(
+            articulo=self,
+            num_control=num_control,
+            num_serie=num_serie
+        )
+
     def disponible(self, inicio, final) -> 'QuerySet[Unidad]':
         """
         Retorna una lista con las unidades disponibles en el rango de
@@ -708,31 +729,16 @@ class Articulo(models.Model):
             QuerySet[Unidad]: Unidades disponibles en el rango especificado.
         """
 
-        unidades = Unidad.objects.filter(articulo=self)
+        unidades = self.unidades()
+
         ordenes_id = UnidadOrden.objects\
             .filter(id__in=unidades)\
             .values_list('orden', flat=True)
 
         orden = Orden.objects\
-            .filter(id__in=ordenes_id)\
-            .filter()
+            .filter(id__in=ordenes_id)
 
         return orden
-
-
-       #
-
-        #unidades_ordenadas = UnidadOrden.objects \
-         #   .filter(id__in=unidades)
-
-    # ids_articulos = CategoriaArticulo.objects \
-    #   .filter(categoria=self) \
-    #  .values_list('articulo', flat=True)
-
-    # return Articulo.objects \
-    #   .filter(id__in=ids_articulos)
-
-    #        ordenes = Orden.objects.get(inicio=inicio)
 
     def categorias(self) -> 'QuerySet[Categoria]':
         """
@@ -741,7 +747,12 @@ class Articulo(models.Model):
         Returns:
             QuerySet[Categoria]: Categorías asociadas al artículo.
         """
-        pass
+        nombre_categoria = CategoriaArticulo.objects \
+            .filter(articulo=self) \
+            .values_list('categoria', flat=True)
+
+        return Categoria.objects\
+            .filter(nombre__in=nombre_categoria)
 
     def materias(self) -> 'QuerySet[Materia]':
         """
@@ -750,6 +761,7 @@ class Articulo(models.Model):
         Returns:
             QuerySet[Materia]: Materias asociadas al artículo.
         """
+
         pass
 
     def unidades(self) -> 'QuerySet[Unidad]':
@@ -759,7 +771,10 @@ class Articulo(models.Model):
         Returns:
             QuerySet[Unidad]: Unidades asociadas al artículo.
         """
-        pass
+
+        return Unidad.objects.filter(
+            articulo=self
+        )
 
 
 class Entrega(models.Model):
@@ -1025,7 +1040,7 @@ class CategoriaArticulo(models.Model):
 
     class Meta:
         unique_together = (
-            ('categoria', 'articulo')
+            ('articulo', 'categoria')
         )
 
     articulo = models.ForeignKey(
