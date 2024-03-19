@@ -467,7 +467,8 @@ class Materia(models.Model):
         Returns:
             QuerySet[User]: Lista de usuarios (alumnos) asociados a la materia.
         """
-        pass
+        return User.objects.exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
+
 
     def profesores(self) -> QuerySet[User]:
         """
@@ -476,7 +477,7 @@ class Materia(models.Model):
         Returns:
             QuerySet[User]: Lista de usuarios (profesores) asociados a la materia.
         """
-        pass
+        return User.objects.exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
 
     def articulos(self) -> 'QuerySet[Articulo]':
         """

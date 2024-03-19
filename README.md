@@ -23,5 +23,22 @@ python manage.py developer_setup
 python manage.py runserver
 ```
 
+### Windows
+```sh
+git clone https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali.git
+cd prestamos-audiovisual-mexicali/
+
+python -m venv .venv
+source ./.venv/Scripts/activate
+pip install -r requirements.txt
+
+python manage.py makemigrations PEMA
+python manage.py migrate
+python manage.py crear_roles
+python manage.py developer_setup
+
+python manage.py runserver
+```
+
 ## Documentación Completa
 Toda la información detallada sobre el proyecto está disponible en la [sección de wiki](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki). Esta documentación proporciona una guía completa para comprender y utilizar el sistema PEMA.
