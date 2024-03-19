@@ -4,9 +4,9 @@ from django.test import TestCase
 from django.utils.timezone import make_aware
 
 from PEMA.models import Articulo
+from PEMA.models import Materia
 from PEMA.models import Categoria
 from PEMA.models import Orden
-from PEMA.models import UnidadOrden
 from PEMA.models import Prestatario
 
 
@@ -53,46 +53,26 @@ class TestArticulo(TestCase):
     def test_unidades(self):
         unidades = self.articulo.unidades()
 
-        self.assertEqual(unidades[0], self.unidad, "Unidades no registradas de manera correcta")
+        self.assertIn(self.unidad, unidades, "Unidades no registradas de manera correcta")
         self.assertEqual(len(unidades), 1, "Unidades no registradas")
 
-
     def test_categorias(self):
-        categoria1 = Categoria.objects.create(
-            nombre="Categoria 1"
-        )
+        # crear categorías
+        categoria1 = Categoria.objects.create(nombre="Categoría 1")
+        categoria2 = Categoria.objects.create(nombre="Categoría 2")
 
-        categoria2 = Categoria.objects.create(
-            nombre="Categoria 2"
-        )
-
+        # agregar el artículo
         categoria1.agregar(self.articulo)
-        categorias = self.articulo.categorias()
-
-        self.assertEqual(
-            categorias[0],
-            categoria1,
-            msg="La categoria no se agrego correctamente"
-        )
-
         categoria2.agregar(self.articulo)
-        categorias = self.articulo.categorias()
 
-        self.assertEqual(
-            len(categorias),
-            2,
-            msg="Numero incorrecto de categorias"
-        )
+        # test
+        categorias_articulo = self.articulo.categorias()
 
+        self.assertIn(categoria1, categorias_articulo, msg="La categoría no se agrego correctamente")
+        self.assertEqual(len(categorias_articulo), 2, msg="Numero incorrecto de categorías")
 
+    def test_materia(self):
+        materia = Materia.objects.create(nombre="Materia de prueba")
+        materia.agregar_articulo(self.articulo)
 
-
-
-
-
-    #def test_disponible(self):
-     #   for a in self.articulo.disponible(
-      #          inicio=self.generar_fechas(0),
-       #         final=self.generar_fechas(1)
-        #):
-         #   print(a.lugar)
+        self.assertIn(materia, self.articulo.materias())

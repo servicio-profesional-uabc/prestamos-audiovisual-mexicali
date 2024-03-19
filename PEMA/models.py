@@ -33,7 +33,7 @@ class Prestatario(User):
     objects = PrestatarioManager()
 
     @classmethod
-    def crear_usuario(cls,  *args, **kwargs) -> User:
+    def crear_usuario(cls, *args, **kwargs) -> User:
         """Crea un usuario de tipo prestatario"""
 
         grupo, _ = Prestatario.crear_grupo()
@@ -170,7 +170,6 @@ class Coordinador(User):
 
         # actualizar el estado de autorizacion
         autorizacion.autorizar = True
-        
 
 
 class Maestro(User):
@@ -477,9 +476,6 @@ class Materia(models.Model):
     """
 
     class Meta:
-        """
-        Metadatos de la clase Materia.
-        """
         unique_together = (
             ('nombre', 'periodo')
         )
@@ -504,6 +500,7 @@ class Materia(models.Model):
         Returns:
             QuerySet[User]: Lista de usuarios (alumnos) asociados a la materia.
         """
+
         pass
 
     def profesores(self) -> 'QuerySet[User]':
@@ -513,6 +510,7 @@ class Materia(models.Model):
         Returns:
             QuerySet[User]: Lista de usuarios (profesores) asociados a la materia.
         """
+
         pass
 
     def articulos(self) -> 'QuerySet[Articulo]':
@@ -522,7 +520,20 @@ class Materia(models.Model):
         Returns:
             QuerySet[Articulo]: Lista de artículos asociados a la materia.
         """
+
         pass
+
+    def agregar_articulo(self, articulo: 'Articulo') -> tuple['Articulo', bool]:
+        """Agrega un articulo a la lista de equipo disponible para esta materia
+
+         Attribute:
+            articulo (Articulo): Articulo que se quiere agregar
+        """
+
+        return ArticuloMateria.objects.get_or_create(
+            materia=self,
+            articulo=articulo
+        )
 
 
 class Carrito(models.Model):
@@ -671,8 +682,8 @@ class Articulo(models.Model):
 
     Attributes:
         nombre (str): Nombre
-        codigo (str): Código
-        descripcion (str): Descripcion
+        codigo (str): Identificador
+        descripcion (str): Descripción breve
         imagen (Image): Imagen
     """
 
@@ -728,17 +739,8 @@ class Articulo(models.Model):
         Returns:
             QuerySet[Unidad]: Unidades disponibles en el rango especificado.
         """
-
-        unidades = self.unidades()
-
-        ordenes_id = UnidadOrden.objects\
-            .filter(id__in=unidades)\
-            .values_list('orden', flat=True)
-
-        orden = Orden.objects\
-            .filter(id__in=ordenes_id)
-
-        return orden
+        # TODO: Me esta volviendo loco este método, lo intentare luego
+        pass
 
     def categorias(self) -> 'QuerySet[Categoria]':
         """
@@ -751,7 +753,7 @@ class Articulo(models.Model):
             .filter(articulo=self) \
             .values_list('categoria', flat=True)
 
-        return Categoria.objects\
+        return Categoria.objects \
             .filter(nombre__in=nombre_categoria)
 
     def materias(self) -> 'QuerySet[Materia]':
@@ -762,7 +764,12 @@ class Articulo(models.Model):
             QuerySet[Materia]: Materias asociadas al artículo.
         """
 
-        pass
+        nombre_materia = ArticuloMateria.objects \
+            .filter(articulo=self) \
+            .values_list('materia', flat=True)
+
+        return Materia.objects \
+            .filter(nombre__in=nombre_materia)
 
     def unidades(self) -> 'QuerySet[Unidad]':
         """
@@ -1030,8 +1037,7 @@ class ArticuloCarrito(models.Model):
 
 
 class CategoriaArticulo(models.Model):
-    """ Clase que representa la relación entre una categoría y un
-    artículo.
+    """ Relación entre una Categoría y un Artículo.
 
     Attributes:
         categoria (Categoria): Categoría a la que pertenece Artículo
@@ -1058,6 +1064,7 @@ class UnidadOrden(models.Model):
     """
     Clase que representa la relación entre una unidad y una orden.
     """
+
     class Meta:
         unique_together = (
             ('unidad', 'orden')
