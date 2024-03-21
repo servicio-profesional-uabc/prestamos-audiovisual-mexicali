@@ -480,8 +480,7 @@ class Materia(models.Model):
         Returns:
             QuerySet[User]: Lista de usuarios (alumnos) asociados a la materia.
         """
-
-        pass
+        return User.objects.exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
 
     def profesores(self) -> 'QuerySet[User]':
         """
@@ -490,8 +489,7 @@ class Materia(models.Model):
         Returns:
             QuerySet[User]: Lista de usuarios (profesores) asociados a la materia.
         """
-
-        pass
+        return User.objects.exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
 
     def articulos(self) -> 'QuerySet[Articulo]':
         """
@@ -501,7 +499,8 @@ class Materia(models.Model):
             QuerySet[Articulo]: Lista de artículos asociados a la materia.
         """
 
-        pass
+        return Articulo.objects.filter(articulomateria__materia=self)
+
 
     def agregar_articulo(self, articulo: 'Articulo') -> tuple['Articulo', bool]:
         """Agrega un articulo a la lista de equipo disponible para esta materia
@@ -509,7 +508,6 @@ class Materia(models.Model):
          Attribute:
             articulo (Articulo): Articulo que se quiere agregar
         """
-
         return ArticuloMateria.objects.get_or_create(
             materia=self,
             articulo=articulo
