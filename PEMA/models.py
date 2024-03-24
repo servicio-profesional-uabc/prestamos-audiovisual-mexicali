@@ -300,7 +300,9 @@ class Almacen(User):
         Returns:
             None
         """
-        pass
+
+        orden.estado = orden.Estado.APROBADA
+        return None
 
     def reportar(self, orden: 'Orden') -> None:
         """
@@ -312,7 +314,7 @@ class Almacen(User):
         Returns:
             None
         """
-        pass
+        return None
 
 
 class Perfil(models.Model):
@@ -363,6 +365,8 @@ class Orden(models.Model):
         tipo (Enum): Tipo de Orden (Ordinaria, Extraordinaria).
     """
 
+    # TODO: Agregar cancelado
+
     class Estado(models.TextChoices):
         """
         Opciones para el estado de la orden.
@@ -381,6 +385,12 @@ class Orden(models.Model):
     prestatario = models.ForeignKey(
         to=Prestatario,
         on_delete=models.CASCADE
+    )
+
+    estado_atr = models.CharField(
+        choices=Estado.choices,
+        default=Estado.PENDIENTE,
+        max_length=3
     )
 
     tipo = models.CharField(
