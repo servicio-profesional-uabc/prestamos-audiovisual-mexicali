@@ -70,7 +70,7 @@ class Prestatario(User):
         Returns:
             QuerySet[Orden]: Lista de órdenes del prestatario.
         """
-        pass
+        return Orden.objects.filter(prestatario=self)
 
     def reportes(self) -> 'QuerySet[Reporte]':
         """
@@ -79,7 +79,7 @@ class Prestatario(User):
         Returns:
             QuerySet[Reporte]: Lista de reportes del prestatario.
         """
-        pass
+        return Reporte.objects.filter(prestatario=self)
 
     def materias(self) -> 'QuerySet[Materia]':
         """
@@ -88,7 +88,7 @@ class Prestatario(User):
         Returns:
             QuerySet[Materia]: Lista de materias del prestatario.
         """
-        pass
+        return Materia.objects.filter(prestatario=self)
 
     def carrito(self) -> 'Carrito':
         """
@@ -97,7 +97,7 @@ class Prestatario(User):
         Returns:
             Carrito: El carrito del prestatario.
         """
-        pass
+        return Carrito.objects.filter(prestatario=self)
 
     def suspendido(self) -> bool:
         """
@@ -107,7 +107,7 @@ class Prestatario(User):
             bool: Verdadero si el usuario está suspendido, Falso de lo contrario.
         """
         # un usuario está suspendido si tiene algún reporte activo
-        pass
+        return self.reportes().filter(estado=Reporte.Estado.ACTIVO).exists()
 
 
 class Coordinador(User):
