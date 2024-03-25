@@ -324,12 +324,13 @@ class Almacen(User):
             fecha=datetime.datetime.now(),
         )
 
-    def reportar(self, orden: 'Orden', descripcion) -> tuple['Reporte', bool]:
+    def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
         """
         Reporta una orden.
 
         Args:
             orden (Orden): La orden que se va a reportar.
+            descripcion (str): Información adicional del reporte
 
         Returns:
             tuple['Reporte', bool]
@@ -341,6 +342,7 @@ class Almacen(User):
             descripcion=descripcion,
             fecha=datetime.datetime.now(),
         )
+
 
 class Perfil(models.Model):
     """
@@ -387,7 +389,6 @@ class Orden(models.Model):
         lugar (String): Lugar donde se usara el material.
         inicio (DateTime): Fecha de inicio de la orden.
         final (DateTime): Fecha de devolución de la orden.
-        tipo (Enum): Tipo de Orden (Ordinaria, Extraordinaria).
     """
 
     # TODO: Agregar cancelado
@@ -442,12 +443,7 @@ class Orden(models.Model):
         Returns:
             QuerySet[Unidad]: Unidades asociadas a la orden.
         """
-        unidad_orden = UnidadOrden.objects \
-            .filter(orden=self) \
-            .values_list('unidad', flat=True)
-
-        return Unidad.objects \
-            .filter(id__in=unidad_orden)
+        return Unidad.objects.filter(unidadorden__orden=self)
 
     def articulos(self) -> 'QuerySet[Articulo]':
         """
@@ -538,7 +534,6 @@ class Materia(models.Model):
         """
 
         return Articulo.objects.filter(articulomateria__materia=self)
-
 
     def agregar_articulo(self, articulo: 'Articulo') -> tuple['Articulo', bool]:
         """Agrega un articulo a la lista de equipo disponible para esta materia
