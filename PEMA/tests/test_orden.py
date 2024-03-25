@@ -8,21 +8,15 @@ from PEMA.models import Prestatario, Articulo, Orden
 
 class TestOrden(TestCase):
     def setUp(self):
-        self.prestataio = Prestatario.crear_usuario(
-            id=0,
-            username="<NAME>",
-            password="<PASSWORD>",
-        )
+        self.prestataio = Prestatario.crear_usuario(id=0, username="<NAME>", password="<PASSWORD>")
 
-        self.articulo = Articulo.objects.create(
-            nombre="Articulo 1",
-            codigo="100"
-        )
+        # crear articulos
+        self.articulo1 = Articulo.objects.create(nombre="Articulo 1", codigo="100")
+        self.articulo2 = Articulo.objects.create(nombre="Articulo 2", codigo="200")
 
-        self.unidad, _ =self.articulo.crear_unidad(
-            num_control="000",
-            num_serie="000"
-        )
+        # crear unidades
+        self.unidad1, _ = self.articulo1.crear_unidad(num_control="000", num_serie="000")
+        self.unidad2, _ = self.articulo2.crear_unidad(num_control="100", num_serie="200")
 
         self.orden = Orden.objects.create(
             prestatario=self.prestataio,
@@ -31,16 +25,46 @@ class TestOrden(TestCase):
         )
 
     def test_agregar_unidad(self):
-        unidad_orden, created = self.orden.agregar_unidad(self.unidad)
-
+        unidad_orden, created = self.orden.agregar_unidad(self.unidad1)
         self.assertTrue(created)
 
-
     def test_unidades(self):
-        self.orden.agregar_unidad(self.unidad)
+        self.orden.agregar_unidad(self.unidad1)
 
-        a = self.orden.unidades()
+        self.assertIn(
+            member=self.unidad1,
+            container=self.orden.unidades(),
+            msg="Unidad No registrada"
+        )
 
-        self.assertIn(self.unidad, a, "Articulo NO agregado")
+    def test_articulo(self):
+        # agregar el objeto de manera repetida
+        self.orden.agregar_unidad(self.unidad1)
+        self.orden.agregar_unidad(self.unidad1)
 
+        self.assertEqual(
+            len(self.orden.articulos()),
+            1,
+            msg="Hay mas articulos registrados"
+        )
+
+        # agregar el un objeto nuevo
+        self.orden.agregar_unidad(self.unidad2)
+        self.assertEqual(
+            len(self.orden.articulos()),
+            2,
+            msg="Hay menos articulos registrados"
+        )
+
+        self.assertIn(
+            member=self.articulo1,
+            container=self.orden.articulos(),
+            msg="Articulo1 No existe en la orden"
+        )
+
+        self.assertIn(
+            member=self.articulo2,
+            container=self.orden.articulos(),
+            msg="Articulo2 No existe en la orden"
+        )
 

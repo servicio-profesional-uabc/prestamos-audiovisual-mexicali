@@ -391,25 +391,20 @@ class Orden(models.Model):
         final (DateTime): Fecha de devolución de la orden.
     """
 
-    # TODO: Agregar cancelado
-
     class Estado(models.TextChoices):
-        """
-        Opciones para el estado de la orden.
-        """
+        """Opciones para el estado de la orden."""
         PENDIENTE = "PN", _("PENDIENTE")
         RECHAZADA = "RE", _("RECHAZADA")
         APROBADA = "AP", _("APROBADA")
         CANCELADO = "CN", _("CANCELADO")
 
     class Tipo(models.TextChoices):
-        """
-        Opciones para el tipo de orden.
-        """
+        """Opciones para el tipo de orden."""
         ORDINARIA = "OR", _("ORDINARIA")
         EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
 
-    class Lugar(models.TextChoices):
+    class Ubicacion(models.TextChoices):
+        """Opciones para el lugar de la orden"""
         CAPUS = "CA", _("CAPUS")
         EXTERNO = "EX", _("EXTERNO")
 
@@ -419,8 +414,8 @@ class Orden(models.Model):
     )
 
     lugar = models.CharField(
-        default=Lugar.CAPUS,
-        choices=Lugar.choices,
+        default=Ubicacion.CAPUS,
+        choices=Ubicacion.choices,
         max_length=2
     )
 
@@ -437,26 +432,25 @@ class Orden(models.Model):
     )
 
     def unidades(self) -> 'QuerySet[Unidad]':
-        """
-        Devuelve las unidades con las que se suplió la orden.
+        """Devuelve las unidades con las que se suplió la orden.
 
         Returns:
             QuerySet[Unidad]: Unidades asociadas a la orden.
         """
-        return Unidad.objects.filter(unidadorden__orden=self)
+        return Unidad.objects \
+            .filter(unidadorden__orden=self)
 
     def articulos(self) -> 'QuerySet[Articulo]':
-        """
-        Devuelve los artículos en la orden.
+        """Devuelve los artículos en la orden.
 
         Returns:
             QuerySet[Articulo]: Artículos asociados a la orden.
         """
-        pass
+        return Articulo.objects \
+            .filter(unidad__in=self.unidades())
 
     def reporte(self) -> 'Reporte':
-        """
-        Retorna el reporte de la Orden o nada si no tiene reporte.
+        """Retorna el reporte de la Orden o nada si no tiene reporte.
 
         Returns:
             Reporte: Reporte asociado a la orden o None si no tiene reporte.
@@ -845,6 +839,10 @@ class Unidad(models.Model):
         num_serie (Str): de la unidad
     """
 
+    class Meta:
+        unique_together = (
+            ('articulo', 'num_control')
+        )
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
@@ -863,11 +861,13 @@ class Unidad(models.Model):
 
     num_control = models.CharField(
         max_length=250,
-        unique=True,
+        null=False,
         blank=False
     )
 
     num_serie = models.CharField(
+        blank=False,
+        null=False,
         max_length=250
     )
 
