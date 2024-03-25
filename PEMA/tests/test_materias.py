@@ -2,6 +2,11 @@ from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
 from PEMA.models import Materia, Prestatario, Coordinador, Almacen, Maestro, ArticuloMateria, Articulo
+from django.test import TestCase
+from django.contrib.auth.models import User, Group
+from django.test import TestCase
+
+from PEMA.models import Materia, Prestatario, Coordinador, Almacen, Maestro
 
 
 class MateriaTestCase(TestCase):
@@ -126,6 +131,7 @@ class MateriaTestCase(TestCase):
 
         self.assertQuerysetEqual(materia.profesores(), respuesta)
 
+
     def test_metodo_articulos(self):
         materia = Materia.objects.create(
             nombre="Fotografia",
@@ -185,3 +191,4 @@ class MateriaTestCase(TestCase):
         self.assertNotIn(articulo2, materia2.articulos())
 
         self.assertNotEqual(materia3.articulos(), None)
+
