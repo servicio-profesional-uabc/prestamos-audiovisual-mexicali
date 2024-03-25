@@ -261,7 +261,7 @@ class Almacen(User):
         )
 
     @classmethod
-    def crear_grupo(cls):
+    def crear_grupo(cls) -> tuple['Group', bool]:
         """
         Crea el 'Permission Group' para el usuario almacén.
         """
@@ -290,6 +290,12 @@ class Almacen(User):
         group.permissions.add(Permission.objects.get(
             codename='puede_ver_reportes'
         ))
+
+        return group, created
+
+    @classmethod
+    def crear_usario(cls, id, username, password):
+        pass
 
     def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
         """
@@ -455,7 +461,7 @@ class Orden(models.Model):
         Returns:
             Reporte: Reporte asociado a la orden o None si no tiene reporte.
         """
-        pass
+        return Reporte.objects.get(orden=self)
 
     def estado(self) -> str:
         """
@@ -464,6 +470,7 @@ class Orden(models.Model):
         Returns:
             str: Estado de la orden (PENDIENTE, RECHAZADA o APROBADA).
         """
+        # TODO: Falta acordar detalles
         pass
 
     def agregar_unidad(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
@@ -637,8 +644,14 @@ class Carrito(models.Model):
 
 
 class Reporte(models.Model):
-    """
-    Clase que representa un reporte.
+    """Clase que representa un reporte.
+
+    Attributes:
+        almacen (Almacen): Usuario que emitio el reporte
+        orden (Orden): Orden a la que se refiere el reporte
+        estado (Estado): Estado de la orden
+        descripcion (Descripcion): Información de la orden
+        emision (Emision): fecha de emision del reporte
     """
 
     class Meta:
@@ -675,7 +688,7 @@ class Reporte(models.Model):
         max_length=250
     )
 
-    fecha = models.DateTimeField(
+    emision = models.DateTimeField(
         auto_now_add=True
     )
 
