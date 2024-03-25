@@ -476,7 +476,7 @@ class Orden(models.Model):
         """
         pass
 
-    def agregar(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
+    def agregar_unidad(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
         """Agrega una unidad especifíca a la orden
 
          Attributes:

@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest import TestCase
+from django.test import TestCase
 
 from django.utils.timezone import make_aware
 
@@ -19,21 +19,28 @@ class TestOrden(TestCase):
             codigo="100"
         )
 
-        self.unidad =self.articulo.crear_unidad(
+        self.unidad, _ =self.articulo.crear_unidad(
             num_control="000",
             num_serie="000"
         )
 
-    def test_orden_unidades(self):
-
-        orden = Orden.objects.create(
-            prestataio=self.prestataio,
+        self.orden = Orden.objects.create(
+            prestatario=self.prestataio,
             inicio=make_aware(datetime(2024, 3, 16, 12)),
             final=make_aware(datetime(2024, 3, 16, 18)),
         )
 
-        orden.agregar_orden(self.unidad)
+    def test_agregar_unidad(self):
+        unidad_orden, created = self.orden.agregar_unidad(self.unidad)
 
-        self.assertIn(self.unidad, orden.unidades(), "Articulo NO agregado")
+        self.assertTrue(created)
+
+
+    def test_unidades(self):
+        self.orden.agregar_unidad(self.unidad)
+
+        a = self.orden.unidades()
+
+        self.assertIn(self.unidad, a, "Articulo NO agregado")
 
 
