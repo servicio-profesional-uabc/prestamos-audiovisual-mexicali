@@ -40,6 +40,24 @@ class TestMaestro(TestCase):
 
 
        Maestro.autorizar(self.user_maestro, orden)
+       
+        
+   def test_materias(self):
+        materia1 = Materia.objects.create(
+            nombre = "Fotografía", periodo = "2024-2"
+        )
+        materia2 = Materia.objects.create(
+            nombre = "Cinefotografía I", periodo = "2024-2"
+        )
+        materia3 = Materia.objects.create(
+            nombre = "Cinefotografía II", periodo = "2024-2"
+        )
+        
+        materias = Materia.objects.all()
+
+        self.assertIn(materia1, materias)
+        self.assertIn(materia2, materias)
+        self.assertIn(materia3, materias)
 
 
 
