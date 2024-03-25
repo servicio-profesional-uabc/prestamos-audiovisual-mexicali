@@ -34,8 +34,6 @@ class TestMaestro(TestCase):
    def test_autorizar_ordinaria(self):
        orden = Orden.objects.create(
            prestatario=self.prestatario,
-           tipo="ordinaria",
-           lugar="",
            inicio=datetime.now(),
            final=datetime.now()
        )

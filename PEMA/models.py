@@ -412,7 +412,6 @@ class Orden(models.Model):
         CAPUS = "CA", _("CAPUS")
         EXTERNO = "EX", _("EXTERNO")
 
-
     prestatario = models.ForeignKey(
         to=Prestatario,
         on_delete=models.CASCADE
@@ -443,7 +442,12 @@ class Orden(models.Model):
         Returns:
             QuerySet[Unidad]: Unidades asociadas a la orden.
         """
-        pass
+        unidad_orden = UnidadOrden.objects \
+            .filter(orden=self) \
+            .values_list('unidad', flat=True)
+
+        return Unidad.objects \
+            .filter(id__in=unidad_orden)
 
     def articulos(self) -> 'QuerySet[Articulo]':
         """
@@ -634,8 +638,6 @@ class Carrito(models.Model):
         with transaction.atomic():
             Orden.objects.create(
                 prestatario=self.prestatario,
-                tipo=Orden.Tipo.ORDINARIA,
-                lugar='',
                 inicio=self.inicio,
                 final=self.final
             )

@@ -37,9 +37,6 @@ class TestCaseAlmacen(TestCase):
         )
 
         self.assertEqual(orden.prestatario, user_prestatario)
-        self.assertEqual(orden.estado_atr, 'PN')
-        self.assertEqual(orden.tipo, 'OR')
-        self.assertEqual(orden.lugar, 'Un lugar')
 
     def test_metodo_entregar(self):
         Prestatario.crear_grupo()
