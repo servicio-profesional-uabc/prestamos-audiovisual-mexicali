@@ -399,6 +399,7 @@ class Orden(models.Model):
         PENDIENTE = "PN", _("PENDIENTE")
         RECHAZADA = "RE", _("RECHAZADA")
         APROBADA = "AP", _("APROBADA")
+        CANCELADO = "CN", _("CANCELADO")
 
     class Tipo(models.TextChoices):
         """
@@ -407,27 +408,20 @@ class Orden(models.Model):
         ORDINARIA = "OR", _("ORDINARIA")
         EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
 
+    class Lugar(models.TextChoices):
+        CAPUS = "CA", _("CAPUS")
+        EXTERNO = "EX", _("EXTERNO")
+
+
     prestatario = models.ForeignKey(
         to=Prestatario,
         on_delete=models.CASCADE
     )
 
-    estado_atr = models.CharField(
-        choices=Estado.choices,
-        default=Estado.PENDIENTE,
-        max_length=3
-    )
-
-    tipo = models.CharField(
-        choices=Tipo.choices,
-        default=Tipo.ORDINARIA,
-        max_length=2
-    )
-
     lugar = models.CharField(
-        default="",
-        null="",
-        max_length=250
+        default=Lugar.CAPUS,
+        choices=Lugar.choices,
+        max_length=2
     )
 
     inicio = models.DateTimeField(
@@ -436,6 +430,10 @@ class Orden(models.Model):
 
     final = models.DateTimeField(
         null=False
+    )
+
+    emision = models.DateTimeField(
+        auto_now_add=True
     )
 
     def unidades(self) -> 'QuerySet[Unidad]':
