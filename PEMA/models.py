@@ -1,3 +1,5 @@
+import datetime
+
 from phonenumber_field.modelfields import PhoneNumberField
 
 from django.contrib.contenttypes.models import ContentType
@@ -289,21 +291,40 @@ class Almacen(User):
             codename='puede_ver_reportes'
         ))
 
-    def autorizar(self, orden: 'Orden') -> None:
+    def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
         """
-        Autoriza una orden ordinaria.
+        Entregar una orden.
 
         Args:
             orden (Orden): La orden que se va a autorizar.
 
         Returns:
-            None
+            tuple['Entrega', bool]
         """
 
-        orden.estado = orden.Estado.APROBADA
-        return None
+        return Entrega.objects.get_or_create(
+            almacen=self,
+            orden=orden,
+            fecha=datetime.datetime.now(),
+        )
 
-    def reportar(self, orden: 'Orden') -> None:
+    def devolver(self, orden: 'Orden') -> tuple['Devolucion', bool]:
+        """
+        Devolver una orden.
+
+        Args:
+            orden (Orden): La orden que se va a devolver.
+
+        Returns:
+            tuple['Devolucion', bool]
+        """
+        return Devolucion.objects.get_or_create(
+            almacen=self,
+            orden=orden,
+            fecha=datetime.datetime.now(),
+        )
+
+    def reportar(self, orden: 'Orden', descripcion) -> tuple['Reporte', bool]:
         """
         Reporta una orden.
 
@@ -311,10 +332,15 @@ class Almacen(User):
             orden (Orden): La orden que se va a reportar.
 
         Returns:
-            None
+            tuple['Reporte', bool]
         """
-        return None
-
+        return Reporte.objects.get_or_create(
+            almacen=self,
+            orden=orden,
+            estado=Reporte.Estado.ACTIVO,
+            descripcion=descripcion,
+            fecha=datetime.datetime.now(),
+        )
 
 class Perfil(models.Model):
     """
