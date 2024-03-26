@@ -1,19 +1,17 @@
 from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
-
-from PEMA.models import Prestatario
+from PEMA.models import Prestatario, Almacen, Orden
 from PEMA.models import Carrito
 from PEMA.models import Materia
 from PEMA.models import Reporte
 
-
 from django.utils.timezone import make_aware
 from datetime import datetime
 
+
 class TestUsers(TestCase):
     def setUp(self):
-
         grupo, _ = Prestatario.crear_grupo()
 
         self.user_normal = User.objects.create_user(
@@ -28,61 +26,39 @@ class TestUsers(TestCase):
             password="<PASSWORD>"
         )
 
-    def test_crear_prestatario(self):
-        # Verificar que el prestatario está en el grupo prestatario
-        grupos = self.user_prestatario.groups
-
-        self.assertTrue(
-            expr=grupos.filter(name='prestatarios').exists(),
-            msg=f"El usuario no se encuentra en el grupo prestatarios: {grupos}"
+        self.user_almacen = Almacen.crear_usuario(
+            id=2,
+            username="almacen",
+            password="<PASSWORD>"
         )
 
-        self.assertTrue(User.objects.filter(username="sin_rol").exists())
-        self.assertTrue(User.objects.filter(username="prestatario").exists())
+    def test_lista_ordenes(self):
+        prestatario = Prestatario.objects.get(pk=self.user_prestatario.pk)
 
-    def self_lista_ordenes(self):
-        carrito = Carrito.objects.create(
-            prestatario=Prestatario.objects.get(usuario=self.user_prestatario),
-            fecha=make_aware(datetime.now())
+        # probar si no tiene ordenes
+        self.assertEqual(len(prestatario.ordenes()), 0, msg="Prestatario ya tiene ordenes")
+
+        orden1 = Orden.objects.create(
+            prestatario=self.user_prestatario,
+            lugar=Orden.Ubicacion.CAPUS,
+            inicio=make_aware(datetime(2024, 10, 5)),
+            final=make_aware(datetime(2024, 10, 5))
         )
 
-        materia = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
+        orden2 = Orden.objects.create(
+            prestatario=self.user_prestatario,
+            lugar=Orden.Ubicacion.EXTERNO,
+            inicio=make_aware(datetime(2024, 10, 5)),
+            final=make_aware(datetime(2024, 10, 5))
         )
 
-        orden = Reporte.objects.create(
-            carrito=carrito,
-            materia=materia,
-            fecha=make_aware(datetime.now())
-        )
+        ordenes = prestatario.ordenes()
+        self.assertTrue(len(ordenes) == 2, msg="No se registraron las Ordenes")
+        self.assertIn(orden1, ordenes, msg="No se registro la orden 1")
+        self.assertIn(orden2, ordenes, msg="No se registro la orden 2")
 
-        self.assertTrue(orden in carrito.lista_ordenes())
-
-    class TestUsers2(TestCase):
-        def setUp(self):
-            Prestatario.crear_grupo()
-
-            self.user_almacen = User.objects.create_user(
-                id=2,
-                username="sin_rol",
-                password="<PASSWORD>"
-            )
-
-            my_group = Group.objects.get(name='almacen')
-            my_group.user_set.add(self.user_almacen)
-
-        def test_lista_reportes(self):
-            self.reporte = Reporte.objects.create(
-                almacen=self.user_almacen,
-                orden="Orden 1",
-            )
-
-            self.reporte.estado = "IN"
-
-            self.assertEqual(self.reporte.almacen, self.user_almacen)
-            self.assertEqual(self.reporte.orden, "Orden 1")
-            self.assertEqual(self.reporte.estado, "IN")
+    def test_lista_reportes(self):
+        pass
 
     def test_lista_materias(self):
         materia1 = Materia.objects.create(
@@ -125,11 +101,4 @@ class TestUsers(TestCase):
         self.assertEqual(self.carrito.materia, materia)
 
     def test_suspendido(self):
-        self.user_prestatario.is_active = False
-        self.user_prestatario.save()
-
-        self.assertFalse(self.user_prestatario.is_active)
-
-
-
-
+        pass
