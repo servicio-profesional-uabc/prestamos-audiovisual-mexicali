@@ -108,7 +108,7 @@ class Prestatario(User):
         """
 
         return self.reportes() \
-            .filter(estado=Reporte.Estado.ACTIVO)\
+            .filter(estado=Reporte.Estado.ACTIVO) \
             .exists()
 
 
@@ -302,11 +302,14 @@ class Almacen(User):
         return group, created
 
     @classmethod
-    def crear_usario(cls, *args, **kwargs) -> User:
-        """Crea el usuario del tipo almacen"""
+    def crear_usuario(cls, *args, **kwargs) -> User:
+        """Crea un usuario de tipo prestatario"""
 
-        # TODO: faltan implementar este método
-        pass
+        grupo, _ = Almacen.crear_grupo()
+        user = User.objects.create_user(*args, **kwargs)
+        grupo.user_set.add(user)
+
+        return user
 
     def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
         """Generar el registro que el Almacén entrego el equipo.
@@ -344,11 +347,12 @@ class Almacen(User):
             fecha=datetime.datetime.now(),
         )
 
-    def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
-        """
-        Reporta una orden.
+    @staticmethod
+    def reportar(emisor: 'User', orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
+        """Reporta una orden.
 
         Args:
+            emisor (User): Usuario que reporta la Orden
             orden (Orden): La orden que se va a reportar.
             descripcion (str): Información adicional del reporte
 
@@ -360,11 +364,10 @@ class Almacen(User):
         # TODO: el default de estado es ACTIVO, eliminar
 
         return Reporte.objects.get_or_create(
-            almacen=self,
+            almacen=emisor,
             orden=orden,
             estado=Reporte.Estado.ACTIVO,
-            descripcion=descripcion,
-            fecha=datetime.datetime.now(),
+            descripcion=descripcion
         )
 
 
@@ -389,7 +392,7 @@ class Perfil(models.Model):
     )
 
     # TODO: cambiar a español
-    phone = PhoneNumberField(
+    telefono = PhoneNumberField(
         null=True
     )
 
@@ -464,7 +467,6 @@ class Orden(models.Model):
     # añadir la descripcion
     # sincronizar el main
 
-
     # TODO: descripcion de el lugar donde estara la orden
 
     def unidades(self) -> 'QuerySet[Unidad]':
@@ -491,7 +493,8 @@ class Orden(models.Model):
         Returns:
             Reporte: Reporte asociado a la orden o None si no tiene reporte.
         """
-        return Reporte.objects.get(orden=self)
+
+        return Reporte.objects.filter(orden=self).first()
 
     def estado(self) -> str:
         """
@@ -545,7 +548,8 @@ class Materia(models.Model):
         blank=False
     )
 
-    def alumnos(self) -> 'QuerySet[User]':
+    @staticmethod
+    def alumnos() -> 'QuerySet[User]':
         """Devuelve la lista de alumnos en la clase.
 
         Returns:
@@ -555,7 +559,8 @@ class Materia(models.Model):
         return User.objects \
             .exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
 
-    def profesores(self) -> 'QuerySet[User]':
+    @staticmethod
+    def profesores() -> 'QuerySet[User]':
         """Devuelve la lista de profesores en la clase.
 
         Returns:
@@ -705,12 +710,12 @@ class Reporte(models.Model):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    almacen = models.OneToOneField(
+    almacen = models.ForeignKey(
         to=Almacen,
         on_delete=models.CASCADE
     )
 
-    orden = models.OneToOneField(
+    orden = models.ForeignKey(
         to=Orden,
         on_delete=models.CASCADE
     )
@@ -940,7 +945,6 @@ class Unidad(models.Model):
     )
 
     def ordenes(self):
-
         # TODO: cambiar esto con el método de diego
 
         ids_orden = UnidadOrden.objects \

@@ -10,7 +10,7 @@ class TestOrden(TestCase):
     def setUp(self):
         # usuarios
         self.prestataio = Prestatario.crear_usuario(id=0, username="<NAME>", password="<PASSWORD>")
-        self.almacen = Almacen.crear_usario(id=1, username="<NAME>", password="<PASSWORD>")
+        self.almacen = Almacen.crear_usuario(id=1, username="<NAME2>", password="<PASSWORD>")
 
         # crear articulos
         self.articulo1 = Articulo.objects.create(nombre="Articulo 1", codigo="100")
@@ -72,14 +72,31 @@ class TestOrden(TestCase):
 
     def test_reporte(self):
 
-        self.assertIsNotNone(
-            obj=self.orden.reporte(),
+        self.assertEqual(
+            first=self.orden.reporte(),
+            second=None,
             msg="Ya existe un reporte"
         )
 
-        self.almacen.reportar(orden=self.orden, descripcion="Nada")
+        Almacen.reportar(
+            emisor=self.almacen,
+            orden=self.orden,
+            descripcion="Nada"
+        )
 
         self.assertIsNotNone(
             obj=self.orden.reporte(),
             msg="No existe un reporte"
+        )
+
+        # verificar que una orden no se puede reportar 2 veces
+        Almacen.reportar(
+            emisor=self.almacen,
+            orden=self.orden,
+            descripcion="Nada"
+        )
+
+        self.assertEqual(
+            len(Reporte.objects.filter(orden=self.orden)),
+            1
         )
