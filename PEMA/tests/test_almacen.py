@@ -141,7 +141,7 @@ class TestCaseAlmacen(TestCase):
         )
 
         # La orden se le crea reporte
-        user_almacen.reportar(orden, 'El equipo llego dañado...')
+        Almacen.reportar(user_almacen,orden, 'El equipo llego dañado...')
         orden_reportada = Reporte.objects.get(orden=orden)
         self.assertEqual(orden_reportada.orden_id, orden.id)
         self.assertEqual(orden_reportada.descripcion, 'El equipo llego dañado...')
