@@ -26,4 +26,11 @@ urlpatterns = [
         view=views.CarritoView.as_view(),
         name='carrito_html'
     ),
+    path(
+        route='solicitud.html',
+        view=views.SolicitudView.as_view(),
+        name='solicitud_html'
+    ),
+    
+
 ]

@@ -1,0 +1,90 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Importar bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <!-- Importar estilos personalizados -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
+    <title>Solicitud</title>
+</head>
+<body>
+    <header id="Solicitud">
+        <div class="hgroup full-container">
+            <div class="logo">
+                <a href="prestatario.html"> <!-- Cambiar por la página de inicio -->
+                    <img src="static/img/LOGO-FACULTAD-RENOVADO.png" height="80px" style="position: absolute; top: 1; left: 0;">
+                </a>
+            </div>
+            <!-- Falta incluir botón para salir -->
+        </div>
+    </header>
+
+    <div class="container form-container">
+        <div class="row">
+            <div class="col-md-12">
+                <form action="solicitud.html" method="POST">
+                    <h4>Datos de solicitud</h4>
+                    <h5>Información del solicitante</h5>
+                    <div class="form-group row">
+                        <label for="nombre" class="col-sm-2 col-form-label">Nombre de la practica</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="NumeroCelular" class="col-sm-2 col-form-label">Número de celular</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="NumeroCelular" name="NumeroCelular" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="correo" class="col-sm-2 col-form-label">Correo electrónico del corresponsable</label>
+                        <div class="col-sm-10">
+                            <input type="email" class="form-control" id="correo" name="correo" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="dentro" id="dentroSi" value="si" required onclick="toggleLugarField()">
+                                <label class="form-check-label" for="dentroSi">Dentro de las instalaciones</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="dentro" id="dentroNo" value="no" required onclick="toggleLugarField()">
+                                <label class="form-check-label" for="dentroNo">Fuera de las instalaciones</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Campo para ingresar el lugar, oculto por defecto -->
+                    <div class="form-group row" id="lugarGroup" style="display: none;">
+                        <label for="lugar" class="col-sm-2 col-form-label">Lugar</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="lugar" name="lugar">
+                        </div>
+                    </div>
+
+                    <!-- Boton de confirmar perdido y boton para regresar -->
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-primary">Confirmar pedido</button>
+                            <a href="prestatario.html" class="btn btn-secondary">Regresar</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
