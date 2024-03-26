@@ -1,8 +1,7 @@
-from django.test import TestCase
 from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
-from PEMA.models import Materia, Prestatario, Coordinador, Almacen, Maestro
+from PEMA.models import Materia, Prestatario, Coordinador, Almacen, Maestro, ArticuloMateria, Articulo
 
 
 class MateriaTestCase(TestCase):
@@ -127,3 +126,62 @@ class MateriaTestCase(TestCase):
 
         self.assertQuerysetEqual(materia.profesores(), respuesta)
 
+    def test_metodo_articulos(self):
+        materia = Materia.objects.create(
+            nombre="Fotografia",
+            periodo="2024-1"
+        )
+
+        articulo1 = Articulo.objects.create(
+            nombre="Camara Canon",
+            codigo="123",
+            descripcion="Camara de alta definicion - hdr"
+        )
+
+        articulo2 = Articulo.objects.create(
+            nombre="Camara Blackmagic",
+            codigo="124",
+            descripcion="Camara de alta definicion - hdr - blackmagic"
+        )
+
+        ArticuloMateria.objects.get_or_create(
+            materia=materia,
+            articulo=articulo1
+        )
+
+        ArticuloMateria.objects.get_or_create(
+            materia=materia,
+            articulo=articulo2
+        )
+
+        # Ejemplo: Comparte articulo1 con materia1
+        materia2 = Materia.objects.create(
+            nombre="Video",
+            periodo="2024-1",
+        )
+
+        ArticuloMateria.objects.get_or_create(
+            materia=materia2,
+            articulo=articulo1,
+        )
+
+        # No tiene articulos
+        materia3 = Materia.objects.create(
+            nombre="Guion",
+            periodo="2024-1",
+        )
+
+        materia_articulos = materia.articulos()
+        materia_articulos_esperadas = Articulo.objects.filter(articulomateria__materia=materia)
+
+        for a in materia_articulos:
+            self.assertIn(a, materia_articulos_esperadas)
+
+        materia_articulos = materia2.articulos()
+        materia_articulos_esperadas = Articulo.objects.filter(articulomateria__materia=materia2)
+        for a in materia_articulos:
+            self.assertIn(a, materia_articulos_esperadas)
+
+        self.assertNotIn(articulo2, materia2.articulos())
+
+        self.assertNotEqual(materia3.articulos(), None)
