@@ -16,18 +16,18 @@ urlpatterns = [
     ),
 
     path(
-        route='prestatario.html',
+        route='prestatario',
         view=views.PrestatarioView.as_view(),
         name='prestatario_html'
     ),
 
     path(
-        route='carrito.html',
+        route='carrito',
         view=views.CarritoView.as_view(),
         name='carrito_html'
     ),
     path(
-        route='solicitud.html',
+        route='solicitud',
         view=views.SolicitudView.as_view(),
         name='solicitud_html'
     ),
