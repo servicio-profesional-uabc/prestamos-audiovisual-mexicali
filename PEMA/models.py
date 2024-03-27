@@ -446,7 +446,7 @@ class Perfil(models.Model):
             user (User): El usuario del cual se desea obtener el perfil.
 
         Returns:
-            Perfil: El perfil asociado al usuario.
+            El perfil asociado al usuario.
         """
         # TODO: Falta implementar este método
         pass
@@ -460,10 +460,12 @@ class Orden(models.Model):
     específicamente que entregar.
 
     Attributes:
-        prestatario (Prestatario): Usuario que solicita los articulos.
-        lugar (String): Lugar donde se usara el material.
-        inicio (DateTime): Fecha de inicio de la orden.
-        final (DateTime): Fecha de devolución de la orden.
+        prestatario: Usuario que hace la solicitud.
+        lugar: Lugar donde se usara el material.
+        inicio: Fecha de inicio de la orden.
+        final: Fecha de devolución de la orden.
+        descripcion: Información adicional de la orden.
+        emision: fecha de emisión de la orden.
     """
 
     class Estado(models.TextChoices):
@@ -506,10 +508,10 @@ class Orden(models.Model):
         auto_now_add=True
     )
 
-    # añadir la descripcion
-    # sincronizar el main
-
-    # TODO: descripcion de el lugar donde estara la orden
+    descripcion = models.TextField(
+        blank=True,
+        max_length=512
+    )
 
     def unidades(self) -> 'QuerySet[Unidad]':
         """Devuelve las unidades con las que se suplió la orden.
@@ -554,10 +556,8 @@ class Orden(models.Model):
          Attributes:
              unidad (Unidad): Unidad que se agregará
         """
-        return UnidadOrden.objects.get_or_create(
-            orden=self,
-            unidad=unidad
-        )
+        return UnidadOrden.objects \
+            .get_or_create(orden=self, unidad=unidad)
 
 
 class Materia(models.Model):
@@ -1076,9 +1076,9 @@ class CorresponsableOrden(models.Model):
     """Corresponsable de una orden.
 
     Attributes:
-        orden (Orden): de la que el prestatario es corresponsable.
-        prestatario (Usuario): Usuario que acepta ser corresponsable.
-        aceptado (boolean): Si el Prestatario acepto la corresponsable.
+        prestatario: Usuario que acepta ser corresponsable.
+        orden: de la que el prestatario es corresponsable.
+        aceptado: Si el Prestatario acepto la corresponsabilidad.
     """
 
     class Meta:
@@ -1096,7 +1096,6 @@ class CorresponsableOrden(models.Model):
         on_delete=models.CASCADE
     )
 
-    # TODO: cambiar el nombre a 'autorizar'
     aceptado = models.BooleanField(
         default=False,
     )
