@@ -27,29 +27,6 @@
             }
           </style>
 
-          <!--Funcion para validar que el ususario haya ingresado algo en la caja de entrada de texto
-          <script>
-            function validarMatricula() {
-              var matricula = document.getElementById("matricula").value;
-              if (matricula == "") {
-                alert("Por favor ingrese su matrícula.");
-                return false;
-              }
-              return true;
-            }
-            </script>
-
-            <script>
-              function validarContra() {
-                var matricula = document.getElementById("contraseña").value;
-                if (matricula == "") {
-                  alert("Por favor ingrese su matrícula.");
-                  return false;
-                }
-                return true;
-              }
-              </script>-->
-
 
         <div class="image-container">
             <img class="my-4" src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="80px" style="position: absolute; top: 0; left: 0;">
@@ -60,17 +37,13 @@
         <h1 style="font-family: 'Minion Pro', sans-serif;">PEMA</h1>
         <h3 style="font-family: 'Minion Pro', sans-serif;">Prestamos de Equipo y Material Audiovisual</h3><br><br>
 
-        <!--form onsubmit="return validarMatricula()"-->
           <label for="matricula" style="font-family: 'Minion Pro', sans-serif;">Ingrese su matrícula:</label><br><br>
           <input type="text" id="matricula" name="matricula" style="font-family: 'Minion Pro', sans-serif;" placeholder="Ingrese su matrícula"><br><br>
 
 
-        <!--Se pide contraseña-->
-        <!--form onsubmit="return validarContra"-->
         <label for="nombre" style="font-family: 'Minion Pro', sans-serif;" >Ingrese su contraseña:</label><br><br>
         <input type="text" id="contraseña" name="contraseña" style="font-family: 'Minion Pro', sans-serif;" placeholder="Ingrese su contraseña"><br><br>
 
-        <!--Boton para iniciar secion -->
         <button class="btn btn-primary my-3"  data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-family: 'Minion Pro', sans-serif;">Iniciar Sesion</button>
     </div>
 

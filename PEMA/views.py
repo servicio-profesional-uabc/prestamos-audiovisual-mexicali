@@ -12,7 +12,12 @@ class IndexView(View):
             request=request,
             template_name="index.html"
         )
-
+class TestView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="test.html"
+        )
 class PrestatarioView(View):
     def get(self, request):
         return render(

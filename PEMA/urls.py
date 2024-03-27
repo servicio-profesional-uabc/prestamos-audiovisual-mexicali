@@ -4,32 +4,25 @@ from django.views.generic.base import TemplateView
 
 urlpatterns = [
     path(
-        'accounts/', include('django.contrib.auth.urls')
-    ),
-    path(
-        '', TemplateView.as_view(template_name='index.html'), name='index'
-    ),
-    path(
-        route='test/',
-        view=views.test,
-        name='test'
+        '', TemplateView.as_view(template_name='test.html'), name='test'
     ),
 
+
     path(
-        route='prestatario',
+        route='prestatario.html',
         view=views.PrestatarioView.as_view(),
-        name='prestatario_html'
+        name='prestatario'
     ),
 
     path(
-        route='carrito',
+        route='carrito.html',
         view=views.CarritoView.as_view(),
-        name='carrito_html'
+        name='carrito'
     ),
     path(
-        route='solicitud',
+        route='solicitud.html',
         view=views.SolicitudView.as_view(),
-        name='solicitud_html'
+        name='solicitud'
     ),
     
 
