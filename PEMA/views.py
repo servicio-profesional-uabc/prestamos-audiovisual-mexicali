@@ -12,6 +12,8 @@ class IndexView(View):
             request=request,
             template_name="index.html"
         )
+
+
 class TestView(View):
     def get(self, request):
         return render(
