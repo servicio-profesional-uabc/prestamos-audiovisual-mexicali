@@ -1,5 +1,4 @@
 import datetime
-from typing import Any
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -595,6 +594,10 @@ class Materia(models.Model):
         return ArticuloMateria.objects \
             .get_or_create(materia=self, articulo=articulo)
 
+    def agregar_participante(self):
+        """Agrega un participante a la clase"""
+        pass
+
 
 class Carrito(models.Model):
     """Clase que representa un carrito de compras.
@@ -1189,5 +1192,29 @@ class UnidadOrden(models.Model):
 
     orden = models.ForeignKey(
         to=Orden,
+        on_delete=models.CASCADE
+    )
+
+
+class MateriaUsuario(models.Model):
+    """Relación entre el Usuario y la materia
+
+    Attributes:
+        materia (Materia): Materia asignada
+        usuario (Usuario): Usuario participante
+    """
+
+    class Meta:
+        unique_together = (
+            ('materia', 'usuario')
+        )
+
+    materia = models.ForeignKey(
+        to=Materia,
+        on_delete=models.CASCADE
+    )
+
+    usuario = models.ForeignKey(
+        to=User,
         on_delete=models.CASCADE
     )
