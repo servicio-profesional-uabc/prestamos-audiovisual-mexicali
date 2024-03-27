@@ -27,6 +27,13 @@ class CarritoView(View):
             template_name="carrito.html"
         )   
 
+class SolicitudView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="solicitud.html"
+        )
+    
 
 
 def test(request):
