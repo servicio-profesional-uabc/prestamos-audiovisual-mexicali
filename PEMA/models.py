@@ -75,11 +75,15 @@ class Prestatario(User):
 
         # permisos del prestatario
         group.permissions.add(Permission.objects.get(
-            codename='puede_solicitar_equipo'
+            codename='add_carrito'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ser_corresponsable'
+            codename='add_orden'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='add_corresponsableorden'
         ))
 
         return group, created
@@ -174,15 +178,15 @@ class Coordinador(User):
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_autorizar_extraordinarias'
+            codename='add_autorizacionextraordinaria'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_eliminar_ordenes'
+            codename='delete_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_desactivar_reportes'
+            codename='change_reporte'
         ))
 
         return group, created
@@ -238,7 +242,11 @@ class Maestro(User):
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_autorizar_ordinarias'
+            codename='add_autorizacionordinaria'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='change_autorizacionordinaria'
         ))
 
         return group, created
@@ -317,23 +325,23 @@ class Almacen(User):
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_recibir_equipo'
+            codename='add_devolucion'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_entregar_equipo'
+            codename='add_entrega'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_hacer_ordenes'
+            codename='add_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ver_ordenes'
+            codename='view_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ver_reportes'
+            codename='view_reporte'
         ))
 
         return group, created
