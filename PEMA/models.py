@@ -20,10 +20,6 @@ class Prestatario(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_solicitar_equipo", "Puede solicitar equipos del almacén"),
-            ("puede_ser_corresponsable", "Puede ser corresponsable de una orden"),
-        )
 
     class PrestatarioManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
@@ -162,11 +158,6 @@ class Coordinador(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_autorizar_extraordinarias", "puede autorizar ordenes extraordinarias"),
-            ("puede_eliminar_ordenes", "puede eliminar ordenes de prestatario"),
-            ("puede_desactivar_reportes", "puede desactivar reportes de los prestatarios"),
-        )
 
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
@@ -231,9 +222,6 @@ class Maestro(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_autorizar_ordinarias", "Puede autorizar órdenes ordinarias"),
-        )
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -299,13 +287,6 @@ class Almacen(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_recibir_equipo", "Puede recibir equipo al almacén"),
-            ("puede_entregar_equipo", "Puede entregar equipo a los prestatarios"),
-            ("puede_hacer_ordenes", "Puede hacer órdenes ordinarias para otros usuarios"),
-            ("puede_ver_ordenes", "Puede ver las órdenes de los prestatarios"),
-            ("puede_ver_reportes", "Puede ver los reportes de los prestatarios"),
-        )
 
     @staticmethod
     def get_user(user: User) -> Any | None:
