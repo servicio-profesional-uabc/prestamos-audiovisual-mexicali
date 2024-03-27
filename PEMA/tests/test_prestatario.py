@@ -10,55 +10,56 @@ from django.utils.timezone import make_aware
 from datetime import datetime
 
 
-class TestUsers(TestCase):
+class TestPrestatario(TestCase):
     def setUp(self):
-        grupo, _ = Prestatario.crear_grupo()
+        # usuarios
+        self.user_no_ordenes = Prestatario.crear_usuario(id=3, username="prestatario_NO", password="<PASSWORD>")
+        self.user_prestatario = Prestatario.crear_usuario(id=1, username="prestatario", password="<PASSWORD>")
+        self.user_almacen = Almacen.crear_usuario(id=2, username="almacen", password="<PASSWORD>")
 
-        self.user_normal = User.objects.create_user(
-            id=0,
-            username="sin_rol",
-            password="<PASSWORD>"
-        )
-
-        self.user_prestatario = Prestatario.crear_usuario(
-            id=1,
-            username="prestatario",
-            password="<PASSWORD>"
-        )
-
-        self.user_almacen = Almacen.crear_usuario(
-            id=2,
-            username="almacen",
-            password="<PASSWORD>"
-        )
-
-    def test_lista_ordenes(self):
-        prestatario = Prestatario.objects.get(pk=self.user_prestatario.pk)
-
-        # probar si no tiene ordenes
-        self.assertEqual(len(prestatario.ordenes()), 0, msg="Prestatario ya tiene ordenes")
-
-        orden1 = Orden.objects.create(
+        # ordenes
+        self.orden1 = Orden.objects.create(
             prestatario=self.user_prestatario,
             lugar=Orden.Ubicacion.CAPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5))
         )
 
-        orden2 = Orden.objects.create(
+        self.orden2 = Orden.objects.create(
             prestatario=self.user_prestatario,
             lugar=Orden.Ubicacion.EXTERNO,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5))
         )
 
+    def test_lista_ordenes(self):
+        # probar si no tiene ordenes
+        prestatario_sin_ordenes = Prestatario.get_user(self.user_no_ordenes)
+        self.assertEqual(len(prestatario_sin_ordenes.ordenes()), 0, msg="Prestatario ya tiene ordenes")
+
+        # multiples ordenes
+        prestatario = Prestatario.get_user(self.user_prestatario)
         ordenes = prestatario.ordenes()
+
         self.assertTrue(len(ordenes) == 2, msg="No se registraron las Ordenes")
-        self.assertIn(orden1, ordenes, msg="No se registro la orden 1")
-        self.assertIn(orden2, ordenes, msg="No se registro la orden 2")
+        self.assertIn(self.orden1, ordenes, msg="No se registro la orden 1")
+        self.assertIn(self.orden2, ordenes, msg="No se registro la orden 2")
 
     def test_lista_reportes(self):
-        pass
+        prestatario = Prestatario.get_user(self.user_prestatario)
+        almacen = Almacen.get_user(self.user_almacen)
+
+        # probar si no hay reportes
+        self.assertEqual(len(prestatario.reportes()), 0, msg="El prestatario ya esta reportado")
+
+        # un reporte
+        almacen.reportar(orden=self.orden1, descripcion="Descripcion 1")
+        self.assertEqual(len(prestatario.reportes()), 1, msg="El prestatario No se ha reportado")
+
+        # multiples reportes
+        almacen.reportar(orden=self.orden2, descripcion="Descripcion 2")
+        self.assertEqual(len(prestatario.reportes()), 2, msg="El prestatario No se ha reportado varias veces")
+
 
     def test_lista_materias(self):
         materia1 = Materia.objects.create(

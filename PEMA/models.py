@@ -1,4 +1,5 @@
 import datetime
+from typing import Any
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -34,8 +35,14 @@ class Prestatario(User):
 
     objects = PrestatarioManager()
 
-    @classmethod
-    def crear_usuario(cls, *args, **kwargs) -> User:
+    @staticmethod
+    def get_user(user: 'User') -> 'Prestatario':
+        """Obtiene el usuario el tipo corresponiente o None si no existe"""
+
+        return Prestatario.objects.get(pk=user.pk)
+
+    @staticmethod
+    def crear_usuario(*args, **kwargs) -> User:
         """Crea un usuario de tipo prestatario"""
 
         grupo, _ = Prestatario.crear_grupo()
@@ -44,8 +51,8 @@ class Prestatario(User):
 
         return user
 
-    @classmethod
-    def crear_grupo(cls):
+    @staticmethod
+    def crear_grupo():
         """Crea el 'Permission Group' para el usuario prestatario."""
 
         # crear grupo prestatario
@@ -80,7 +87,7 @@ class Prestatario(User):
             QuerySet[Reporte]: Lista de reportes del prestatario.
         """
 
-        return Reporte.objects.filter(prestatario=self)
+        return Reporte.objects.filter(orden__in=self.ordenes())
 
     def materias(self) -> 'QuerySet[Materia]':
         """Devuelve las materias del prestatario.
@@ -250,9 +257,8 @@ class Almacen(User):
 
     class AlmacenManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            return super().get_queryset(*args, **kwargs).filter(
-                groups__name='almacen'
-            )
+            return super().get_queryset(*args, **kwargs) \
+                .filter(groups__name='almacen')
 
     objects = AlmacenManager()
 
@@ -265,6 +271,12 @@ class Almacen(User):
             ("puede_ver_ordenes", "Puede ver las órdenes de los prestatarios"),
             ("puede_ver_reportes", "Puede ver los reportes de los prestatarios"),
         )
+
+    @staticmethod
+    def get_user(user: 'User') -> 'Almacen':
+        """Obtiene el usuario el tipo corresponiente o None si no existe"""
+
+        return Almacen.objects.get(pk=user.pk)
 
     @classmethod
     def crear_grupo(cls) -> tuple['Group', bool]:
@@ -347,12 +359,10 @@ class Almacen(User):
             fecha=datetime.datetime.now(),
         )
 
-    @staticmethod
-    def reportar(emisor: 'User', orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
+    def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
         """Reporta una orden.
 
         Args:
-            emisor (User): Usuario que reporta la Orden
             orden (Orden): La orden que se va a reportar.
             descripcion (str): Información adicional del reporte
 
@@ -360,13 +370,9 @@ class Almacen(User):
             tuple['Reporte', bool]: el objeto reporte y si el objeto se creó.
         """
 
-        # TODO: fecha es un campo automatico, eliminar
-        # TODO: el default de estado es ACTIVO, eliminar
-
         return Reporte.objects.get_or_create(
-            almacen=emisor,
+            almacen=self,
             orden=orden,
-            estado=Reporte.Estado.ACTIVO,
             descripcion=descripcion
         )
 
