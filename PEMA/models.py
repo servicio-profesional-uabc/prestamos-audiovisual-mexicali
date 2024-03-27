@@ -20,10 +20,6 @@ class Prestatario(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_solicitar_equipo", "Puede solicitar equipos del almacén"),
-            ("puede_ser_corresponsable", "Puede ser corresponsable de una orden"),
-        )
 
     class PrestatarioManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
@@ -79,11 +75,15 @@ class Prestatario(User):
 
         # permisos del prestatario
         group.permissions.add(Permission.objects.get(
-            codename='puede_solicitar_equipo'
+            codename='add_carrito'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ser_corresponsable'
+            codename='add_orden'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='add_corresponsableorden'
         ))
 
         return group, created
@@ -162,11 +162,6 @@ class Coordinador(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_autorizar_extraordinarias", "puede autorizar ordenes extraordinarias"),
-            ("puede_eliminar_ordenes", "puede eliminar ordenes de prestatario"),
-            ("puede_desactivar_reportes", "puede desactivar reportes de los prestatarios"),
-        )
 
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
@@ -183,15 +178,15 @@ class Coordinador(User):
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_autorizar_extraordinarias'
+            codename='add_autorizacionextraordinaria'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_eliminar_ordenes'
+            codename='delete_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_desactivar_reportes'
+            codename='change_reporte'
         ))
 
         return group, created
@@ -231,9 +226,6 @@ class Maestro(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_autorizar_ordinarias", "Puede autorizar órdenes ordinarias"),
-        )
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -250,7 +242,11 @@ class Maestro(User):
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_autorizar_ordinarias'
+            codename='add_autorizacionordinaria'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='change_autorizacionordinaria'
         ))
 
         return group, created
@@ -299,13 +295,6 @@ class Almacen(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_recibir_equipo", "Puede recibir equipo al almacén"),
-            ("puede_entregar_equipo", "Puede entregar equipo a los prestatarios"),
-            ("puede_hacer_ordenes", "Puede hacer órdenes ordinarias para otros usuarios"),
-            ("puede_ver_ordenes", "Puede ver las órdenes de los prestatarios"),
-            ("puede_ver_reportes", "Puede ver los reportes de los prestatarios"),
-        )
 
     @staticmethod
     def get_user(user: User) -> Any | None:
@@ -336,23 +325,23 @@ class Almacen(User):
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_recibir_equipo'
+            codename='add_devolucion'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_entregar_equipo'
+            codename='add_entrega'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_hacer_ordenes'
+            codename='add_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ver_ordenes'
+            codename='view_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ver_reportes'
+            codename='view_reporte'
         ))
 
         return group, created
