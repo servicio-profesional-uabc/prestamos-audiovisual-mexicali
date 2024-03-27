@@ -297,10 +297,19 @@ class Almacen(User):
         )
 
     @staticmethod
-    def get_user(user: 'User') -> 'Almacen':
-        """Obtiene el usuario el tipo corresponiente o None si no existe"""
+    def get_user(user: User) -> Any | None:
+        """
+        Obtiene el usuario Almacen.
 
-        return Almacen.objects.get(pk=user.pk)
+        Args:
+            user: Usuario del que se quiere obtener el Almacen.
+        Returns:
+           Prestatario o None si no es Almacen.
+        """
+        try:
+            return Almacen.objects.get(pk=user.pk)
+        except Almacen.DoesNotExist:
+            return None
 
     @classmethod
     def crear_grupo(cls) -> tuple['Group', bool]:

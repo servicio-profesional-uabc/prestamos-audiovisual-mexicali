@@ -71,6 +71,7 @@ class TestOrden(TestCase):
         )
 
     def test_reporte(self):
+        almacen = Almacen.get_user(self.almacen)
 
         self.assertEqual(
             first=self.orden.reporte(),
@@ -78,8 +79,7 @@ class TestOrden(TestCase):
             msg="Ya existe un reporte"
         )
 
-        Almacen.reportar(
-            emisor=self.almacen,
+        almacen.reportar(
             orden=self.orden,
             descripcion="Nada"
         )
@@ -90,8 +90,7 @@ class TestOrden(TestCase):
         )
 
         # verificar que una orden no se puede reportar 2 veces
-        Almacen.reportar(
-            emisor=self.almacen,
+        almacen.reportar(
             orden=self.orden,
             descripcion="Nada"
         )
