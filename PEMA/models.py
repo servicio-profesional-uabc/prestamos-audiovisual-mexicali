@@ -14,8 +14,7 @@ from django.db import models, transaction
 
 
 class Prestatario(User):
-    """Representa un usuario prestatario
-
+    """
     Es un tipo de usuario con permisos específicos para solicitar
     equipos del almacén y ser corresponsable de órdenes.
     """
@@ -29,22 +28,34 @@ class Prestatario(User):
 
     class PrestatarioManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            return super().get_queryset(*args, **kwargs).filter(
-                groups__name='prestatarios'
-            )
+            return super().get_queryset(*args, **kwargs) \
+                .filter(groups__name='prestatarios')
 
     objects = PrestatarioManager()
 
     @staticmethod
-    def get_user(user: 'User') -> 'Prestatario':
-        """Obtiene el usuario el tipo corresponiente o None si no existe"""
+    def get_user(user: User) -> Any | None:
+        """
+        Obtiene el usuario prestatario
 
-        return Prestatario.objects.get(pk=user.pk)
+        Args:
+            user: Usuario del que se quiere obtener el prestatario
+        Returns:
+           Prestatario o None si no es Prestatario
+        """
+        try:
+            return Prestatario.objects.get(pk=user.pk)
+        except Prestatario.DoesNotExist:
+            return None
 
     @staticmethod
     def crear_usuario(*args, **kwargs) -> User:
-        """Crea un usuario de tipo prestatario"""
+        """
+        Crea un usuario de tipo prestatario, util para hacer pruebas unitarias
 
+        Returns:
+            User: usuario en el grupo de Prestatarios
+        """
         grupo, _ = Prestatario.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
         grupo.user_set.add(user)
@@ -52,8 +63,13 @@ class Prestatario(User):
         return user
 
     @staticmethod
-    def crear_grupo():
-        """Crea el 'Permission Group' para el usuario prestatario."""
+    def crear_grupo() -> tuple[Any, bool]:
+        """
+        Crea el 'Permission Group' para el usuario prestatario.
+
+        Returns:
+            grupo y si se creo
+        """
 
         # crear grupo prestatario
         group, created = Group.objects.get_or_create(
@@ -71,17 +87,18 @@ class Prestatario(User):
 
         return group, created
 
-    def ordenes(self) -> 'QuerySet[Orden]':
-        """Devuelve las órdenes del prestatario.
+    def ordenes(self) -> QuerySet[Any]:
+        """
+        Órdenes que ha realizado el usuario.
 
         Returns:
-            QuerySet[Orden]: Lista de órdenes del prestatario.
+             Lista de órdenes del usuario.
         """
-
         return Orden.objects.filter(prestatario=self)
 
     def reportes(self) -> 'QuerySet[Reporte]':
-        """Devuelve los reportes del prestatario.
+        """
+        Devuelve los reportes del prestatario.
 
         Returns:
             QuerySet[Reporte]: Lista de reportes del prestatario.
@@ -90,7 +107,8 @@ class Prestatario(User):
         return Reporte.objects.filter(orden__in=self.ordenes())
 
     def materias(self) -> QuerySet[Any]:
-        """Devuelve las materias del prestatario.
+        """
+        Devuelve las materias del prestatario.
 
         Returns:
             Lista de materias del prestatario.
@@ -98,8 +116,10 @@ class Prestatario(User):
 
         return Materia.objects.filter(prestatario=self)
 
-    def carrito(self) -> Any | 'None':
-        """Devuelve el carrito del prestatario.
+    def carrito(self) -> Any | None:
+        """
+        Devuelve el carrito actual del prestatario, el usuario solo
+        puede tener un carrito a la vez
 
         Returns:
             El carrito del prestatario o None si no existe.
@@ -111,10 +131,11 @@ class Prestatario(User):
             return None
 
     def suspendido(self) -> bool:
-        """Verifica si el usuario está suspendido.
+        """
+        Verifica si el usuario está suspendido.
 
         Returns:
-            bool: el usuario está suspendido
+            Si el usuario está suspendido del sistema
         """
 
         return self.reportes() \
