@@ -1,4 +1,5 @@
 import datetime
+from typing import Any
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -88,23 +89,26 @@ class Prestatario(User):
 
         return Reporte.objects.filter(orden__in=self.ordenes())
 
-    def materias(self) -> 'QuerySet[Materia]':
+    def materias(self) -> QuerySet[Any]:
         """Devuelve las materias del prestatario.
 
         Returns:
-            QuerySet[Materia]: Lista de materias del prestatario.
+            Lista de materias del prestatario.
         """
 
         return Materia.objects.filter(prestatario=self)
 
-    def carrito(self) -> 'Carrito':
+    def carrito(self) -> Any | 'None':
         """Devuelve el carrito del prestatario.
 
         Returns:
-            Carrito: El carrito del prestatario.
+            El carrito del prestatario o None si no existe.
         """
 
-        return Carrito.objects.filter(prestatario=self)
+        try:
+            return Carrito.objects.get(prestatario=self)
+        except Carrito.DoesNotExist:
+            return None
 
     def suspendido(self) -> bool:
         """Verifica si el usuario está suspendido.
@@ -594,9 +598,14 @@ class Materia(models.Model):
         return ArticuloMateria.objects \
             .get_or_create(materia=self, articulo=articulo)
 
-    def agregar_participante(self):
-        """Agrega un participante a la clase"""
-        pass
+    def agregar_participante(self, usuario: 'User') -> tuple['MateriaUsuario', bool]:
+        """Agrega un participante a la clase
+
+        Attribute:
+            usuario (User): Participante que se quiere agregar a la clase
+        """
+        return MateriaUsuario.objects \
+            .get_or_create(usuario=usuario, materia=self)
 
 
 class Carrito(models.Model):

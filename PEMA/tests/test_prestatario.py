@@ -1,10 +1,8 @@
-from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
 from PEMA.models import Prestatario, Almacen, Orden
 from PEMA.models import Carrito
 from PEMA.models import Materia
-from PEMA.models import Reporte
 
 from django.utils.timezone import make_aware
 from datetime import datetime
@@ -52,6 +50,9 @@ class TestPrestatario(TestCase):
         # probar si no hay reportes
         self.assertEqual(len(prestatario.reportes()), 0, msg="El prestatario ya esta reportado")
 
+        # está suspendido
+        self.assertFalse(prestatario.suspendido(), msg="El usuario ya esta suspendido")
+
         # un reporte
         almacen.reportar(orden=self.orden1, descripcion="Descripcion 1")
         self.assertEqual(len(prestatario.reportes()), 1, msg="El prestatario No se ha reportado")
@@ -60,46 +61,40 @@ class TestPrestatario(TestCase):
         almacen.reportar(orden=self.orden2, descripcion="Descripcion 2")
         self.assertEqual(len(prestatario.reportes()), 2, msg="El prestatario No se ha reportado varias veces")
 
+        # está suspendido
+        self.assertTrue(prestatario.suspendido(), msg="El usuario NO esta suspendido")
 
     def test_lista_materias(self):
-        materia1 = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
+        prestatario = Prestatario.get_user(self.user_prestatario)
 
-        materia2 = Materia.objects.create(
-            nombre="Edicion y diseño",
-            periodo="2024-1"
-        )
+        # nigunda materia
+        self.assertEqual(len(prestatario.materias()), 0, msg="El prestatario no tiene materias")
 
-        materia3 = Materia.objects.create(
-            nombre="Animacion",
-            periodo="2024-1"
-        )
+        # agregar el usario a las materias
+        materia1 = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+        materia2 = Materia.objects.create(nombre="Edicion y diseño", periodo="2024-1")
 
-        materias = Materia.objects.all()
+        materia1.agregar_participante(prestatario)
+        materia2.agregar_participante(prestatario)
 
+        materias = prestatario.materias()
         self.assertIn(materia1, materias)
         self.assertIn(materia2, materias)
-        self.assertIn(materia3, materias)
 
     def test_carrito(self):
-        materia = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
+        prestatario = Prestatario.get_user(self.user_prestatario)
 
-        self.carrito = Carrito.objects.create(
+        # carrito vacío
+        self.assertIsNone(prestatario.carrito(), msg="El usuario ya tiene un carrito")
+
+        # carrito no vacío
+        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
+        carrito = Carrito.objects.create(
             prestatario=self.user_prestatario,
             materia=materia,
             inicio=datetime.now(),
             final=datetime.now()
         )
 
-        self.assertEqual(self.carrito.prestatario, self.user_prestatario)
-        self.assertEqual(self.carrito.inicio, self.carrito.inicio)
-        self.assertEqual(self.carrito.final, self.carrito.final)
-        self.assertEqual(self.carrito.materia, materia)
-
-    def test_suspendido(self):
-        pass
+        self.assertEqual(prestatario.carrito(), carrito, msg="El carrito no coincide")
