@@ -1,4 +1,3 @@
-import datetime
 from typing import Any
 
 from phonenumber_field.modelfields import PhoneNumberField
@@ -384,22 +383,18 @@ class Almacen(User):
         )
 
     def devolver(self, orden: 'Orden') -> tuple['Devolucion', bool]:
-        """Generar el registro que el Almacén recibió el equipo de vuelta.
+        """
+        Generar el registro que el Almacén recibió el equipo de vuelta.
 
         Args:
-            orden (Orden): La orden que se va a devolver.
+            orden: La orden que se va a devolver.
 
         Returns:
-            tuple['Entrega', bool]: el registro de devolución, si el registro se creó
+            El registro de devolución, si el registro se creó
         """
 
-        # TODO: fecha es un campo automatico, eliminar
-
-        return Devolucion.objects.get_or_create(
-            almacen=self,
-            orden=orden,
-            fecha=datetime.datetime.now(),
-        )
+        return Devolucion.objects \
+            .get_or_create(almacen=self, orden=orden)
 
     def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
         """Reporta una orden.
@@ -439,7 +434,6 @@ class Perfil(models.Model):
         default='default.png'
     )
 
-    # TODO: cambiar a español
     telefono = PhoneNumberField(
         null=True
     )
@@ -713,14 +707,8 @@ class Carrito(models.Model):
             [Articulo]: Artículos en el carrito.
         """
 
-        # TODO: simplificar este query con el método de diego
-
-        ids_articulos = ArticuloCarrito.objects \
-            .filter(carrito=self) \
-            .values_list('articulo', flat=True)
-
         return Articulo.objects \
-            .filter(id__in=ids_articulos)
+            .filter(articulocarrito__carrito=self)
 
     def ordenar(self) -> None:
         """
@@ -867,14 +855,7 @@ class Articulo(models.Model):
             QuerySet[Categoria]: Categorías a las que pertenece.
         """
 
-        # TODO: simplificar estó con el método de diego
-
-        nombre_categoria = CategoriaArticulo.objects \
-            .filter(articulo=self) \
-            .values_list('categoria', flat=True)
-
-        return Categoria.objects \
-            .filter(nombre__in=nombre_categoria)
+        return Categoria.objects.filter(categoriaarticulo__articulo=self)
 
     def materias(self) -> 'QuerySet[Materia]':
         """Lista de materias en las que se encuentra el artículo.
@@ -883,14 +864,7 @@ class Articulo(models.Model):
             QuerySet[Materia]: Materias asociadas al artículo.
         """
 
-        # TODO: simplificar estó con el método de diego
-
-        nombre_materia = ArticuloMateria.objects \
-            .filter(articulo=self) \
-            .values_list('materia', flat=True)
-
-        return Materia.objects \
-            .filter(nombre__in=nombre_materia)
+        return Materia.objects.filter(articulomateria__articulo=self)
 
     def unidades(self) -> 'QuerySet[Unidad]':
         """Devuelve la lista de unidades de un artículo.
@@ -908,9 +882,9 @@ class Entrega(models.Model):
     Se genera cada vez que Almacen entrega el equipo al Prestatario.
 
     Attributes:
-        almacen (Almacen): encargado del Almacen
-        orden (Orden): orden que se entrega
-        fecha (DateTime): fecha en la que se hace la emisión
+        almacen: encargado del Almacen
+        orden: orden que se entrega
+        emision: fecha en la que se hace la emisión
     """
 
     orden = models.OneToOneField(
@@ -924,8 +898,7 @@ class Entrega(models.Model):
         on_delete=models.CASCADE
     )
 
-    # TODO: cambiar por emisión
-    fecha = models.DateTimeField(
+    emision = models.DateTimeField(
         auto_now_add=True
     )
 
@@ -938,7 +911,7 @@ class Devolucion(models.Model):
     Attributes:
         orden (Orden): orden que se devuelve
         almacen (Almacen): responsable del almacen
-        fecha (DateTime): fecha de emisión
+        emision (DateTime): fecha de emisión
     """
 
     orden = models.OneToOneField(
@@ -952,8 +925,7 @@ class Devolucion(models.Model):
         on_delete=models.CASCADE
     )
 
-    # TODO: cambiar por emisión
-    fecha = models.DateTimeField(
+    emision = models.DateTimeField(
         auto_now_add=True
     )
 
@@ -1001,15 +973,8 @@ class Unidad(models.Model):
         max_length=250
     )
 
-    def ordenes(self):
-        # TODO: cambiar esto con el método de diego
-
-        ids_orden = UnidadOrden.objects \
-            .filter(unidad=self) \
-            .values_list('orden', flat=True)
-
-        return Orden.objects \
-            .filter(id__in=ids_orden)
+    def ordenes(self) -> QuerySet[Orden]:
+        return Orden.objects.filter(unidadorden__unidad=self)
 
 
 class Categoria(models.Model):
@@ -1028,17 +993,11 @@ class Categoria(models.Model):
         """Devuelve los artículos que pertenecen a esta categoría.
 
         Return:
-            QuerySet: Artículos que pertenecen a la Categoría
+            Artículos que pertenecen a la Categoría
         """
 
-        # TODO: cambiar esto con el método de diego
-
-        ids_articulos = CategoriaArticulo.objects \
-            .filter(categoria=self) \
-            .values_list('articulo', flat=True)
-
         return Articulo.objects \
-            .filter(id__in=ids_articulos)
+            .filter(categoriaarticulo__categoria=self)
 
     def agregar(self, articulo: 'Articulo') -> tuple['CategoriaArticulo', bool]:
         """Agrega un Articulo a la Categoría
