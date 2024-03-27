@@ -43,6 +43,7 @@ class Prestatario(User):
         Returns:
            Prestatario o None si no es Prestatario
         """
+
         try:
             return Prestatario.objects.get(pk=user.pk)
         except Prestatario.DoesNotExist:
@@ -56,6 +57,7 @@ class Prestatario(User):
         Returns:
             User: usuario en el grupo de Prestatarios
         """
+
         grupo, _ = Prestatario.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
         grupo.user_set.add(user)
@@ -94,6 +96,7 @@ class Prestatario(User):
         Returns:
              Lista de órdenes del usuario.
         """
+
         return Orden.objects.filter(prestatario=self)
 
     def reportes(self) -> 'QuerySet[Reporte]':
@@ -114,7 +117,7 @@ class Prestatario(User):
             Lista de materias del prestatario.
         """
 
-        return Materia.objects.filter(prestatario=self)
+        return Materia.objects.filter(materiausuario__usuario=self)
 
     def carrito(self) -> Any | None:
         """
@@ -167,10 +170,13 @@ class Coordinador(User):
         )
 
     @classmethod
-    def crear_grupo(cls):
-        """Crea el grupo de Coordinadores y agrega los permisos """
+    def crear_grupo(cls) -> tuple[Any, bool]:
+        """
+        Crea el grupo de permisos para Coordinadores.
 
-        # TODO: utilizar get_or_create para este método
+        Returns:
+            Grupo de Coordinadores y si se creó el grupo.
+        """
 
         group, created = Group.objects.get_or_create(
             name='coordinador'
@@ -189,14 +195,14 @@ class Coordinador(User):
             codename='puede_desactivar_reportes'
         ))
 
-    def autorizar(self, orden: 'Orden') -> None:
+        return group, created
+
+    def autorizar(self, orden: 'Orden') -> tuple[Any, bool]:
         """Autoriza una orden específica.
 
         Args:
             orden (Orden): Orden que se va a autorizar
         """
-
-        # TODO: retornar Tupla si se creó y el objeto
 
         # crear la autorizacion extraordinaria
         autorizacion, created = AutorizacionExtraordinaria.objects.get_or_create(
@@ -207,10 +213,11 @@ class Coordinador(User):
         # actualizar el estado de autorizacion
         autorizacion.autorizar = True
 
+        return autorizacion, created
+
 
 class Maestro(User):
-    """Clase que representa el usuario Maestro.
-
+    """
     Un maestro puede autorizar ordenes ordinarias y ser el
     supervisor de una clase.
     """
@@ -229,11 +236,14 @@ class Maestro(User):
             ("puede_autorizar_ordinarias", "Puede autorizar órdenes ordinarias"),
         )
 
-    @classmethod
-    def crear_grupo(cls):
-        """Crea el 'Permission Group' para el usuario maestro."""
+    @staticmethod
+    def crear_grupo() -> tuple[Any, bool]:
+        """
+        Crea el 'Permission Group' para el usuario maestro.
 
-        # TODO: retornar la Tupla si se creo con el objeto
+        Returns:
+            el grupo y sí se creó
+        """
 
         group, created = Group.objects.get_or_create(
             name='maestro'
@@ -243,6 +253,8 @@ class Maestro(User):
         group.permissions.add(Permission.objects.get(
             codename='puede_autorizar_ordinarias'
         ))
+
+        return group, created
 
     def autorizar(self, orden: 'Orden') -> tuple['AutorizacionOrdinaria', bool]:
         """
@@ -356,22 +368,19 @@ class Almacen(User):
 
         return user
 
-    def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
+    def entregar(self, orden: 'Orden') -> tuple[Any, bool]:
         """Generar el registro que el Almacén entrego el equipo.
 
         Args:
-            orden (Orden): la orden entregada
+            orden: la orden entregada
 
         Returns:
-            tuple['Entrega', bool]: el registro de entrega, si el registro se creó
+            Registro de entrega y si el registro se creó
         """
-
-        # TODO: fecha es un campo automatico, eliminar
 
         return Entrega.objects.get_or_create(
             almacen=self,
-            orden=orden,
-            fecha=datetime.datetime.now(),
+            orden=orden
         )
 
     def devolver(self, orden: 'Orden') -> tuple['Devolucion', bool]:
