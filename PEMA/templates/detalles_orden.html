@@ -1,0 +1,70 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Importar bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <!-- Importar estilos personalizados -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
+    <title>Detalles de orden</title>
+</head>
+
+<body class="custom-background-color">
+    <nav class="navbar navbar-expand-lg navbar-light custom-navbar-bg">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <a class="navbar-brand" href="#">
+                <img src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="50px">
+                <img src="{% static 'img/CEPA-UABC.png' %}" height="40px">
+            </a>
+            <a href="prestatario">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.36828 6.65552C6.91888 7.45808 5.77602 8.71798 5.11811 10.2385C4.46021 11.759 4.32429 13.4546 4.73158 15.0605C5.13886 16.6665 6.06643 18.0923 7.36947 19.1155C8.67251 20.1387 10.2777 20.7017 11.9344 20.7165C13.5911 20.7313 15.206 20.1971 16.5272 19.1974C17.8483 18.1976 18.8012 16.7886 19.2371 15.1902C19.6731 13.5918 19.5675 11.8941 18.9369 10.362C18.3062 8.82999 17.1861 7.54987 15.7513 6.72152L16.5013 5.42252C18.2228 6.4168 19.5666 7.95307 20.323 9.79154C21.0795 11.63 21.2059 13.6672 20.6826 15.5851C20.1593 17.5029 19.0157 19.1936 17.4304 20.3931C15.8451 21.5926 13.9072 22.2335 11.9193 22.2157C9.93136 22.1978 8.00528 21.5223 6.44172 20.2945C4.87816 19.0668 3.7651 17.3559 3.2763 15.4289C2.78749 13.5019 2.95046 11.4674 3.73974 9.64277C4.52903 7.81817 5.90022 6.30625 7.63928 5.34302L8.36828 6.65552Z" fill="black"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M11.25 12V1.5H12.75V12H11.25Z" fill="black"/>
+                </svg>
+            </a>  
+        </div>
+    </nav>
+
+    <main>
+        <div class="container order-details-container">
+            <h2>Detalles de orden ###</h2>
+            <div class="order-items">
+                <h5>Artículos de la orden</h5>
+                <ul>
+                    <li>Artículo #1</li>
+                    <li>Artículo #2</li>
+                    <li>Artículo #3</li>
+                </ul>
+            </div>
+            <div class="order-info">
+                <h5>Nombre de la práctica</h5>
+                <p>Nombre de la práctica</p>
+                <h5>Lugar de práctica o producción</h5>
+                <p>Lugar de práctica o producción</p>
+                <h5>Fecha y hora de recepción</h5>
+                <p>Fecha y hora de recepción</p>
+                <h5>Fecha y hora de devolución</h5>
+                <p>Fecha y hora de devolución</p>
+            </div>
+            <div class="buttons">
+                <button type="button" class="btn-danger" onclick="confirmarCancelacion()">Cancelar Solicitud</button>
+                <a href="historial_solicitudes" class="btn btn-secondary">Regresar</a>
+            </div>
+        </div>
+        
+    </main>
+    <footer>
+        <p>© 2024</p>
+    </footer>
+    <!-- Script -->
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
