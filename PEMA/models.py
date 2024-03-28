@@ -280,10 +280,10 @@ class Maestro(User):
 
 
 class Almacen(User):
-    """Clase que representa al usuario Almacén.
-
-    Un usuario almacen puede surtir las Ordenes de los prestatarios
-    también se encarga de recibir el equipo.
+    """
+    Clase que representa al usuario Almacén, Un usuario almacen 
+    puede surtir las Ordenes de los prestatarios también se encarga 
+    de recibir el equipo.
     """
 
     class AlmacenManager(models.Manager):
@@ -301,10 +301,9 @@ class Almacen(User):
         """
         Obtiene el usuario Almacen.
 
-        Args:
-            user: Usuario del que se quiere obtener el Almacen.
-        Returns:
-           Prestatario o None si no es Almacen.
+        :param user: Usuario del que se quiere obtener el Almacen.
+
+        :returns: Prestatario o None si no es Almacen.
         """
         try:
             return Almacen.objects.get(pk=user.pk)
@@ -1033,12 +1032,8 @@ class AutorizacionOrdinaria(models.Model):
 
 
 class AutorizacionExtraordinaria(models.Model):
-    """Clase que representa una autorización extraordinaria.
-
-    Attributes:
-        orden (Orden): Orden a la que pertenece la autorización
-        coordinador (Usuario): Usuario que autoriza la orden
-        autorizar (boolean): Estado de la autorización
+    """
+    Clase que representa una autorización extraordinaria.
     """
 
     class Meta:
