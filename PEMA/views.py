@@ -40,7 +40,22 @@ class SolicitudView(View):
             request=request,
             template_name="solicitud.html"
         )
-    
+
+
+class CatalogoView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="historial.html"
+        )
+
+
+class HistorialView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="catalogo.html"
+        )
 
 
 def test(request):

@@ -26,6 +26,17 @@ urlpatterns = [
         view=views.SolicitudView.as_view(),
         name='solicitud'
     ),
-    
+
+    path(
+        route='historial.html',
+        view=views.HistorialView.as_view(),
+        name='historial'
+    ),
+
+    path(
+        route='catalogo.html',
+        view=views.CatalogoView.as_view(),
+        name='catalogo'
+    ),
 
 ]
