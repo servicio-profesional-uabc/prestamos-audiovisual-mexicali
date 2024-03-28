@@ -46,7 +46,7 @@ class CatalogoView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="historial.html"
+            template_name="catalogo.html"
         )
 
 
@@ -54,9 +54,22 @@ class HistorialView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="catalogo.html"
+            template_name="historial.html"
         )
 
+class DetalleArticuloView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="detalleArticulo.html"
+        )
+
+class CancelarOrdenView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="cancelarOrden.html"
+        )
 
 def test(request):
     send_mail(

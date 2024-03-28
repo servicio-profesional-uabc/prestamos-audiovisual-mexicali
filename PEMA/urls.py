@@ -38,5 +38,16 @@ urlpatterns = [
         view=views.CatalogoView.as_view(),
         name='catalogo'
     ),
-
+    
+    path(
+        route='detalleArticulo.html',
+        view=views.DetalleArticuloView.as_view(),
+        name='detalleArticulo'
+    ),
+    
+    path(
+        route='cancelarOrden.html',
+        view=views.CancelarOrdenView.as_view(),
+        name='cancelarOrden'
+    )
 ]
