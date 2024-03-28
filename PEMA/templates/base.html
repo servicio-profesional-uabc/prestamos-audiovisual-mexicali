@@ -1,0 +1,58 @@
+{% load static %}
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    </head>
+    <header>
+        <div class="container text-center mt-5">
+
+            <style>
+                .image-container {
+                    display: flex;
+                    justify-content: flex-start;
+                    padding: 1px;
+                    font-family: "Minion Pro", sans-serif;
+                }
+                h1, h3 {
+                    font-family: 'Minion Pro', sans-serif;
+                }
+            </style>
+
+            <!--Imagen de la facultad-->
+            <div class="image-container">
+                <img class="my-4" src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="80px" style="position: absolute; top: 0; left: 0;">
+            </div>
+        </div>
+        {#        TODO: AGREGAR NAVBAR VIENE AQUI, HEADER ES POR MIENTRAS, ESTO SE USA COMO HERENCIA EN TODO PARA QUE NO TENGAN QUE AGREGAR NAVBAR#}
+    </header>
+    <body>
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                    {% if message.tags == 'success' %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            {#  ESTE BLOQUE ES LO QUE VARIA, AQUI PUEDE SER EL LOGIN, DETALLES DE CARRITO. CUALQUIER CONTENIDO. #}
+            {% block content %}
+            {% endblock %}
+        </div>
+    </body>
+</html>
+
