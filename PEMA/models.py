@@ -1,3 +1,5 @@
+from typing import Any
+
 from phonenumber_field.modelfields import PhoneNumberField
 
 from django.contrib.contenttypes.models import ContentType
@@ -12,29 +14,44 @@ from django.db import models, transaction
 
 class Prestatario(User):
     """
-    Clase que representa un prestatario, que es un usuario con
-    permisos específicos para solicitar equipos del almacén y ser
-    corresponsable de órdenes.
+    Es un tipo de usuario con permisos específicos para solicitar
+    equipos del almacén y ser corresponsable de órdenes.
     """
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_solicitar_equipo", "Puede solicitar equipos del almacén"),
-            ("puede_ser_corresponsable", "Puede ser corresponsable de una orden"),
-        )
 
     class PrestatarioManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            return super().get_queryset(*args, **kwargs).filter(
-                groups__name='prestatarios'
-            )
+            return super().get_queryset(*args, **kwargs) \
+                .filter(groups__name='prestatarios')
 
     objects = PrestatarioManager()
 
-    @classmethod
-    def crear_usuario(cls, *args, **kwargs) -> User:
-        """Crea un usuario de tipo prestatario"""
+    @staticmethod
+    def get_user(user: User) -> Any | None:
+        """
+        Obtiene el usuario prestatario
+
+        Args:
+            user: Usuario del que se quiere obtener el prestatario
+        Returns:
+           Prestatario o None si no es Prestatario
+        """
+
+        try:
+            return Prestatario.objects.get(pk=user.pk)
+        except Prestatario.DoesNotExist:
+            return None
+
+    @staticmethod
+    def crear_usuario(*args, **kwargs) -> User:
+        """
+        Crea un usuario de tipo prestatario, util para hacer pruebas unitarias
+
+        Returns:
+            User: usuario en el grupo de Prestatarios
+        """
 
         grupo, _ = Prestatario.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
@@ -42,11 +59,15 @@ class Prestatario(User):
 
         return user
 
-    @classmethod
-    def crear_grupo(cls):
+    @staticmethod
+    def crear_grupo() -> tuple[Any, bool]:
         """
         Crea el 'Permission Group' para el usuario prestatario.
+
+        Returns:
+            grupo y si se creo
         """
+
         # crear grupo prestatario
         group, created = Group.objects.get_or_create(
             name='prestatarios'
@@ -54,22 +75,27 @@ class Prestatario(User):
 
         # permisos del prestatario
         group.permissions.add(Permission.objects.get(
-            codename='puede_solicitar_equipo'
+            codename='add_carrito'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ser_corresponsable'
+            codename='add_orden'
+        ))
+
+        group.permissions.add(Permission.objects.get(
+            codename='add_corresponsableorden'
         ))
 
         return group, created
 
-    def ordenes(self) -> 'QuerySet[Orden]':
+    def ordenes(self) -> QuerySet[Any]:
         """
-        Devuelve las órdenes del prestatario.
+        Órdenes que ha realizado el usuario.
 
         Returns:
-            QuerySet[Orden]: Lista de órdenes del prestatario.
+             Lista de órdenes del usuario.
         """
+
         return Orden.objects.filter(prestatario=self)
 
     def reportes(self) -> 'QuerySet[Reporte]':
@@ -79,35 +105,44 @@ class Prestatario(User):
         Returns:
             QuerySet[Reporte]: Lista de reportes del prestatario.
         """
-        return Reporte.objects.filter(prestatario=self)
 
-    def materias(self) -> 'QuerySet[Materia]':
+        return Reporte.objects.filter(orden__in=self.ordenes())
+
+    def materias(self) -> QuerySet[Any]:
         """
         Devuelve las materias del prestatario.
 
         Returns:
-            QuerySet[Materia]: Lista de materias del prestatario.
+            Lista de materias del prestatario.
         """
-        return Materia.objects.filter(prestatario=self)
 
-    def carrito(self) -> 'Carrito':
+        return Materia.objects.filter(materiausuario__usuario=self)
+
+    def carrito(self) -> Any | None:
         """
-        Devuelve el carrito del prestatario.
+        Devuelve el carrito actual del prestatario, el usuario solo
+        puede tener un carrito a la vez
 
         Returns:
-            Carrito: El carrito del prestatario.
+            El carrito del prestatario o None si no existe.
         """
-        return Carrito.objects.filter(prestatario=self)
+
+        try:
+            return Carrito.objects.get(prestatario=self)
+        except Carrito.DoesNotExist:
+            return None
 
     def suspendido(self) -> bool:
         """
         Verifica si el usuario está suspendido.
 
         Returns:
-            bool: Verdadero si el usuario está suspendido, Falso de lo contrario.
+            Si el usuario está suspendido del sistema
         """
-        # un usuario está suspendido si tiene algún reporte activo
-        return self.reportes().filter(estado=Reporte.Estado.ACTIVO).exists()
+
+        return self.reportes() \
+            .filter(estado=Reporte.Estado.ACTIVO) \
+            .exists()
 
 
 class Coordinador(User):
@@ -127,17 +162,14 @@ class Coordinador(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_autorizar_extraordinarias", "puede autorizar ordenes extraordinarias"),
-            ("puede_eliminar_ordenes", "puede eliminar ordenes de prestatario"),
-            ("puede_desactivar_reportes", "puede desactivar reportes de los prestatarios"),
-        )
 
     @classmethod
-    def crear_grupo(cls):
+    def crear_grupo(cls) -> tuple[Any, bool]:
         """
-        Método de clase para crear el grupo de coordinadores y
-        asignarles permisos.
+        Crea el grupo de permisos para Coordinadores.
+
+        Returns:
+            Grupo de Coordinadores y si se creó el grupo.
         """
 
         group, created = Group.objects.get_or_create(
@@ -146,20 +178,24 @@ class Coordinador(User):
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_autorizar_extraordinarias'
+            codename='add_autorizacionextraordinaria'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_eliminar_ordenes'
+            codename='delete_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_desactivar_reportes'
+            codename='change_reporte'
         ))
 
-    def autorizar(self, orden: 'Orden') -> None:
-        """
-        Autoriza una orden específica.
+        return group, created
+
+    def autorizar(self, orden: 'Orden') -> tuple[Any, bool]:
+        """Autoriza una orden específica.
+
+        Args:
+            orden (Orden): Orden que se va a autorizar
         """
 
         # crear la autorizacion extraordinaria
@@ -171,17 +207,16 @@ class Coordinador(User):
         # actualizar el estado de autorizacion
         autorizacion.autorizar = True
 
+        return autorizacion, created
+
 
 class Maestro(User):
     """
-    Clase que representa el usuario Maestro.
+    Un maestro puede autorizar ordenes ordinarias y ser el
+    supervisor de una clase.
     """
 
     class MaestroManager(models.Manager):
-        """
-        Manejador de objetos para los maestros.
-        """
-
         def get_queryset(self, *args, **kwargs):
             return super().get_queryset(*args, **kwargs).filter(
                 groups__name='maestro'
@@ -191,26 +226,32 @@ class Maestro(User):
 
     class Meta:
         proxy = True
-        permissions = (
-            ("puede_autorizar_ordinarias", "Puede autorizar órdenes ordinarias"),
-        )
 
-    @classmethod
-    def crear_grupo(cls):
+    @staticmethod
+    def crear_grupo() -> tuple[Any, bool]:
         """
         Crea el 'Permission Group' para el usuario maestro.
+
+        Returns:
+            el grupo y sí se creó
         """
-        # crear grupo maestro
+
         group, created = Group.objects.get_or_create(
             name='maestro'
         )
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_autorizar_ordinarias'
+            codename='add_autorizacionordinaria'
         ))
 
-    def autorizar(self, orden: 'Orden'):
+        group.permissions.add(Permission.objects.get(
+            codename='change_autorizacionordinaria'
+        ))
+
+        return group, created
+
+    def autorizar(self, orden: 'Orden') -> tuple['AutorizacionOrdinaria', bool]:
         """
         Autoriza órdenes ordinarias.
 
@@ -220,6 +261,9 @@ class Maestro(User):
         Returns:
             None
         """
+
+        # TODO: Este metodo esta pediente
+
         pass
 
     def materias(self) -> 'QuerySet[Materia]':
@@ -229,39 +273,50 @@ class Maestro(User):
         Returns:
             QuerySet[Materia]: Materias supervisadas por el maestro.
         """
+
+        # TODO: este método esta pendiente
+
         pass
 
 
 class Almacen(User):
-    """
-    Clase que representa al usuario Almacén.
+    """Clase que representa al usuario Almacén.
+
+    Un usuario almacen puede surtir las Ordenes de los prestatarios
+    también se encarga de recibir el equipo.
     """
 
     class AlmacenManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            return super().get_queryset(*args, **kwargs).filter(
-                groups__name='almacen'
-            )
+            return super().get_queryset(*args, **kwargs) \
+                .filter(groups__name='almacen')
 
     objects = AlmacenManager()
 
     class Meta:
-        """
-        Metadatos de la clase Almacén.
-        """
         proxy = True
-        permissions = (
-            ("puede_recibir_equipo", "Puede recibir equipo al almacén"),
-            ("puede_entregar_equipo", "Puede entregar equipo a los prestatarios"),
-            ("puede_hacer_ordenes", "Puede hacer órdenes ordinarias para otros usuarios"),
-            ("puede_ver_ordenes", "Puede ver las órdenes de los prestatarios"),
-            ("puede_ver_reportes", "Puede ver los reportes de los prestatarios"),
-        )
+
+    @staticmethod
+    def get_user(user: User) -> Any | None:
+        """
+        Obtiene el usuario Almacen.
+
+        Args:
+            user: Usuario del que se quiere obtener el Almacen.
+        Returns:
+           Prestatario o None si no es Almacen.
+        """
+        try:
+            return Almacen.objects.get(pk=user.pk)
+        except Almacen.DoesNotExist:
+            return None
 
     @classmethod
-    def crear_grupo(cls):
-        """
-        Crea el 'Permission Group' para el usuario almacén.
+    def crear_grupo(cls) -> tuple['Group', bool]:
+        """Crea el 'Permission Group' para el usuario almacén.
+
+        Returns:
+            tuple['Group', bool]: El grupo creado y sí se creo el grupo
         """
         # crear grupo almacén
         group, created = Group.objects.get_or_create(
@@ -270,55 +325,93 @@ class Almacen(User):
 
         # permisos
         group.permissions.add(Permission.objects.get(
-            codename='puede_recibir_equipo'
+            codename='add_devolucion'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_entregar_equipo'
+            codename='add_entrega'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_hacer_ordenes'
+            codename='add_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ver_ordenes'
+            codename='view_orden'
         ))
 
         group.permissions.add(Permission.objects.get(
-            codename='puede_ver_reportes'
+            codename='view_reporte'
         ))
 
-    def autorizar(self, orden: 'Orden') -> None:
-        """
-        Autoriza una orden ordinaria.
+        return group, created
+
+    @classmethod
+    def crear_usuario(cls, *args, **kwargs) -> User:
+        """Crea un usuario de tipo prestatario"""
+
+        grupo, _ = Almacen.crear_grupo()
+        user = User.objects.create_user(*args, **kwargs)
+        grupo.user_set.add(user)
+
+        return user
+
+    def entregar(self, orden: 'Orden') -> tuple[Any, bool]:
+        """Generar el registro que el Almacén entrego el equipo.
 
         Args:
-            orden (Orden): La orden que se va a autorizar.
+            orden: la orden entregada
 
         Returns:
-            None
+            Registro de entrega y si el registro se creó
         """
 
-        orden.estado = orden.Estado.APROBADA
-        return None
+        return Entrega.objects.get_or_create(
+            almacen=self,
+            orden=orden
+        )
 
-    def reportar(self, orden: 'Orden') -> None:
+    def devolver(self, orden: 'Orden') -> tuple['Devolucion', bool]:
         """
-        Reporta una orden.
+        Generar el registro que el Almacén recibió el equipo de vuelta.
+
+        Args:
+            orden: La orden que se va a devolver.
+
+        Returns:
+            El registro de devolución, si el registro se creó
+        """
+
+        return Devolucion.objects \
+            .get_or_create(almacen=self, orden=orden)
+
+    def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
+        """Reporta una orden.
 
         Args:
             orden (Orden): La orden que se va a reportar.
+            descripcion (str): Información adicional del reporte
 
         Returns:
-            None
+            tuple['Reporte', bool]: el objeto reporte y si el objeto se creó.
         """
-        return None
+
+        return Reporte.objects.get_or_create(
+            almacen=self,
+            orden=orden,
+            descripcion=descripcion
+        )
 
 
 class Perfil(models.Model):
-    """
-    Información adicional del usuario.
+    """Información adicional del usuario.
+
+    Datos sobre el perfil de usuario, para no extender el User de django
+
+    Attributes:
+        usuario (User): Usuario del perfil
+        imagen (Image): Imagen del perfil
+        telefono (Phone): Telefono del usuario
     """
 
     usuario = models.OneToOneField(
@@ -330,22 +423,21 @@ class Perfil(models.Model):
         default='default.png'
     )
 
-    phone = PhoneNumberField(
+    telefono = PhoneNumberField(
         null=True
     )
 
-    @staticmethod
+    @classmethod
     def info(cls, user: User) -> 'Perfil':
-        """
-        Obtiene el perfil asociado a un usuario dado.
+        """Obtiene el perfil asociado a un usuario dado.
 
         Args:
-            cls
             user (User): El usuario del cual se desea obtener el perfil.
 
         Returns:
-            Perfil: El perfil asociado al usuario.
+            El perfil asociado al usuario.
         """
+        # TODO: Falta implementar este método
         pass
 
 
@@ -357,51 +449,40 @@ class Orden(models.Model):
     específicamente que entregar.
 
     Attributes:
-        prestatario (Prestatario): Usuario que solicita los articulos.
-        lugar (String): Lugar donde se usara el material.
-        inicio (DateTime): Fecha de inicio de la orden.
-        final (DateTime): Fecha de devolución de la orden.
-        tipo (Enum): Tipo de Orden (Ordinaria, Extraordinaria).
+        prestatario: Usuario que hace la solicitud.
+        lugar: Lugar donde se usara el material.
+        inicio: Fecha de inicio de la orden.
+        final: Fecha de devolución de la orden.
+        descripcion: Información adicional de la orden.
+        emision: fecha de emisión de la orden.
     """
 
-    # TODO: Agregar cancelado
-
     class Estado(models.TextChoices):
-        """
-        Opciones para el estado de la orden.
-        """
+        """Opciones para el estado de la orden."""
         PENDIENTE = "PN", _("PENDIENTE")
         RECHAZADA = "RE", _("RECHAZADA")
         APROBADA = "AP", _("APROBADA")
+        CANCELADO = "CN", _("CANCELADO")
 
     class Tipo(models.TextChoices):
-        """
-        Opciones para el tipo de orden.
-        """
+        """Opciones para el tipo de orden."""
         ORDINARIA = "OR", _("ORDINARIA")
         EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
+
+    class Ubicacion(models.TextChoices):
+        """Opciones para el lugar de la orden"""
+        CAPUS = "CA", _("CAPUS")
+        EXTERNO = "EX", _("EXTERNO")
 
     prestatario = models.ForeignKey(
         to=Prestatario,
         on_delete=models.CASCADE
     )
 
-    estado_atr = models.CharField(
-        choices=Estado.choices,
-        default=Estado.PENDIENTE,
-        max_length=3
-    )
-
-    tipo = models.CharField(
-        choices=Tipo.choices,
-        default=Tipo.ORDINARIA,
-        max_length=2
-    )
-
     lugar = models.CharField(
-        default="",
-        null="",
-        max_length=250
+        default=Ubicacion.CAPUS,
+        choices=Ubicacion.choices,
+        max_length=2
     )
 
     inicio = models.DateTimeField(
@@ -412,32 +493,41 @@ class Orden(models.Model):
         null=False
     )
 
+    emision = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    descripcion = models.TextField(
+        blank=True,
+        max_length=512
+    )
+
     def unidades(self) -> 'QuerySet[Unidad]':
-        """
-        Devuelve las unidades con las que se suplió la orden.
+        """Devuelve las unidades con las que se suplió la orden.
 
         Returns:
             QuerySet[Unidad]: Unidades asociadas a la orden.
         """
-        pass
+
+        return Unidad.objects.filter(unidadorden__orden=self)
 
     def articulos(self) -> 'QuerySet[Articulo]':
-        """
-        Devuelve los artículos en la orden.
+        """Devuelve los artículos en la orden.
 
         Returns:
             QuerySet[Articulo]: Artículos asociados a la orden.
         """
-        pass
+
+        return Articulo.objects.filter(unidad__in=self.unidades())
 
     def reporte(self) -> 'Reporte':
-        """
-        Retorna el reporte de la Orden o nada si no tiene reporte.
+        """Retorna el Reporte de la Orden o nada sí no tiene reporte.
 
         Returns:
             Reporte: Reporte asociado a la orden o None si no tiene reporte.
         """
-        pass
+
+        return Reporte.objects.filter(orden=self).first()
 
     def estado(self) -> str:
         """
@@ -446,23 +536,28 @@ class Orden(models.Model):
         Returns:
             str: Estado de la orden (PENDIENTE, RECHAZADA o APROBADA).
         """
+        # TODO: falta implementar este método, Falta acordar detalles
         pass
 
-    def agregar(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
+    def agregar_unidad(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
         """Agrega una unidad especifíca a la orden
 
          Attributes:
              unidad (Unidad): Unidad que se agregará
         """
-        return UnidadOrden.objects.get_or_create(
-            orden=self,
-            unidad=unidad
-        )
+        return UnidadOrden.objects \
+            .get_or_create(orden=self, unidad=unidad)
 
 
 class Materia(models.Model):
-    """
-    Clase que representa una materia.
+    """Clase que representa una materia.
+
+    Las materias se encargan de limitar el material al que pueden
+    acceder los Prestatarios.
+
+    Attributes:
+        nombre (str): Nombre de la clase
+        periodo (str): Periodo de la clase ej. 2022-1
     """
 
     class Meta:
@@ -477,40 +572,43 @@ class Materia(models.Model):
         blank=False
     )
 
+    # TODO: separar año y periodo
     periodo = models.CharField(
         max_length=6,
         null=False,
         blank=False
     )
 
-    def alumnos(self) -> 'QuerySet[User]':
-        """
-        Devuelve la lista de alumnos en la clase.
+    @staticmethod
+    def alumnos() -> 'QuerySet[User]':
+        """Devuelve la lista de alumnos en la clase.
 
         Returns:
-            QuerySet[User]: Lista de usuarios (alumnos) asociados a la materia.
+            QuerySet[User]: Lista de alumnos de la materia.
         """
-        return User.objects.exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
 
-    def profesores(self) -> 'QuerySet[User]':
-        """
-        Devuelve la lista de profesores en la clase.
+        return User.objects \
+            .exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
+
+    @staticmethod
+    def profesores() -> 'QuerySet[User]':
+        """Devuelve la lista de profesores en la clase.
 
         Returns:
-            QuerySet[User]: Lista de usuarios (profesores) asociados a la materia.
+            QuerySet[User]: Lista de profesores asociados a la materia.
         """
-        return User.objects.exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
+
+        return User.objects \
+            .exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
 
     def articulos(self) -> 'QuerySet[Articulo]':
-        """
-        Devuelve la lista de artículos que se pueden solicitar si se lleva esta clase.
+        """Artículos que se pueden solicitar.
 
         Returns:
-            QuerySet[Articulo]: Lista de artículos asociados a la materia.
+            QuerySet[Articulo]: Lista de artículos de la materia.
         """
 
         return Articulo.objects.filter(articulomateria__materia=self)
-
 
     def agregar_articulo(self, articulo: 'Articulo') -> tuple['Articulo', bool]:
         """Agrega un articulo a la lista de equipo disponible para esta materia
@@ -518,10 +616,18 @@ class Materia(models.Model):
          Attribute:
             articulo (Articulo): Articulo que se quiere agregar
         """
-        return ArticuloMateria.objects.get_or_create(
-            materia=self,
-            articulo=articulo
-        )
+
+        return ArticuloMateria.objects \
+            .get_or_create(materia=self, articulo=articulo)
+
+    def agregar_participante(self, usuario: 'User') -> tuple['MateriaUsuario', bool]:
+        """Agrega un participante a la clase
+
+        Attribute:
+            usuario (User): Participante que se quiere agregar a la clase
+        """
+        return MateriaUsuario.objects \
+            .get_or_create(usuario=usuario, materia=self)
 
 
 class Carrito(models.Model):
@@ -569,6 +675,10 @@ class Carrito(models.Model):
             Relación al artículo al carrito y si se agregó
         """
 
+        # TODO: falta verificar casos
+        # - agregar el mismo articulo otra vez (se suma?)
+        # - cambiar el numero de articulos cuando unidades es diferente a 1
+
         objeto, creado = ArticuloCarrito.objects \
             .get_or_create(articulo=articulo, carrito=self)
 
@@ -580,21 +690,14 @@ class Carrito(models.Model):
         return objeto, creado
 
     def articulos(self) -> 'QuerySet[Articulo]':
-        """
-        Devuelve los artículos en el carrito.
+        """Devuelve los artículos en el carrito.
 
         Returns:
             [Articulo]: Artículos en el carrito.
         """
 
-        # TODO: ¿qué hacer con las ordenes repetidas?
-
-        ids_articulos = ArticuloCarrito.objects \
-            .filter(carrito=self) \
-            .values_list('articulo', flat=True)
-
         return Articulo.objects \
-            .filter(id__in=ids_articulos)
+            .filter(articulocarrito__carrito=self)
 
     def ordenar(self) -> None:
         """
@@ -604,14 +707,13 @@ class Carrito(models.Model):
             None
         """
 
+        # TODO: reimplementar este metodo cuando haya mas detalles
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
         # TODO: Como identificar el 'lugar' de la orden
 
         with transaction.atomic():
             Orden.objects.create(
                 prestatario=self.prestatario,
-                tipo=Orden.Tipo.ORDINARIA,
-                lugar='',
                 inicio=self.inicio,
                 final=self.final
             )
@@ -622,8 +724,14 @@ class Carrito(models.Model):
 
 
 class Reporte(models.Model):
-    """
-    Clase que representa un reporte.
+    """Clase que representa un reporte a una Orden.
+
+    Attributes:
+        almacen (Almacen): Usuario que emitió el reporte
+        orden (Orden): Orden a la que se refiere el reporte
+        estado (Estado): Estado de la orden
+        descripcion (Descripcion): Información de la orden
+        emision (Emision): fecha de emisión del reporte
     """
 
     class Meta:
@@ -632,18 +740,16 @@ class Reporte(models.Model):
         )
 
     class Estado(models.TextChoices):
-        """
-        Opciones para el estado del reporte.
-        """
+        """Opciones para el estado del reporte."""
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    almacen = models.OneToOneField(
+    almacen = models.ForeignKey(
         to=Almacen,
         on_delete=models.CASCADE
     )
 
-    orden = models.OneToOneField(
+    orden = models.ForeignKey(
         to=Orden,
         on_delete=models.CASCADE
     )
@@ -660,7 +766,7 @@ class Reporte(models.Model):
         max_length=250
     )
 
-    fecha = models.DateTimeField(
+    emision = models.DateTimeField(
         auto_now_add=True
     )
 
@@ -709,6 +815,7 @@ class Articulo(models.Model):
             num_control (str): numero de control de la unidad
             num_serie (str): numero de series de la unidad
         """
+
         return Unidad.objects.get_or_create(
             articulo=self,
             num_control=num_control,
@@ -716,65 +823,57 @@ class Articulo(models.Model):
         )
 
     def disponible(self, inicio, final) -> 'QuerySet[Unidad]':
-        """
-        Retorna una lista con las unidades disponibles en el rango de
-        fecha y hora [inicio, final].
+        """Lista con las unidades disponibles en el rango [inicio, final].
 
         Args:
-            inicio: Fecha y hora de inicio del rango.
-            final: Fecha y hora de finalización del rango.
+            inicio (DateTime): Fecha y hora de inicio del rango.
+            final (DateTime): Fecha y hora de finalización del rango.
 
         Returns:
             QuerySet[Unidad]: Unidades disponibles en el rango especificado.
         """
+
         # TODO: Me esta volviendo loco este método, lo intentare luego
+
         pass
 
     def categorias(self) -> 'QuerySet[Categoria]':
-        """
-        Devuelve la lista de categorías en las que se encuentra el artículo.
+        """Devuelve la lista de categorías en las que pertenece el artículo.
 
         Returns:
-            QuerySet[Categoria]: Categorías asociadas al artículo.
+            QuerySet[Categoria]: Categorías a las que pertenece.
         """
-        nombre_categoria = CategoriaArticulo.objects \
-            .filter(articulo=self) \
-            .values_list('categoria', flat=True)
 
-        return Categoria.objects \
-            .filter(nombre__in=nombre_categoria)
+        return Categoria.objects.filter(categoriaarticulo__articulo=self)
 
     def materias(self) -> 'QuerySet[Materia]':
-        """
-        Devuelve la lista de materias en las que se encuentra el artículo.
+        """Lista de materias en las que se encuentra el artículo.
 
         Returns:
             QuerySet[Materia]: Materias asociadas al artículo.
         """
 
-        nombre_materia = ArticuloMateria.objects \
-            .filter(articulo=self) \
-            .values_list('materia', flat=True)
-
-        return Materia.objects \
-            .filter(nombre__in=nombre_materia)
+        return Materia.objects.filter(articulomateria__articulo=self)
 
     def unidades(self) -> 'QuerySet[Unidad]':
-        """
-        Devuelve la lista de unidades de un artículo.
+        """Devuelve la lista de unidades de un artículo.
 
         Returns:
             QuerySet[Unidad]: Unidades asociadas al artículo.
         """
 
-        return Unidad.objects.filter(
-            articulo=self
-        )
+        return Unidad.objects.filter(articulo=self)
 
 
 class Entrega(models.Model):
-    """
-    Clase que representa una entrega.
+    """Entrega al almacen.
+
+    Se genera cada vez que Almacen entrega el equipo al Prestatario.
+
+    Attributes:
+        almacen: encargado del Almacen
+        orden: orden que se entrega
+        emision: fecha en la que se hace la emisión
     """
 
     orden = models.OneToOneField(
@@ -788,14 +887,20 @@ class Entrega(models.Model):
         on_delete=models.CASCADE
     )
 
-    fecha = models.DateTimeField(
+    emision = models.DateTimeField(
         auto_now_add=True
     )
 
 
 class Devolucion(models.Model):
-    """
-    Clase que representa una devolució del equipo al almacen
+    """Devolución del equipo al Almacen
+
+    Se genera cada vez que Prestatario devuelve el equipo al Almacen.
+
+    Attributes:
+        orden (Orden): orden que se devuelve
+        almacen (Almacen): responsable del almacen
+        emision (DateTime): fecha de emisión
     """
 
     orden = models.OneToOneField(
@@ -809,7 +914,7 @@ class Devolucion(models.Model):
         on_delete=models.CASCADE
     )
 
-    fecha = models.DateTimeField(
+    emision = models.DateTimeField(
         auto_now_add=True
     )
 
@@ -823,6 +928,11 @@ class Unidad(models.Model):
         num_control (Str): para identificar la unidad
         num_serie (Str): de la unidad
     """
+
+    class Meta:
+        unique_together = (
+            ('articulo', 'num_control')
+        )
 
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
@@ -842,21 +952,18 @@ class Unidad(models.Model):
 
     num_control = models.CharField(
         max_length=250,
-        unique=True,
+        null=False,
         blank=False
     )
 
     num_serie = models.CharField(
+        blank=False,
+        null=False,
         max_length=250
     )
 
-    def ordenes(self):
-        ids_orden = UnidadOrden.objects \
-            .filter(unidad=self) \
-            .values_list('orden', flat=True)
-
-        return Orden.objects \
-            .filter(id__in=ids_orden)
+    def ordenes(self) -> QuerySet[Orden]:
+        return Orden.objects.filter(unidadorden__unidad=self)
 
 
 class Categoria(models.Model):
@@ -875,15 +982,11 @@ class Categoria(models.Model):
         """Devuelve los artículos que pertenecen a esta categoría.
 
         Return:
-            QuerySet: Artículos que pertenecen a la Categoría
+            Artículos que pertenecen a la Categoría
         """
 
-        ids_articulos = CategoriaArticulo.objects \
-            .filter(categoria=self) \
-            .values_list('articulo', flat=True)
-
         return Articulo.objects \
-            .filter(id__in=ids_articulos)
+            .filter(categoriaarticulo__categoria=self)
 
     def agregar(self, articulo: 'Articulo') -> tuple['CategoriaArticulo', bool]:
         """Agrega un Articulo a la Categoría
@@ -901,8 +1004,12 @@ class Categoria(models.Model):
 
 
 class AutorizacionOrdinaria(models.Model):
-    """
-    Clase que representa una autorización ordinaria.
+    """Clase que representa una autorización ordinaria.
+
+    Attributes:
+        orden (Orden): Orden a la que pertenece la autorización
+        maestro (Usuario): Usuario que autoriza la orden
+        autorizar (boolean): Estado de la autorización
     """
 
     class Meta:
@@ -926,8 +1033,12 @@ class AutorizacionOrdinaria(models.Model):
 
 
 class AutorizacionExtraordinaria(models.Model):
-    """
-    Clase que representa una autorización extraordinaria.
+    """Clase que representa una autorización extraordinaria.
+
+    Attributes:
+        orden (Orden): Orden a la que pertenece la autorización
+        coordinador (Usuario): Usuario que autoriza la orden
+        autorizar (boolean): Estado de la autorización
     """
 
     class Meta:
@@ -951,8 +1062,12 @@ class AutorizacionExtraordinaria(models.Model):
 
 
 class CorresponsableOrden(models.Model):
-    """
-    Clase que representa un corresponsable de una orden.
+    """Corresponsable de una orden.
+
+    Attributes:
+        prestatario: Usuario que acepta ser corresponsable.
+        orden: de la que el prestatario es corresponsable.
+        aceptado: Si el Prestatario acepto la corresponsabilidad.
     """
 
     class Meta:
@@ -976,8 +1091,11 @@ class CorresponsableOrden(models.Model):
 
 
 class ArticuloMateria(models.Model):
-    """
-    Clase que representa la relación entre un artículo y una materia.
+    """Relación entre un artículo y una materia.
+
+    Attributes:
+        articulo (Articulo): Artículo disponible para la materia.
+        materia (Materia): Materia a la que se agrega el artículo.
     """
 
     class Meta:
@@ -1000,8 +1118,9 @@ class ArticuloCarrito(models.Model):
     """Relación entre un Artículo y un Carrito.
 
     Attributes:
-        articulo (Articulo): Articulo que se encuentra en el carrito
-        carrito (Carrito): Carrito de un usuario
+        articulo (Articulo): Artículo que se encuentra en el carrito.
+        carrito (Carrito): Carrito de un usuario.
+        unidades (Int): Número de unidades que se van a solicitar del artículo.
     """
 
     class Meta:
@@ -1025,11 +1144,11 @@ class ArticuloCarrito(models.Model):
 
 
 class CategoriaArticulo(models.Model):
-    """ Relación entre una Categoría y un Artículo.
+    """Relación entre una Categoría y un Artículo.
 
     Attributes:
-        categoria (Categoria): Categoría a la que pertenece Artículo
-        articulo (Articulo): Artículo que se encuentra en la Categoría
+        categoria (Categoria): Categoría a la que pertenece Artículo.
+        articulo (Articulo): Artículo que se encuentra en la Categoría.
     """
 
     class Meta:
@@ -1049,8 +1168,11 @@ class CategoriaArticulo(models.Model):
 
 
 class UnidadOrden(models.Model):
-    """
-    Clase que representa la relación entre una unidad y una orden.
+    """Relación entre una unidad y una orden.
+
+    Attributes:
+        unidad (Unidad): Unidad asignada a la orden.
+        orden (Orden): Orden a la que se asignan las unidades.
     """
 
     class Meta:
@@ -1065,5 +1187,29 @@ class UnidadOrden(models.Model):
 
     orden = models.ForeignKey(
         to=Orden,
+        on_delete=models.CASCADE
+    )
+
+
+class MateriaUsuario(models.Model):
+    """Relación entre el Usuario y la materia
+
+    Attributes:
+        materia (Materia): Materia asignada
+        usuario (Usuario): Usuario participante
+    """
+
+    class Meta:
+        unique_together = (
+            ('materia', 'usuario')
+        )
+
+    materia = models.ForeignKey(
+        to=Materia,
+        on_delete=models.CASCADE
+    )
+
+    usuario = models.ForeignKey(
+        to=User,
         on_delete=models.CASCADE
     )

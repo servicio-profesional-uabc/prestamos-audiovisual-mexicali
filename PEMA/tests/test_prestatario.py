@@ -1,135 +1,100 @@
-from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
-
-from PEMA.models import Prestatario
+from PEMA.models import Prestatario, Almacen, Orden
 from PEMA.models import Carrito
 from PEMA.models import Materia
-from PEMA.models import Reporte
-
 
 from django.utils.timezone import make_aware
 from datetime import datetime
 
-class TestUsers(TestCase):
+
+class TestPrestatario(TestCase):
     def setUp(self):
+        # usuarios
+        self.user_no_ordenes = Prestatario.crear_usuario(id=3, username="prestatario_NO", password="<PASSWORD>")
+        self.user_prestatario = Prestatario.crear_usuario(id=1, username="prestatario", password="<PASSWORD>")
+        self.user_almacen = Almacen.crear_usuario(id=2, username="almacen", password="<PASSWORD>")
 
-        grupo, _ = Prestatario.crear_grupo()
-
-        self.user_normal = User.objects.create_user(
-            id=0,
-            username="sin_rol",
-            password="<PASSWORD>"
+        # ordenes
+        self.orden1 = Orden.objects.create(
+            prestatario=self.user_prestatario,
+            lugar=Orden.Ubicacion.CAPUS,
+            inicio=make_aware(datetime(2024, 10, 5)),
+            final=make_aware(datetime(2024, 10, 5))
         )
 
-        self.user_prestatario = Prestatario.crear_usuario(
-            id=1,
-            username="prestatario",
-            password="<PASSWORD>"
+        self.orden2 = Orden.objects.create(
+            prestatario=self.user_prestatario,
+            lugar=Orden.Ubicacion.EXTERNO,
+            inicio=make_aware(datetime(2024, 10, 5)),
+            final=make_aware(datetime(2024, 10, 5))
         )
 
-    def test_crear_prestatario(self):
-        # Verificar que el prestatario está en el grupo prestatario
-        grupos = self.user_prestatario.groups
+    def test_lista_ordenes(self):
+        # probar si no tiene ordenes
+        prestatario_sin_ordenes = Prestatario.get_user(self.user_no_ordenes)
+        self.assertEqual(len(prestatario_sin_ordenes.ordenes()), 0, msg="Prestatario ya tiene ordenes")
 
-        self.assertTrue(
-            expr=grupos.filter(name='prestatarios').exists(),
-            msg=f"El usuario no se encuentra en el grupo prestatarios: {grupos}"
-        )
+        # multiples ordenes
+        prestatario = Prestatario.get_user(self.user_prestatario)
+        ordenes = prestatario.ordenes()
 
-        self.assertTrue(User.objects.filter(username="sin_rol").exists())
-        self.assertTrue(User.objects.filter(username="prestatario").exists())
+        self.assertTrue(len(ordenes) == 2, msg="No se registraron las Ordenes")
+        self.assertIn(self.orden1, ordenes, msg="No se registro la orden 1")
+        self.assertIn(self.orden2, ordenes, msg="No se registro la orden 2")
 
-    def self_lista_ordenes(self):
-        carrito = Carrito.objects.create(
-            prestatario=Prestatario.objects.get(usuario=self.user_prestatario),
-            fecha=make_aware(datetime.now())
-        )
+    def test_lista_reportes(self):
+        prestatario = Prestatario.get_user(self.user_prestatario)
+        almacen = Almacen.get_user(self.user_almacen)
 
-        materia = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
+        # probar si no hay reportes
+        self.assertEqual(len(prestatario.reportes()), 0, msg="El prestatario ya esta reportado")
 
-        orden = Reporte.objects.create(
-            carrito=carrito,
-            materia=materia,
-            fecha=make_aware(datetime.now())
-        )
+        # está suspendido
+        self.assertFalse(prestatario.suspendido(), msg="El usuario ya esta suspendido")
 
-        self.assertTrue(orden in carrito.lista_ordenes())
+        # un reporte
+        almacen.reportar(orden=self.orden1, descripcion="Descripcion 1")
+        self.assertEqual(len(prestatario.reportes()), 1, msg="El prestatario No se ha reportado")
 
-    class TestUsers2(TestCase):
-        def setUp(self):
-            Prestatario.crear_grupo()
+        # multiples reportes
+        almacen.reportar(orden=self.orden2, descripcion="Descripcion 2")
+        self.assertEqual(len(prestatario.reportes()), 2, msg="El prestatario No se ha reportado varias veces")
 
-            self.user_almacen = User.objects.create_user(
-                id=2,
-                username="sin_rol",
-                password="<PASSWORD>"
-            )
-
-            my_group = Group.objects.get(name='almacen')
-            my_group.user_set.add(self.user_almacen)
-
-        def test_lista_reportes(self):
-            self.reporte = Reporte.objects.create(
-                almacen=self.user_almacen,
-                orden="Orden 1",
-            )
-
-            self.reporte.estado = "IN"
-
-            self.assertEqual(self.reporte.almacen, self.user_almacen)
-            self.assertEqual(self.reporte.orden, "Orden 1")
-            self.assertEqual(self.reporte.estado, "IN")
+        # está suspendido
+        self.assertTrue(prestatario.suspendido(), msg="El usuario NO esta suspendido")
 
     def test_lista_materias(self):
-        materia1 = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
+        prestatario = Prestatario.get_user(self.user_prestatario)
 
-        materia2 = Materia.objects.create(
-            nombre="Edicion y diseño",
-            periodo="2024-1"
-        )
+        # nigunda materia
+        self.assertEqual(len(prestatario.materias()), 0, msg="El prestatario no tiene materias")
 
-        materia3 = Materia.objects.create(
-            nombre="Animacion",
-            periodo="2024-1"
-        )
+        # agregar el usario a las materias
+        materia1 = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+        materia2 = Materia.objects.create(nombre="Edicion y diseño", periodo="2024-1")
 
-        materias = Materia.objects.all()
+        materia1.agregar_participante(prestatario)
+        materia2.agregar_participante(prestatario)
 
+        materias = prestatario.materias()
         self.assertIn(materia1, materias)
         self.assertIn(materia2, materias)
-        self.assertIn(materia3, materias)
 
     def test_carrito(self):
-        materia = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
+        prestatario = Prestatario.get_user(self.user_prestatario)
 
-        self.carrito = Carrito.objects.create(
+        # carrito vacío
+        self.assertIsNone(prestatario.carrito(), msg="El usuario ya tiene un carrito")
+
+        # carrito no vacío
+        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
+        carrito = Carrito.objects.create(
             prestatario=self.user_prestatario,
             materia=materia,
             inicio=datetime.now(),
             final=datetime.now()
         )
 
-        self.assertEqual(self.carrito.prestatario, self.user_prestatario)
-        self.assertEqual(self.carrito.inicio, self.carrito.inicio)
-        self.assertEqual(self.carrito.final, self.carrito.final)
-        self.assertEqual(self.carrito.materia, materia)
-
-    def test_suspendido(self):
-        self.user_prestatario.is_active = False
-        self.user_prestatario.save()
-
-        self.assertFalse(self.user_prestatario.is_active)
-
-
-
-
+        self.assertEqual(prestatario.carrito(), carrito, msg="El carrito no coincide")

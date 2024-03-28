@@ -47,8 +47,8 @@ class TestArticulo(TestCase):
             final=self.generar_fechas(1)
         )
 
-        self.orden_antes.agregar(unidad=self.unidad)
-        self.orden_despues.agregar(unidad=self.unidad)
+        self.orden_antes.agregar_unidad(unidad=self.unidad)
+        self.orden_despues.agregar_unidad(unidad=self.unidad)
 
     def test_unidades(self):
         unidades = self.articulo.unidades()

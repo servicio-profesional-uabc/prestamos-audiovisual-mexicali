@@ -6,8 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Importar bootstrap -->
+    <!-- Importar bootstrap  -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- Omitir este script si no se necesita -->
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
 
     <title>Vista de prueba</title>
@@ -15,63 +16,48 @@
 <body>
     <div class="container text-center mt-5">
 
-          <style>
+        <style>
             .image-container {
-              display: flex;
-              justify-content: flex-start;
-              padding: 1px;
-
-              body {
+                display: flex;
+                justify-content: flex-start;
+                padding: 1px;
                 font-family: "Minion Pro", sans-serif;
             }
+            h1, h3 {
+                font-family: 'Minion Pro', sans-serif;
             }
-          </style>
+        </style>
 
-          <!--Funcion para validar que el ususario haya ingresado algo en la caja de entrada de texto
-          <script>
-            function validarMatricula() {
-              var matricula = document.getElementById("matricula").value;
-              if (matricula == "") {
-                alert("Por favor ingrese su matrícula.");
-                return false;
-              }
-              return true;
-            }
-            </script>
-
-            <script>
-              function validarContra() {
-                var matricula = document.getElementById("contraseña").value;
-                if (matricula == "") {
-                  alert("Por favor ingrese su matrícula.");
-                  return false;
-                }
-                return true;
-              }
-              </script>-->
-
-
+        <!--Imagen de la facultad-->
         <div class="image-container">
             <img class="my-4" src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="80px" style="position: absolute; top: 0; left: 0;">
         </div>
 
+        <!--Palabras de inicio-->
+        <h1>PEMA</h1>
+        <h3>Prestamos de Equipo y Material Audiovisual</h3><br><br>
 
-        <!--Palabras de incio-->
-        <h1 style="font-family: 'Minion Pro', sans-serif;">PEMA</h1>
-        <h3 style="font-family: 'Minion Pro', sans-serif;">Prestamos de Equipo y Material Audiovisual</h3><br><br>
+        <div class="container d-flex justify-content-center align-items-center mt-5">
+            <div class="col-md-6">
+                <form>
+                    <div class="mb-3">
+                        <label for="matricula" class="form-label">Matricula</label>
+                        <input type="number" class="form-control" id="matricula" aria-describedby="Ingrese matricula">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contraseña" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="contraseña">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                        <label class="form-check-label" for="exampleCheck1">Recordarme</label>
+                    </div>
+                </form>
+                    <button class="btn btn-primary my-3"  data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-family: 'Minion Pro', sans-serif;">Iniciar Sesion</button>
 
-        <!--form onsubmit="return validarMatricula()"-->
-          <label for="matricula" style="font-family: 'Minion Pro', sans-serif;">Ingrese su matrícula:</label><br><br>
-          <input type="text" id="matricula" name="matricula" style="font-family: 'Minion Pro', sans-serif;" placeholder="Ingrese su matrícula"><br><br>
+            </div>
+        </div>
 
-
-        <!--Se pide contraseña-->
-        <!--form onsubmit="return validarContra"-->
-        <label for="nombre" style="font-family: 'Minion Pro', sans-serif;" >Ingrese su contraseña:</label><br><br>
-        <input type="text" id="contraseña" name="contraseña" style="font-family: 'Minion Pro', sans-serif;" placeholder="Ingrese su contraseña"><br><br>
-
-        <!--Boton para iniciar secion -->
-        <button class="btn btn-primary my-3"  data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-family: 'Minion Pro', sans-serif;">Iniciar Sesion</button>
     </div>
 
     <!-- Modal -->

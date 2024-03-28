@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 
-from PEMA.models import Maestro
+from PEMA.models import Maestro, Materia
 from PEMA.models import Orden
 
 
@@ -34,14 +34,30 @@ class TestMaestro(TestCase):
    def test_autorizar_ordinaria(self):
        orden = Orden.objects.create(
            prestatario=self.prestatario,
-           tipo="ordinaria",
-           lugar="",
            inicio=datetime.now(),
            final=datetime.now()
        )
 
 
        Maestro.autorizar(self.user_maestro, orden)
+       
+        
+   def test_materias(self):
+        materia1 = Materia.objects.create(
+            nombre = "Fotografía", periodo = "2024-2"
+        )
+        materia2 = Materia.objects.create(
+            nombre = "Cinefotografía I", periodo = "2024-2"
+        )
+        materia3 = Materia.objects.create(
+            nombre = "Cinefotografía II", periodo = "2024-2"
+        )
+        
+        materias = Materia.objects.all()
+
+        self.assertIn(materia1, materias)
+        self.assertIn(materia2, materias)
+        self.assertIn(materia3, materias)
 
 
 
