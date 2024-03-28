@@ -42,7 +42,7 @@ class LoginView(View):
             messages.success(request, 'Has iniciado sesión!')
             return redirect(menu_url)
         else:
-            messages.error(request, 'Hubo un error al iniciar sesión, intente de nuevo...')
+            messages.error(request, 'Hubo un error en los datos que ingreso, intente de nuevo...')
             return redirect(login_url)
 
 
