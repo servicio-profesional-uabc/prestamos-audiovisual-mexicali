@@ -57,6 +57,12 @@ class HistorialView(View):
             template_name="catalogo.html"
         )
 
+class FiltrosView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="filtros.html"
+        )
 
 def test(request):
     send_mail(

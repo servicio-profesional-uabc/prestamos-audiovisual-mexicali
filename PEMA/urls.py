@@ -38,5 +38,10 @@ urlpatterns = [
         view=views.CatalogoView.as_view(),
         name='catalogo'
     ),
+    path(
+        route='filtros.html',
+        view=views.FiltrosView.as_view(),
+        name='filtros'
+    ),
 
 ]
