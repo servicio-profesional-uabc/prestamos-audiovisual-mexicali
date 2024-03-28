@@ -1,0 +1,29 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Importar bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <title>Vista de prueba</title>
+</head>
+<body>
+    <div class="container text-center mt-5">
+        <img class="my-4" src="{% static 'img/uabc-logo.png' %}" height="125px">
+        <h1>Bienvenido a la vista de prueba de login</h1>
+        <form method="POST">
+            {% csrf_token %}
+            {{form}}
+            <button type="submit">Ingresar</button>
+        </form>
+    </div>
+
+</body>
+</html>
+
+

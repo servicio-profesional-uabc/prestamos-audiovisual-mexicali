@@ -1,0 +1,95 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Importar bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <!-- Importar estilos personalizados -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
+    <title>Solicitud</title>
+</head>
+<body class="custom-background-color">
+    <nav class="navbar navbar-expand-lg navbar-light custom-navbar-bg">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <a class="navbar-brand" href="#">
+                <img src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="50px">
+                <img src="{% static 'img/CEPA-UABC.png' %}" height="40px">
+            </a>
+            <a href="prestatario">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.36828 6.65552C6.91888 7.45808 5.77602 8.71798 5.11811 10.2385C4.46021 11.759 4.32429 13.4546 4.73158 15.0605C5.13886 16.6665 6.06643 18.0923 7.36947 19.1155C8.67251 20.1387 10.2777 20.7017 11.9344 20.7165C13.5911 20.7313 15.206 20.1971 16.5272 19.1974C17.8483 18.1976 18.8012 16.7886 19.2371 15.1902C19.6731 13.5918 19.5675 11.8941 18.9369 10.362C18.3062 8.82999 17.1861 7.54987 15.7513 6.72152L16.5013 5.42252C18.2228 6.4168 19.5666 7.95307 20.323 9.79154C21.0795 11.63 21.2059 13.6672 20.6826 15.5851C20.1593 17.5029 19.0157 19.1936 17.4304 20.3931C15.8451 21.5926 13.9072 22.2335 11.9193 22.2157C9.93136 22.1978 8.00528 21.5223 6.44172 20.2945C4.87816 19.0668 3.7651 17.3559 3.2763 15.4289C2.78749 13.5019 2.95046 11.4674 3.73974 9.64277C4.52903 7.81817 5.90022 6.30625 7.63928 5.34302L8.36828 6.65552Z" fill="black"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M11.25 12V1.5H12.75V12H11.25Z" fill="black"/>
+                </svg>
+            </a>  
+        </div>
+    </nav>
+    
+    <div class="container form-container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-md-12">
+                <form id="solicitudForm" action="solicitud" method="POST">
+                    <h4>Datos de solicitud</h4>
+                    <h5>Información del solicitante</h5>
+                    <div class="form-group row">
+                        <label for="nombre" class="col-sm-2 col-form-label">Nombre de la práctica</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="NumeroCelular" class="col-sm-2 col-form-label">Número de celular</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="NumeroCelular" name="NumeroCelular" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="correo" class="col-sm-2 col-form-label">Correo electrónico del corresponsable</label>
+                        <div class="col-sm-10">
+                            <input type="email" class="form-control" id="correo" name="correo" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="dentro" id="dentroSi" value="si" required onclick="toggleLugarField()">
+                                <label class="form-check-label" for="dentroSi">Dentro de las instalaciones</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="dentro" id="dentroNo" value="no" required onclick="toggleLugarField()">
+                                <label class="form-check-label" for="dentroNo">Fuera de las instalaciones</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Campo para ingresar el lugar, oculto por defecto -->
+                    <div class="form-group row" id="lugarGroup" style="display: none;">
+                        <label for="lugar" class="col-sm-2 col-form-label">Lugar</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="lugar" name="lugar">
+                        </div>
+                    </div>
+
+                    <!-- Boton de confirmar perdido y boton para regresar -->
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn-primary">Confirmar solicitud</button>
+                            <a href="prestatario" class="btn btn-secondary">Regresar</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="{% static 'js/script.js' %}"></script>
+
+</body> 
+</html>

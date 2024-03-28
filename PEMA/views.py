@@ -3,15 +3,87 @@ from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
+from django.template import loader
 
 
 class IndexView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="test.html"
+            template_name="index.html"
         )
 
+
+class TestView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="test.html"
+        )
+class PrestatarioView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="prestatario.html"
+        )   
+
+class CarritoView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="carrito.html"
+        )   
+
+class SolicitudView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="solicitud.html"
+        )
+    
+class HistorialSolicitudesView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="historial_solicitudes.html"
+        )
+    
+class DetallesOrdenView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="detalles_orden.html"
+        )
+
+
+class CatalogoView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="catalogo.html"
+        )
+
+
+class HistorialView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="historial.html"
+        )
+
+class DetalleArticuloView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="detalleArticulo.html"
+        )
+
+class CancelarOrdenView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="cancelarOrden.html"
+        )
 
 def test(request):
     send_mail(
