@@ -398,16 +398,13 @@ class Perfil(models.Model):
     )
 
     @classmethod
-    def info(cls, user: User) -> 'Perfil':
+    def user_data(cls, user: User) -> tuple['Perfil', bool]:
         """Obtiene el perfil asociado a un usuario dado.
 
-        Args:
-            user (User): El usuario del cual se desea obtener el perfil.
-
+        :param user: El usuario del cual se desea obtener el perfil.
         :returns: El perfil asociado al usuario.
         """
-        # TODO: Falta implementar este método
-        pass
+        return Perfil.objects.get_or_create(usuario=user)
 
 
 class Orden(models.Model):
