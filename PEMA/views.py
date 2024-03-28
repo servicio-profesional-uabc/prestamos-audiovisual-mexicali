@@ -40,6 +40,20 @@ class SolicitudView(View):
             request=request,
             template_name="solicitud.html"
         )
+    
+class HistorialSolicitudesView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="historial_solicitudes.html"
+        )
+    
+class DetallesOrdenView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="detalles_orden.html"
+        )
 
 
 class CatalogoView(View):
