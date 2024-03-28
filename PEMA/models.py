@@ -33,10 +33,8 @@ class Prestatario(User):
         """
         Obtiene el usuario prestatario
 
-        Args:
-            user: Usuario del que se quiere obtener el prestatario
-        Returns:
-           Prestatario o None si no es Prestatario
+        :param user: Usuario del que se quiere obtener el prestatario
+        :returns: Prestatario o None si no es Prestatario
         """
 
         try:
@@ -49,8 +47,7 @@ class Prestatario(User):
         """
         Crea un usuario de tipo prestatario, util para hacer pruebas unitarias
 
-        Returns:
-            User: usuario en el grupo de Prestatarios
+        :returns: usuario en el grupo de Prestatarios
         """
 
         grupo, _ = Prestatario.crear_grupo()
@@ -64,8 +61,7 @@ class Prestatario(User):
         """
         Crea el 'Permission Group' para el usuario prestatario.
 
-        Returns:
-            grupo y si se creo
+        :returns: grupo y sí se creo
         """
 
         # crear grupo prestatario
@@ -92,28 +88,25 @@ class Prestatario(User):
         """
         Órdenes que ha realizado el usuario.
 
-        Returns:
-             Lista de órdenes del usuario.
+        :return: Lista de órdenes del usuario.
         """
 
         return Orden.objects.filter(prestatario=self)
 
-    def reportes(self) -> 'QuerySet[Reporte]':
+    def reportes(self) -> QuerySet['Reporte']:
         """
         Devuelve los reportes del prestatario.
 
-        Returns:
-            QuerySet[Reporte]: Lista de reportes del prestatario.
+        :returns: Lista de reportes del prestatario.
         """
 
         return Reporte.objects.filter(orden__in=self.ordenes())
 
-    def materias(self) -> QuerySet[Any]:
+    def materias(self) -> QuerySet['Materia']:
         """
         Devuelve las materias del prestatario.
 
-        Returns:
-            Lista de materias del prestatario.
+        :returns: Materias a las que está integrado el prestatario.
         """
 
         return Materia.objects.filter(materiausuario__usuario=self)
@@ -123,8 +116,7 @@ class Prestatario(User):
         Devuelve el carrito actual del prestatario, el usuario solo
         puede tener un carrito a la vez
 
-        Returns:
-            El carrito del prestatario o None si no existe.
+        :return:  El carrito del prestatario o None si no existe.
         """
 
         try:
@@ -136,8 +128,7 @@ class Prestatario(User):
         """
         Verifica si el usuario está suspendido.
 
-        Returns:
-            Si el usuario está suspendido del sistema
+        :returns: Si el usuario está suspendido del sistema
         """
 
         return self.reportes() \
@@ -168,8 +159,7 @@ class Coordinador(User):
         """
         Crea el grupo de permisos para Coordinadores.
 
-        Returns:
-            Grupo de Coordinadores y si se creó el grupo.
+        :returns: Grupo de Coordinadores y si se creó el grupo.
         """
 
         group, created = Group.objects.get_or_create(
@@ -191,11 +181,10 @@ class Coordinador(User):
 
         return group, created
 
-    def autorizar(self, orden: 'Orden') -> tuple[Any, bool]:
+    def autorizar(self, orden: 'Orden') -> tuple['AutorizacionExtraordinaria', bool]:
         """Autoriza una orden específica.
 
-        Args:
-            orden (Orden): Orden que se va a autorizar
+        :param orden: Orden que se va a autorizar
         """
 
         # crear la autorizacion extraordinaria
@@ -232,8 +221,7 @@ class Maestro(User):
         """
         Crea el 'Permission Group' para el usuario maestro.
 
-        Returns:
-            el grupo y sí se creó
+        :returns: el grupo y sí se creó
         """
 
         group, created = Group.objects.get_or_create(
@@ -255,23 +243,19 @@ class Maestro(User):
         """
         Autoriza órdenes ordinarias.
 
-        Args:
-            orden (Orden): La orden que se va a autorizar.
-
-        Returns:
-            None
+        :param orden (Orden): La orden que se va a autorizar.
+        :returns: AutorizacionOrdinaria y si se creo
         """
 
         # TODO: Este metodo esta pediente
 
         pass
 
-    def materias(self) -> 'QuerySet[Materia]':
+    def materias(self) -> QuerySet['Materia']:
         """
         Materias que supervisa el maestro.
 
-        Returns:
-            QuerySet[Materia]: Materias supervisadas por el maestro.
+        :returns: Materias supervisadas por el maestro.
         """
 
         # TODO: este método esta pendiente
@@ -302,7 +286,6 @@ class Almacen(User):
         Obtiene el usuario Almacen.
 
         :param user: Usuario del que se quiere obtener el Almacen.
-
         :returns: Prestatario o None si no es Almacen.
         """
         try:
@@ -310,12 +293,11 @@ class Almacen(User):
         except Almacen.DoesNotExist:
             return None
 
-    @classmethod
-    def crear_grupo(cls) -> tuple['Group', bool]:
+    @staticmethod
+    def crear_grupo() -> tuple['Group', bool]:
         """Crea el 'Permission Group' para el usuario almacén.
 
-        Returns:
-            tuple['Group', bool]: El grupo creado y sí se creo el grupo
+        :returns: El grupo creado y sí se creo el grupo
         """
         # crear grupo almacén
         group, created = Group.objects.get_or_create(
@@ -345,8 +327,8 @@ class Almacen(User):
 
         return group, created
 
-    @classmethod
-    def crear_usuario(cls, *args, **kwargs) -> User:
+    @staticmethod
+    def crear_usuario(*args, **kwargs) -> User:
         """Crea un usuario de tipo prestatario"""
 
         grupo, _ = Almacen.crear_grupo()
@@ -355,14 +337,11 @@ class Almacen(User):
 
         return user
 
-    def entregar(self, orden: 'Orden') -> tuple[Any, bool]:
+    def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
         """Generar el registro que el Almacén entrego el equipo.
 
-        Args:
-            orden: la orden entregada
-
-        Returns:
-            Registro de entrega y si el registro se creó
+        :param orden: La orden entregada
+        :returns: Registro de entrega y si el registro se creó
         """
 
         return Entrega.objects.get_or_create(
@@ -374,11 +353,8 @@ class Almacen(User):
         """
         Generar el registro que el Almacén recibió el equipo de vuelta.
 
-        Args:
-            orden: La orden que se va a devolver.
-
-        Returns:
-            El registro de devolución, si el registro se creó
+        :param orden: La orden que se va a devolver.
+        :returns: El registro de devolución, si el registro se creó
         """
 
         return Devolucion.objects \
@@ -387,12 +363,9 @@ class Almacen(User):
     def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
         """Reporta una orden.
 
-        Args:
-            orden (Orden): La orden que se va a reportar.
-            descripcion (str): Información adicional del reporte
-
-        Returns:
-            tuple['Reporte', bool]: el objeto reporte y si el objeto se creó.
+        :param orden: La orden que se va a reportar.
+        :param descripcion: Información adicional del Reporte
+        :returns: Reporte y sí el objeto se creó.
         """
 
         return Reporte.objects.get_or_create(
@@ -403,14 +376,12 @@ class Almacen(User):
 
 
 class Perfil(models.Model):
-    """Información adicional del usuario.
+    """
+    Información adicional del usuario, para no extender el User de django.
 
-    Datos sobre el perfil de usuario, para no extender el User de django
-
-    Attributes:
-        usuario (User): Usuario del perfil
-        imagen (Image): Imagen del perfil
-        telefono (Phone): Telefono del usuario
+    :param usuario: Usuario del perfil
+    :param imagen: Imagen del perfil
+    :param telefono: Telefono del usuario
     """
 
     usuario = models.OneToOneField(
@@ -433,8 +404,7 @@ class Perfil(models.Model):
         Args:
             user (User): El usuario del cual se desea obtener el perfil.
 
-        Returns:
-            El perfil asociado al usuario.
+        :returns: El perfil asociado al usuario.
         """
         # TODO: Falta implementar este método
         pass
@@ -504,8 +474,7 @@ class Orden(models.Model):
     def unidades(self) -> 'QuerySet[Unidad]':
         """Devuelve las unidades con las que se suplió la orden.
 
-        Returns:
-            QuerySet[Unidad]: Unidades asociadas a la orden.
+        :returns: QuerySet[Unidad]: Unidades asociadas a la orden.
         """
 
         return Unidad.objects.filter(unidadorden__orden=self)
@@ -513,8 +482,7 @@ class Orden(models.Model):
     def articulos(self) -> 'QuerySet[Articulo]':
         """Devuelve los artículos en la orden.
 
-        Returns:
-            QuerySet[Articulo]: Artículos asociados a la orden.
+        :returns: QuerySet[Articulo]: Artículos asociados a la orden.
         """
 
         return Articulo.objects.filter(unidad__in=self.unidades())
@@ -522,8 +490,7 @@ class Orden(models.Model):
     def reporte(self) -> 'Reporte':
         """Retorna el Reporte de la Orden o nada sí no tiene reporte.
 
-        Returns:
-            Reporte: Reporte asociado a la orden o None si no tiene reporte.
+        :returns: Reporte: Reporte asociado a la orden o None si no tiene reporte.
         """
 
         return Reporte.objects.filter(orden=self).first()
@@ -532,8 +499,7 @@ class Orden(models.Model):
         """
         Devuelve el estado de la Orden.
 
-        Returns:
-            str: Estado de la orden (PENDIENTE, RECHAZADA o APROBADA).
+        :returns: str: Estado de la orden (PENDIENTE, RECHAZADA o APROBADA).
         """
         # TODO: falta implementar este método, Falta acordar detalles
         pass
@@ -582,8 +548,7 @@ class Materia(models.Model):
     def alumnos() -> 'QuerySet[User]':
         """Devuelve la lista de alumnos en la clase.
 
-        Returns:
-            QuerySet[User]: Lista de alumnos de la materia.
+        :returns: QuerySet[User]: Lista de alumnos de la materia.
         """
 
         return User.objects \
@@ -593,8 +558,7 @@ class Materia(models.Model):
     def profesores() -> 'QuerySet[User]':
         """Devuelve la lista de profesores en la clase.
 
-        Returns:
-            QuerySet[User]: Lista de profesores asociados a la materia.
+        :returns: QuerySet[User]: Lista de profesores asociados a la materia.
         """
 
         return User.objects \
@@ -603,8 +567,7 @@ class Materia(models.Model):
     def articulos(self) -> 'QuerySet[Articulo]':
         """Artículos que se pueden solicitar.
 
-        Returns:
-            QuerySet[Articulo]: Lista de artículos de la materia.
+        :returns: QuerySet[Articulo]: Lista de artículos de la materia.
         """
 
         return Articulo.objects.filter(articulomateria__materia=self)
@@ -691,8 +654,7 @@ class Carrito(models.Model):
     def articulos(self) -> 'QuerySet[Articulo]':
         """Devuelve los artículos en el carrito.
 
-        Returns:
-            [Articulo]: Artículos en el carrito.
+        :returns: [Articulo]: Artículos en el carrito.
         """
 
         return Articulo.objects \
@@ -702,8 +664,7 @@ class Carrito(models.Model):
         """
         Convierte el carrito en una orden (Transacción).
 
-        Returns:
-            None
+        :returns: None
         """
 
         # TODO: reimplementar este metodo cuando haya mas detalles
@@ -828,8 +789,7 @@ class Articulo(models.Model):
             inicio (DateTime): Fecha y hora de inicio del rango.
             final (DateTime): Fecha y hora de finalización del rango.
 
-        Returns:
-            QuerySet[Unidad]: Unidades disponibles en el rango especificado.
+        :returns: QuerySet[Unidad]: Unidades disponibles en el rango especificado.
         """
 
         # TODO: Me esta volviendo loco este método, lo intentare luego
@@ -839,8 +799,7 @@ class Articulo(models.Model):
     def categorias(self) -> 'QuerySet[Categoria]':
         """Devuelve la lista de categorías en las que pertenece el artículo.
 
-        Returns:
-            QuerySet[Categoria]: Categorías a las que pertenece.
+        :returns: QuerySet[Categoria]: Categorías a las que pertenece.
         """
 
         return Categoria.objects.filter(categoriaarticulo__articulo=self)
@@ -848,8 +807,7 @@ class Articulo(models.Model):
     def materias(self) -> 'QuerySet[Materia]':
         """Lista de materias en las que se encuentra el artículo.
 
-        Returns:
-            QuerySet[Materia]: Materias asociadas al artículo.
+        :returns: QuerySet[Materia]: Materias asociadas al artículo.
         """
 
         return Materia.objects.filter(articulomateria__articulo=self)
@@ -857,8 +815,7 @@ class Articulo(models.Model):
     def unidades(self) -> 'QuerySet[Unidad]':
         """Devuelve la lista de unidades de un artículo.
 
-        Returns:
-            QuerySet[Unidad]: Unidades asociadas al artículo.
+        :returns: QuerySet[Unidad]: Unidades asociadas al artículo.
         """
 
         return Unidad.objects.filter(articulo=self)

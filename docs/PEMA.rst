@@ -27,9 +27,15 @@ Modelos
 
 .. automodule:: PEMA.models
    :members: 
-   :exclude-members: Almacen,Prestatario,Coordinador
+   :exclude-members: Almacen, Prestatario, Coordinador, Maestro, ArticuloMateria, ArticuloCarrito, CategoriaArticulo, UnidadOrden
    :undoc-members:
    :show-inheritance:
+
+Relaciones
+----------
+
+
+
 
 Señales
 -------------------
