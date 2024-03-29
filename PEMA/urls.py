@@ -1,13 +1,26 @@
 from django.urls import include, path
 from . import views
 from django.views.generic.base import TemplateView
+from . forms import UserLoginForm
+from django.contrib.auth.views import LoginView, LogoutView
 
 
 urlpatterns = [
+    # login
     path(
-        route='',
-        view=views.LoginView.as_view(),
+        route='login',
+        view=LoginView.as_view(
+            template_name='login.html',
+            authentication_form=UserLoginForm
+        ),
         name='login'
+    ),
+
+    # logout
+    path(
+        route='logout',
+        view=LogoutView.as_view(),
+        name='logout'
     ),
 
     path(
