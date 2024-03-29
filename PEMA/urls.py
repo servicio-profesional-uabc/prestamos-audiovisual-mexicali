@@ -8,7 +8,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 urlpatterns = [
     # login
     path(
-        route='login',
+        route='',
         view=LoginView.as_view(
             template_name='login.html',
             authentication_form=UserLoginForm
