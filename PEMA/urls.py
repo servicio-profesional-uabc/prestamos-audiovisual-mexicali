@@ -2,46 +2,63 @@ from django.urls import include, path
 from . import views
 from django.views.generic.base import TemplateView
 
+
 urlpatterns = [
     path(
-        '',
-        TemplateView.as_view(template_name='test.html'),
-        name='test'
-    ),
-
-
-    path(
-        route='prestatario.html',
-        view=views.PrestatarioView.as_view(),
-        name='prestatario'
+        route='',
+        view=views.LoginView.as_view(),
+        name='login'
     ),
 
     path(
-        route='carrito.html',
+        route='menu',
+        view=views.MenuView.as_view(),
+        name='menu'
+    ),
+
+    path(
+        route='carrito',
         view=views.CarritoView.as_view(),
         name='carrito'
     ),
     path(
-        route='solicitud.html',
+        route='solicitud',
         view=views.SolicitudView.as_view(),
         name='solicitud'
     ),
 
     path(
-        route='historial.html',
+        route='historial',
         view=views.HistorialView.as_view(),
         name='historial'
     ),
 
     path(
-        route='catalogo.html',
+        route='catalogo',
         view=views.CatalogoView.as_view(),
         name='catalogo'
     ),
     path(
-        route='filtros.html',
-        view=views.FiltrosView.as_view(),
-        name='filtros'
+        route="historial_solicitudes",
+        view=views.HistorialSolicitudesView.as_view(),
+        name='historial_solicitudes'
     ),
-
+    path(
+        route="detalles_orden",
+        view=views.DetallesOrdenView.as_view(),
+        name='detalles_orden'
+    ),
+    
+    
+    path(
+        route='detalleArticulo',
+        view=views.DetalleArticuloView.as_view(),
+        name='detalleArticulo'
+    ),
+    
+    path(
+        route='cancelarOrden',
+        view=views.CancelarOrdenView.as_view(),
+        name='cancelarOrden'
+    )
 ]

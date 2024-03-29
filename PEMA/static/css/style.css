@@ -1,7 +1,8 @@
 
-
+/**Estilos para solicitud de pedido**/
 body {
     font-family: "Minion Pro", serif;
+    
 }
 body.custom-background-color {
     background-color: #f9f9f9;
@@ -11,7 +12,6 @@ body.custom-background-color {
     background-color: #f9f9f9;
     
 }
-
 
 /* Estilos para el formulario */
 form {
@@ -66,7 +66,49 @@ a.btn:hover {
     background-color: #b38600; /* Cambio de color de fondo al pasar el mouse */
 }
 
+
+/**Estilos para detalles de orden*/
+
 .form-container {
     margin-top: 100px; 
+    
 }
 
+.order-details-container {
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.order-items ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.buttons .btn-danger {
+    padding: 10px 20px; 
+    margin-bottom: 10px;
+    background-color: #00723F; 
+    color: #fff; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+
+.buttons .btn-danger:hover {
+    background-color: #012616; 
+}
+/**footer**/
+footer {
+    background-color: #00723F;
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+}
+
+footer p {
+    margin: 0;
+}

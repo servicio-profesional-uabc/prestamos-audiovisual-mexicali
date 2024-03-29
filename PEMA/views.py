@@ -1,8 +1,14 @@
-from django.shortcuts import render
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+from django.shortcuts import render, redirect
 from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.hashers import check_password
+from .forms import LoginForm
+from .models import User
 from django.template import loader
 
 
@@ -14,25 +20,47 @@ class IndexView(View):
         )
 
 
-class TestView(View):
+class LoginView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="test.html"
+            template_name="login.html"
         )
-class PrestatarioView(View):
+
+    def post(self, request):
+        login_url = 'login'
+        menu_url = 'menu'
+
+        matricula = request.POST['matricula']
+        password = request.POST['password']
+
+        # Autenticacion
+        user = authenticate(request, username=matricula, password=password)
+
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'Has iniciado sesión!')
+            return redirect(menu_url)
+        else:
+            messages.error(request, 'Hubo un error en los datos que ingreso, intente de nuevo...')
+            return redirect(login_url)
+
+
+class MenuView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="prestatario.html"
-        )   
+            template_name="menu.html"
+        )
+
 
 class CarritoView(View):
     def get(self, request):
         return render(
             request=request,
             template_name="carrito.html"
-        )   
+        )
+
 
 class SolicitudView(View):
     def get(self, request):
@@ -42,11 +70,27 @@ class SolicitudView(View):
         )
 
 
+class HistorialSolicitudesView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="historial_solicitudes.html"
+        )
+
+
+class DetallesOrdenView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="detalles_orden.html"
+        )
+
+
 class CatalogoView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="historial.html"
+            template_name="catalogo.html"
         )
 
 
@@ -54,7 +98,23 @@ class HistorialView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="catalogo.html"
+            template_name="historial.html"
+        )
+
+
+class DetalleArticuloView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="detalleArticulo.html"
+        )
+
+
+class CancelarOrdenView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="cancelarOrden.html"
         )
 
 class FiltrosView(View):
