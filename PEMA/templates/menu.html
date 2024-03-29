@@ -1,16 +1,10 @@
+{% extends 'base.html' %}
+
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="es">
+{% block content %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Importar bootstrap -->
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
-
-    <title>Vista de prueba</title>
+    <title>Menu</title>
 </head>
 <body>
     <div class="container text-center mt-5">
@@ -26,11 +20,6 @@
             }
           }
         </style>
-
-        <!--Imagen de la facultad-->
-        <div class="image-container">
-            <img class="my-4" src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="80px" style="position: absolute; top: 0; left: 0;">
-        </div>
 
         <a href="carrito.html">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16" style="position: absolute; top: 44px; right: 100px; width: 32px; height: 32px;">
@@ -84,13 +73,10 @@
     </div>
 </div>
 
-
-
     <script>
         var carrito = document.querySelector('.bi-cart');
         carrito.addEventListener('click', function() {
             window.location.href = "carrito.html";
         });
     </script>
-</body>
-</html>
+{% endblock %}

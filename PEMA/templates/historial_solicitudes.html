@@ -1,18 +1,11 @@
+{% extends 'base.html' %}
+
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
+{% block content %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Importar bootstrap -->
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
-
     <!-- Importar estilos personalizados -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
 
     <title>Historial de solicitudes</title>
 </head>
@@ -55,5 +48,4 @@
             <a href="prestatario" class="btn btn-secondary">Regresar</a>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}

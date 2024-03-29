@@ -21,16 +21,11 @@ urlpatterns = [
         view=views.CarritoView.as_view(),
         name='carrito'
     ),
+    
     path(
         route='solicitud',
         view=views.SolicitudView.as_view(),
         name='solicitud'
-    ),
-
-    path(
-        route='historial',
-        view=views.HistorialView.as_view(),
-        name='historial'
     ),
 
     path(
@@ -51,14 +46,14 @@ urlpatterns = [
     
     
     path(
-        route='detalleArticulo',
-        view=views.DetalleArticuloView.as_view(),
-        name='detalleArticulo'
+        route='detalles_articulo',
+        view=views.DetallesArticuloView.as_view(),
+        name='detalles_articulo'
     ),
     
     path(
-        route='cancelarOrden',
+        route='cancelar_orden',
         view=views.CancelarOrdenView.as_view(),
-        name='cancelarOrden'
+        name='cancelar_orden'
     )
 ]
