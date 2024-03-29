@@ -243,7 +243,7 @@ class Maestro(User):
         """
         Autoriza órdenes ordinarias.
 
-        :param orden (Orden): La orden que se va a autorizar.
+        :param orden: La orden que se va a autorizar.
         :returns: AutorizacionOrdinaria y si se creo
         """
 

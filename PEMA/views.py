@@ -7,7 +7,6 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.hashers import check_password
-from .forms import LoginForm
 from .models import User
 from django.template import loader
 
@@ -18,32 +17,6 @@ class IndexView(View):
             request=request,
             template_name="index.html"
         )
-
-
-class LoginView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="login.html"
-        )
-
-    def post(self, request):
-        login_url = 'login'
-        menu_url = 'menu'
-
-        matricula = request.POST['matricula']
-        password = request.POST['password']
-
-        # Autenticacion
-        user = authenticate(request, username=matricula, password=password)
-
-        if user is not None:
-            login(request, user)
-            messages.success(request, 'Has iniciado sesión!')
-            return redirect(menu_url)
-        else:
-            messages.error(request, 'Hubo un error en los datos que ingreso, intente de nuevo...')
-            return redirect(login_url)
 
 
 class MenuView(View):
@@ -112,7 +85,7 @@ class CancelarOrdenView(View):
 
 def test(request):
     send_mail(
-        subject="Email de prueba",
+        subject="Email de pruebfrom .forms import LoginForma",
         message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
                 "prueba fue exitosa. Atentamente, Galindo.",
         from_email=settings.EMAIL_HOST_USER,
