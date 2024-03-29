@@ -94,19 +94,11 @@ class CatalogoView(View):
         )
 
 
-class HistorialView(View):
+class DetallesArticuloView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="historial.html"
-        )
-
-
-class DetalleArticuloView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="detalleArticulo.html"
+            template_name="detalles_articulo.html"
         )
 
 
@@ -114,7 +106,7 @@ class CancelarOrdenView(View):
     def get(self, request):
         return render(
             request=request,
-            template_name="cancelarOrden.html"
+            template_name="cancelar_orden.html"
         )
 
 class FiltrosView(View):
