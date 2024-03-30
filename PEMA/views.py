@@ -9,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.hashers import check_password
 from .forms import LoginForm
 from .models import User
+from .models import Orden
 from django.template import loader
 
 
@@ -70,11 +71,14 @@ class SolicitudView(View):
         )
 
 
+
 class HistorialSolicitudesView(View):
     def get(self, request):
+        solicitudes = Orden.objects.all() 
         return render(
             request=request,
-            template_name="historial_solicitudes.html"
+            template_name="historial_solicitudes.html",
+            context={'solicitudes': solicitudes}  
         )
 
 

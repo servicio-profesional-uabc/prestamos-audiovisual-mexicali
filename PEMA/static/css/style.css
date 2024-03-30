@@ -112,3 +112,7 @@ footer {
 footer p {
     margin: 0;
 }
+.list-group-item {
+    background-color: #00723F;
+    color: white;
+}
