@@ -1,13 +1,26 @@
 from django.urls import include, path
 from . import views
 from django.views.generic.base import TemplateView
+from . forms import UserLoginForm
+from django.contrib.auth.views import LoginView, LogoutView
 
 
 urlpatterns = [
+    # login
     path(
         route='',
-        view=views.LoginView.as_view(),
+        view=LoginView.as_view(
+            template_name='login.html',
+            authentication_form=UserLoginForm
+        ),
         name='login'
+    ),
+
+    # logout
+    path(
+        route='logout',
+        view=LogoutView.as_view(),
+        name='logout'
     ),
 
     path(
@@ -21,16 +34,11 @@ urlpatterns = [
         view=views.CarritoView.as_view(),
         name='carrito'
     ),
+    
     path(
         route='solicitud',
         view=views.SolicitudView.as_view(),
         name='solicitud'
-    ),
-
-    path(
-        route='historial',
-        view=views.HistorialView.as_view(),
-        name='historial'
     ),
 
     path(
@@ -51,14 +59,14 @@ urlpatterns = [
     
     
     path(
-        route='detalleArticulo',
-        view=views.DetalleArticuloView.as_view(),
-        name='detalleArticulo'
+        route='detalles_articulo',
+        view=views.DetallesArticuloView.as_view(),
+        name='detalles_articulo'
     ),
     
     path(
-        route='cancelarOrden',
+        route='cancelar_orden',
         view=views.CancelarOrdenView.as_view(),
-        name='cancelarOrden'
+        name='cancelar_orden'
     )
 ]
