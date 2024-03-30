@@ -427,7 +427,7 @@ class Orden(models.Model):
     def articulos(self) -> 'QuerySet[Articulo]':
         """Devuelve los artículos en la orden.
 
-        :returns: QuerySet[Articulo]: Artículos asociados a la orden.
+        :returns: Artículos asociados a la orden.
         """
 
         return Articulo.objects.filter(unidad__in=self.unidades())
@@ -491,7 +491,7 @@ class Materia(models.Model):
 
         return User.objects.exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
 
-    def articulos(self) -> 'QuerySet[Articulo]':
+    def articulos(self) -> QuerySet['Articulo']:
         """
         :returns: Lista de artículos disponibles para la materia.
         """
@@ -503,7 +503,7 @@ class Materia(models.Model):
         Agrega un Articulo a la lista de equipo disponible para esta materia
 
         :param articulo: Articulo que se quiere agregar.
-        :return El objeto ArticuloMateria agregado y sí se creó el objeto.
+        :returns: ArticuloMateria agregado y sí se creó el objeto.
         """
 
         return ArticuloMateria.objects.get_or_create(materia=self, articulo=articulo)
@@ -616,10 +616,10 @@ class Articulo(models.Model):
     """
     Clase que representa un artículo.
 
-    :param nombre: Nombre
-    :param codigo: Identificador
-    :param descripcion: Descripción breve
-    :param imagen: Imagen
+    :param nombre: Nombre.
+    :param codigo: Identificador.
+    :param descripcion: Descripción breve.
+    :param imagen: Imagen.
     """
 
     class Meta:
@@ -645,9 +645,9 @@ class Articulo(models.Model):
         Lista con las unidades disponibles en el rango [inicio, final].
 
         :param inicio: Fecha y hora de inicio del rango.
-        :param final : Fecha y hora de finalización del rango.
+        :param final: Fecha y hora de finalización del rango.
 
-        :returns: QuerySet[Unidad]: Unidades disponibles en el rango especificado.
+        :returns: Unidades disponibles en el rango especificado.
         """
 
         # TODO: Me esta volviendo loco este método, lo intentare luego
