@@ -1,15 +1,14 @@
 from typing import Any
 
-from phonenumber_field.modelfields import PhoneNumberField
-
-from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import Permission
 from django.contrib.auth.models import Group
+from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.db import models, transaction
 from django.db.models.query import QuerySet
 from django.utils import timezone
-from django.db import models, transaction
+from django.utils.translation import gettext_lazy as _
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Prestatario(User):
@@ -23,8 +22,7 @@ class Prestatario(User):
 
     class PrestatarioManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            return super().get_queryset(*args, **kwargs) \
-                .filter(groups__name='prestatarios')
+            return super().get_queryset(*args, **kwargs).filter(groups__name='prestatarios')
 
     objects = PrestatarioManager()
 
@@ -65,22 +63,12 @@ class Prestatario(User):
         """
 
         # crear grupo prestatario
-        group, created = Group.objects.get_or_create(
-            name='prestatarios'
-        )
+        group, created = Group.objects.get_or_create(name='prestatarios')
 
         # permisos del prestatario
-        group.permissions.add(Permission.objects.get(
-            codename='add_carrito'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='add_orden'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='add_corresponsableorden'
-        ))
+        group.permissions.add(Permission.objects.get(codename='add_carrito'))
+        group.permissions.add(Permission.objects.get(codename='add_orden'))
+        group.permissions.add(Permission.objects.get(codename='add_corresponsableorden'))
 
         return group, created
 
@@ -131,9 +119,7 @@ class Prestatario(User):
         :returns: Si el usuario está suspendido del sistema
         """
 
-        return self.reportes() \
-            .filter(estado=Reporte.Estado.ACTIVO) \
-            .exists()
+        return self.reportes().filter(estado=Reporte.Estado.ACTIVO).exists()
 
 
 class Coordinador(User):
@@ -145,9 +131,7 @@ class Coordinador(User):
 
     class CoordinadorManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            return super().get_queryset(*args, **kwargs).filter(
-                groups__name='coordinador'
-            )
+            return super().get_queryset(*args, **kwargs).filter(groups__name='coordinador')
 
     objects = CoordinadorManager()
 
@@ -162,36 +146,25 @@ class Coordinador(User):
         :returns: Grupo de Coordinadores y si se creó el grupo.
         """
 
-        group, created = Group.objects.get_or_create(
-            name='coordinador'
-        )
+        # grupo
+        group, created = Group.objects.get_or_create(name='coordinador')
 
         # permisos
-        group.permissions.add(Permission.objects.get(
-            codename='add_autorizacionextraordinaria'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='delete_orden'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='change_reporte'
-        ))
+        group.permissions.add(Permission.objects.get(codename='add_autorizacionextraordinaria'))
+        group.permissions.add(Permission.objects.get(codename='delete_orden'))
+        group.permissions.add(Permission.objects.get(codename='change_reporte'))
 
         return group, created
 
     def autorizar(self, orden: 'Orden') -> tuple['AutorizacionExtraordinaria', bool]:
-        """Autoriza una orden específica.
+        """
+        Autoriza una orden específica.
 
         :param orden: Orden que se va a autorizar
         """
 
         # crear la autorizacion extraordinaria
-        autorizacion, created = AutorizacionExtraordinaria.objects.get_or_create(
-            orden=orden,
-            coordinador=self
-        )
+        autorizacion, created = AutorizacionExtraordinaria.objects.get_or_create(orden=orden, coordinador=self)
 
         # actualizar el estado de autorizacion
         autorizacion.autorizar = True
@@ -207,9 +180,7 @@ class Maestro(User):
 
     class MaestroManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            return super().get_queryset(*args, **kwargs).filter(
-                groups__name='maestro'
-            )
+            return super().get_queryset(*args, **kwargs).filter(groups__name='maestro')
 
     objects = MaestroManager()
 
@@ -224,18 +195,12 @@ class Maestro(User):
         :returns: el grupo y sí se creó
         """
 
-        group, created = Group.objects.get_or_create(
-            name='maestro'
-        )
+        # grupo
+        group, created = Group.objects.get_or_create(name='maestro')
 
         # permisos
-        group.permissions.add(Permission.objects.get(
-            codename='add_autorizacionordinaria'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='change_autorizacionordinaria'
-        ))
+        group.permissions.add(Permission.objects.get(codename='add_autorizacionordinaria'))
+        group.permissions.add(Permission.objects.get(codename='change_autorizacionordinaria'))
 
         return group, created
 
@@ -272,8 +237,7 @@ class Almacen(User):
 
     class AlmacenManager(models.Manager):
         def get_queryset(self, *args, **kwargs):
-            return super().get_queryset(*args, **kwargs) \
-                .filter(groups__name='almacen')
+            return super().get_queryset(*args, **kwargs).filter(groups__name='almacen')
 
     objects = AlmacenManager()
 
@@ -300,30 +264,14 @@ class Almacen(User):
         :returns: El grupo creado y sí se creo el grupo
         """
         # crear grupo almacén
-        group, created = Group.objects.get_or_create(
-            name='almacen'
-        )
+        group, created = Group.objects.get_or_create(name='almacen')
 
         # permisos
-        group.permissions.add(Permission.objects.get(
-            codename='add_devolucion'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='add_entrega'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='add_orden'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='view_orden'
-        ))
-
-        group.permissions.add(Permission.objects.get(
-            codename='view_reporte'
-        ))
+        group.permissions.add(Permission.objects.get(codename='add_devolucion'))
+        group.permissions.add(Permission.objects.get(codename='add_entrega'))
+        group.permissions.add(Permission.objects.get(codename='add_orden'))
+        group.permissions.add(Permission.objects.get(codename='view_orden'))
+        group.permissions.add(Permission.objects.get(codename='view_reporte'))
 
         return group, created
 
@@ -344,10 +292,7 @@ class Almacen(User):
         :returns: Registro de entrega y si el registro se creó
         """
 
-        return Entrega.objects.get_or_create(
-            almacen=self,
-            orden=orden
-        )
+        return Entrega.objects.get_or_create(almacen=self, orden=orden)
 
     def devolver(self, orden: 'Orden') -> tuple['Devolucion', bool]:
         """
@@ -357,8 +302,7 @@ class Almacen(User):
         :returns: El registro de devolución, si el registro se creó
         """
 
-        return Devolucion.objects \
-            .get_or_create(almacen=self, orden=orden)
+        return Devolucion.objects.get_or_create(almacen=self, orden=orden)
 
     def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
         """Reporta una orden.
@@ -368,43 +312,40 @@ class Almacen(User):
         :returns: Reporte y sí el objeto se creó.
         """
 
-        return Reporte.objects.get_or_create(
-            almacen=self,
-            orden=orden,
-            descripcion=descripcion
-        )
+        return Reporte.objects.get_or_create(almacen=self, orden=orden, descripcion=descripcion)
 
 
 class Perfil(models.Model):
     """
-    Información adicional del usuario, para no extender el User de django.
+    Esta clase proporciona acceso a todos los datos de un usuario.
+    Se implementa para evitar complicar el modelo de usuario de
+    Django. Además, este método facilita el acceso a los datos que ya
+    están incluidos mediante métodos específicos.
 
     :param usuario: Usuario del perfil
     :param imagen: Imagen del perfil
-    :param telefono: Telefono del usuario
+    :param telefono: Número de teléfono
     """
 
-    usuario = models.OneToOneField(
-        to=User,
-        on_delete=models.CASCADE
-    )
-
-    imagen = models.ImageField(
-        default='default.png'
-    )
-
-    telefono = PhoneNumberField(
-        null=True
-    )
+    usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    imagen = models.ImageField(default='default.png')
+    telefono = PhoneNumberField(null=True)
 
     @classmethod
     def user_data(cls, user: User) -> tuple['Perfil', bool]:
-        """Obtiene el perfil asociado a un usuario dado.
+        """
+        Obtiene el perfil asociado a un usuario.
 
         :param user: El usuario del cual se desea obtener el perfil.
         :returns: El perfil asociado al usuario.
         """
         return Perfil.objects.get_or_create(usuario=user)
+
+    def email(self):
+        """
+
+        :return:
+        """
 
 
 class Orden(models.Model):
@@ -440,33 +381,12 @@ class Orden(models.Model):
         CAPUS = "CA", _("CAPUS")
         EXTERNO = "EX", _("EXTERNO")
 
-    prestatario = models.ForeignKey(
-        to=Prestatario,
-        on_delete=models.CASCADE
-    )
-
-    lugar = models.CharField(
-        default=Ubicacion.CAPUS,
-        choices=Ubicacion.choices,
-        max_length=2
-    )
-
-    inicio = models.DateTimeField(
-        null=False
-    )
-
-    final = models.DateTimeField(
-        null=False
-    )
-
-    emision = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    descripcion = models.TextField(
-        blank=True,
-        max_length=512
-    )
+    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
+    lugar = models.CharField(default=Ubicacion.CAPUS, choices=Ubicacion.choices, max_length=2)
+    inicio = models.DateTimeField(null=False)
+    final = models.DateTimeField(null=False)
+    emision = models.DateTimeField(auto_now_add=True)
+    descripcion = models.TextField(blank=True, max_length=512)
 
     def unidades(self) -> 'QuerySet[Unidad]':
         """Devuelve las unidades con las que se suplió la orden.
@@ -507,8 +427,7 @@ class Orden(models.Model):
          Attributes:
              unidad (Unidad): Unidad que se agregará
         """
-        return UnidadOrden.objects \
-            .get_or_create(orden=self, unidad=unidad)
+        return UnidadOrden.objects.get_or_create(orden=self, unidad=unidad)
 
 
 class Materia(models.Model):
@@ -523,23 +442,12 @@ class Materia(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('nombre', 'periodo')
-        )
+        unique_together = ('nombre', 'periodo')
 
-    nombre = models.CharField(
-        primary_key=True,
-        max_length=250,
-        null=False,
-        blank=False
-    )
+    nombre = models.CharField(primary_key=True, max_length=250, null=False, blank=False)
 
     # TODO: separar año y periodo
-    periodo = models.CharField(
-        max_length=6,
-        null=False,
-        blank=False
-    )
+    periodo = models.CharField(max_length=6, null=False, blank=False)
 
     @staticmethod
     def alumnos() -> 'QuerySet[User]':
@@ -548,8 +456,7 @@ class Materia(models.Model):
         :returns: QuerySet[User]: Lista de alumnos de la materia.
         """
 
-        return User.objects \
-            .exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
+        return User.objects.exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
 
     @staticmethod
     def profesores() -> 'QuerySet[User]':
@@ -558,8 +465,7 @@ class Materia(models.Model):
         :returns: QuerySet[User]: Lista de profesores asociados a la materia.
         """
 
-        return User.objects \
-            .exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
+        return User.objects.exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
 
     def articulos(self) -> 'QuerySet[Articulo]':
         """Artículos que se pueden solicitar.
@@ -576,8 +482,7 @@ class Materia(models.Model):
             articulo (Articulo): Articulo que se quiere agregar
         """
 
-        return ArticuloMateria.objects \
-            .get_or_create(materia=self, articulo=articulo)
+        return ArticuloMateria.objects.get_or_create(materia=self, articulo=articulo)
 
     def agregar_participante(self, usuario: 'User') -> tuple['MateriaUsuario', bool]:
         """Agrega un participante a la clase
@@ -585,8 +490,7 @@ class Materia(models.Model):
         Attribute:
             usuario (User): Participante que se quiere agregar a la clase
         """
-        return MateriaUsuario.objects \
-            .get_or_create(usuario=usuario, materia=self)
+        return MateriaUsuario.objects.get_or_create(usuario=usuario, materia=self)
 
 
 class Carrito(models.Model):
@@ -602,25 +506,10 @@ class Carrito(models.Model):
        final (DateTime): fecha de devolución del préstamo.
     """
 
-    prestatario = models.OneToOneField(
-        to=User,
-        on_delete=models.CASCADE
-    )
-
-    materia = models.OneToOneField(
-        to=Materia,
-        on_delete=models.DO_NOTHING
-    )
-
-    inicio = models.DateTimeField(
-        default=timezone.now,
-        null=False
-    )
-
-    final = models.DateTimeField(
-        default=timezone.now,
-        null=False
-    )
+    prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    materia = models.OneToOneField(to=Materia, on_delete=models.DO_NOTHING)
+    inicio = models.DateTimeField(default=timezone.now, null=False)
+    final = models.DateTimeField(default=timezone.now, null=False)
 
     def agregar(self, articulo: 'Articulo', unidades: int = 1) -> tuple['ArticuloCarrito', bool]:
         """
@@ -638,8 +527,7 @@ class Carrito(models.Model):
         # - agregar el mismo articulo otra vez (se suma?)
         # - cambiar el numero de articulos cuando unidades es diferente a 1
 
-        objeto, creado = ArticuloCarrito.objects \
-            .get_or_create(articulo=articulo, carrito=self)
+        objeto, creado = ArticuloCarrito.objects.get_or_create(articulo=articulo, carrito=self)
 
         if not creado and objeto.unidades != unidades:
             # Actualizar unidades
@@ -654,8 +542,7 @@ class Carrito(models.Model):
         :returns: [Articulo]: Artículos en el carrito.
         """
 
-        return Articulo.objects \
-            .filter(articulocarrito__carrito=self)
+        return Articulo.objects.filter(articulocarrito__carrito=self)
 
     def ordenar(self) -> None:
         """
@@ -669,11 +556,7 @@ class Carrito(models.Model):
         # TODO: Como identificar el 'lugar' de la orden
 
         with transaction.atomic():
-            Orden.objects.create(
-                prestatario=self.prestatario,
-                inicio=self.inicio,
-                final=self.final
-            )
+            Orden.objects.create(prestatario=self.prestatario, inicio=self.inicio, final=self.final)
 
             # TODO: convertir los ArticuloCarrito a UnidadOrden
 
@@ -692,40 +575,18 @@ class Reporte(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('almacen', 'orden')
-        )
+        unique_together = ('almacen', 'orden')
 
     class Estado(models.TextChoices):
         """Opciones para el estado del reporte."""
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    almacen = models.ForeignKey(
-        to=Almacen,
-        on_delete=models.CASCADE
-    )
-
-    orden = models.ForeignKey(
-        to=Orden,
-        on_delete=models.CASCADE
-    )
-
-    estado = models.CharField(
-        max_length=2,
-        choices=Estado.choices,
-        default=Estado.ACTIVO
-    )
-
-    descripcion = models.TextField(
-        null=True,
-        blank=True,
-        max_length=250
-    )
-
-    emision = models.DateTimeField(
-        auto_now_add=True
-    )
+    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+    estado = models.CharField(max_length=2, choices=Estado.choices, default=Estado.ACTIVO)
+    descripcion = models.TextField(null=True, blank=True, max_length=250)
+    emision = models.DateTimeField(auto_now_add=True)
 
 
 class Articulo(models.Model):
@@ -739,31 +600,12 @@ class Articulo(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('nombre', 'codigo')
-        )
+        unique_together = ('nombre', 'codigo')
 
-    imagen = models.ImageField(
-        default='default.png'
-    )
-
-    nombre = models.CharField(
-        blank=False,
-        null=False,
-        max_length=250
-    )
-
-    codigo = models.CharField(
-        blank=False,
-        null=False,
-        max_length=250
-    )
-
-    descripcion = models.TextField(
-        null=True,
-        blank=True,
-        max_length=250
-    )
+    imagen = models.ImageField(default='default.png')
+    nombre = models.CharField(blank=False, null=False, max_length=250)
+    codigo = models.CharField(blank=False, null=False, max_length=250)
+    descripcion = models.TextField(null=True, blank=True, max_length=250)
 
     def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
         """registrar una unidad de un articulo
@@ -773,11 +615,7 @@ class Articulo(models.Model):
             num_serie (str): numero de series de la unidad
         """
 
-        return Unidad.objects.get_or_create(
-            articulo=self,
-            num_control=num_control,
-            num_serie=num_serie
-        )
+        return Unidad.objects.get_or_create(articulo=self, num_control=num_control, num_serie=num_serie)
 
     def disponible(self, inicio, final) -> 'QuerySet[Unidad]':
         """Lista con las unidades disponibles en el rango [inicio, final].
@@ -829,20 +667,9 @@ class Entrega(models.Model):
         emision: fecha en la que se hace la emisión
     """
 
-    orden = models.OneToOneField(
-        to=Orden,
-        on_delete=models.CASCADE,
-        primary_key=True
-    )
-
-    almacen = models.OneToOneField(
-        to=Almacen,
-        on_delete=models.CASCADE
-    )
-
-    emision = models.DateTimeField(
-        auto_now_add=True
-    )
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
+    almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    emision = models.DateTimeField(auto_now_add=True)
 
 
 class Devolucion(models.Model):
@@ -856,20 +683,9 @@ class Devolucion(models.Model):
         emision (DateTime): fecha de emisión
     """
 
-    orden = models.OneToOneField(
-        to=Orden,
-        on_delete=models.CASCADE,
-        primary_key=True
-    )
-
-    almacen = models.OneToOneField(
-        to=Almacen,
-        on_delete=models.CASCADE
-    )
-
-    emision = models.DateTimeField(
-        auto_now_add=True
-    )
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
+    almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    emision = models.DateTimeField(auto_now_add=True)
 
 
 class Unidad(models.Model):
@@ -883,37 +699,16 @@ class Unidad(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('articulo', 'num_control')
-        )
+        unique_together = ('articulo', 'num_control')
 
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    articulo = models.OneToOneField(
-        to=Articulo,
-        on_delete=models.CASCADE
-    )
-
-    estado = models.CharField(
-        max_length=2,
-        choices=Estado.choices,
-        null=False,
-        default=Estado.ACTIVO
-    )
-
-    num_control = models.CharField(
-        max_length=250,
-        null=False,
-        blank=False
-    )
-
-    num_serie = models.CharField(
-        blank=False,
-        null=False,
-        max_length=250
-    )
+    articulo = models.OneToOneField(to=Articulo, on_delete=models.CASCADE)
+    estado = models.CharField(max_length=2, choices=Estado.choices, null=False, default=Estado.ACTIVO)
+    num_control = models.CharField(max_length=250, null=False, blank=False)
+    num_serie = models.CharField(blank=False, null=False, max_length=250)
 
     def ordenes(self) -> QuerySet[Orden]:
         return Orden.objects.filter(unidadorden__unidad=self)
@@ -926,10 +721,7 @@ class Categoria(models.Model):
         nombre (str): Nombre de la categoría
     """
 
-    nombre = models.CharField(
-        primary_key=True,
-        max_length=250
-    )
+    nombre = models.CharField(primary_key=True, max_length=250)
 
     def articulos(self) -> QuerySet[Articulo]:
         """Devuelve los artículos que pertenecen a esta categoría.
@@ -938,8 +730,7 @@ class Categoria(models.Model):
             Artículos que pertenecen a la Categoría
         """
 
-        return Articulo.objects \
-            .filter(categoriaarticulo__categoria=self)
+        return Articulo.objects.filter(categoriaarticulo__categoria=self)
 
     def agregar(self, articulo: 'Articulo') -> tuple['CategoriaArticulo', bool]:
         """Agrega un Articulo a la Categoría
@@ -952,8 +743,7 @@ class Categoria(models.Model):
             ha sido creado
         """
 
-        return CategoriaArticulo.objects \
-            .get_or_create(categoria=self, articulo=articulo)
+        return CategoriaArticulo.objects.get_or_create(categoria=self, articulo=articulo)
 
 
 class AutorizacionOrdinaria(models.Model):
@@ -966,23 +756,11 @@ class AutorizacionOrdinaria(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('orden', 'maestro')
-        )
+        unique_together = ('orden', 'maestro')
 
-    orden = models.OneToOneField(
-        to=Orden,
-        on_delete=models.CASCADE
-    )
-
-    maestro = models.OneToOneField(
-        to=Almacen,
-        on_delete=models.CASCADE
-    )
-
-    autorizar = models.BooleanField(
-        default=False
-    )
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
+    maestro = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    autorizar = models.BooleanField(default=False)
 
 
 class AutorizacionExtraordinaria(models.Model):
@@ -991,23 +769,11 @@ class AutorizacionExtraordinaria(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('orden', 'coordinador')
-        )
+        unique_together = ('orden', 'coordinador')
 
-    orden = models.OneToOneField(
-        to=Orden,
-        on_delete=models.CASCADE
-    )
-
-    coordinador = models.OneToOneField(
-        to=Coordinador,
-        on_delete=models.CASCADE
-    )
-
-    autorizar = models.BooleanField(
-        default=False
-    )
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
+    coordinador = models.OneToOneField(to=Coordinador, on_delete=models.CASCADE)
+    autorizar = models.BooleanField(default=False)
 
 
 class CorresponsableOrden(models.Model):
@@ -1020,23 +786,11 @@ class CorresponsableOrden(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('orden', 'prestatario')
-        )
+        unique_together = ('orden', 'prestatario')
 
-    prestatario = models.OneToOneField(
-        to=Prestatario,
-        on_delete=models.CASCADE,
-    )
-
-    orden = models.OneToOneField(
-        to=Orden,
-        on_delete=models.CASCADE
-    )
-
-    aceptado = models.BooleanField(
-        default=False,
-    )
+    prestatario = models.OneToOneField(to=Prestatario, on_delete=models.CASCADE, )
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
+    aceptado = models.BooleanField(default=False, )
 
 
 class ArticuloMateria(models.Model):
@@ -1048,19 +802,10 @@ class ArticuloMateria(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('materia', 'articulo')
-        )
+        unique_together = ('materia', 'articulo')
 
-    materia = models.ForeignKey(
-        to=Materia,
-        on_delete=models.CASCADE
-    )
-
-    articulo = models.ForeignKey(
-        to=Articulo,
-        on_delete=models.CASCADE
-    )
+    materia = models.ForeignKey(to=Materia, on_delete=models.CASCADE)
+    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
 
 
 class ArticuloCarrito(models.Model):
@@ -1073,23 +818,11 @@ class ArticuloCarrito(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('articulo', 'carrito')
-        )
+        unique_together = ('articulo', 'carrito')
 
-    articulo = models.ForeignKey(
-        to=Articulo,
-        on_delete=models.CASCADE
-    )
-
-    carrito = models.ForeignKey(
-        to=Carrito,
-        on_delete=models.CASCADE
-    )
-
-    unidades = models.IntegerField(
-        default=1,
-    )
+    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
+    carrito = models.ForeignKey(to=Carrito, on_delete=models.CASCADE)
+    unidades = models.IntegerField(default=1, )
 
 
 class CategoriaArticulo(models.Model):
@@ -1101,19 +834,10 @@ class CategoriaArticulo(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('articulo', 'categoria')
-        )
+        unique_together = ('articulo', 'categoria')
 
-    articulo = models.ForeignKey(
-        to=Articulo,
-        on_delete=models.CASCADE
-    )
-
-    categoria = models.ForeignKey(
-        to=Categoria,
-        on_delete=models.CASCADE
-    )
+    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
+    categoria = models.ForeignKey(to=Categoria, on_delete=models.CASCADE)
 
 
 class UnidadOrden(models.Model):
@@ -1125,19 +849,10 @@ class UnidadOrden(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('unidad', 'orden')
-        )
+        unique_together = ('unidad', 'orden')
 
-    unidad = models.ForeignKey(
-        to=Unidad,
-        on_delete=models.CASCADE
-    )
-
-    orden = models.ForeignKey(
-        to=Orden,
-        on_delete=models.CASCADE
-    )
+    unidad = models.ForeignKey(to=Unidad, on_delete=models.CASCADE)
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
 
 
 class MateriaUsuario(models.Model):
@@ -1149,16 +864,7 @@ class MateriaUsuario(models.Model):
     """
 
     class Meta:
-        unique_together = (
-            ('materia', 'usuario')
-        )
+        unique_together = ('materia', 'usuario')
 
-    materia = models.ForeignKey(
-        to=Materia,
-        on_delete=models.CASCADE
-    )
-
-    usuario = models.ForeignKey(
-        to=User,
-        on_delete=models.CASCADE
-    )
+    materia = models.ForeignKey(to=Materia, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(to=User, on_delete=models.CASCADE)
