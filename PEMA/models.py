@@ -632,10 +632,10 @@ class Articulo(models.Model):
 
     def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
         """
-        Registrar una unidad de un Articulo.
+        Registrar una unidad de un Artículo.
 
-        :param num_control: numero de control de la unidad.
-        :param num_serie: numero de series de la unidad.
+        :param num_control: Número de control de la unidad.
+        :param num_serie: Número de seríe de la unidad.
         """
 
         return Unidad.objects.get_or_create(articulo=self, num_control=num_control, num_serie=num_serie)
