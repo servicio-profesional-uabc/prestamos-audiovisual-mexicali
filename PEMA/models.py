@@ -286,7 +286,8 @@ class Almacen(User):
         return user
 
     def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
-        """Generar el registro que el Almacén entrego el equipo.
+        """
+        Generar el registro que el Almacén entrego el equipo.
 
         :param orden: La orden entregada
         :returns: Registro de entrega y si el registro se creó
@@ -305,10 +306,14 @@ class Almacen(User):
         return Devolucion.objects.get_or_create(almacen=self, orden=orden)
 
     def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
-        """Reporta una orden.
+        """
+        Este método genera un Reporte para una orden solicitada. Las órdenes
+        reportadas utilizando este método siempre se consideran activas.
+        Si se desea desactivar el informe, se requiere la intervención de un
+        Coordinador.
 
         :param orden: La orden que se va a reportar.
-        :param descripcion: Información adicional del Reporte
+        :param descripcion: Información adicional del Reporte.
         :returns: Reporte y sí el objeto se creó.
         """
 
@@ -322,9 +327,9 @@ class Perfil(models.Model):
     Django. Además, este método facilita el acceso a los datos que ya
     están incluidos mediante métodos específicos.
 
-    :param usuario: Usuario del perfil
-    :param imagen: Imagen del perfil
-    :param telefono: Número de teléfono
+    :param usuario: Usuario del perfil.
+    :param imagen: Imagen del perfil.
+    :param telefono: Número de teléfono.
     """
 
     usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
@@ -334,18 +339,41 @@ class Perfil(models.Model):
     @classmethod
     def user_data(cls, user: User) -> tuple['Perfil', bool]:
         """
-        Obtiene el perfil asociado a un usuario.
-
         :param user: El usuario del cual se desea obtener el perfil.
         :returns: El perfil asociado al usuario.
         """
+
         return Perfil.objects.get_or_create(usuario=user)
 
-    def email(self):
+    def email(self) -> str:
         """
+        :return: Obtener el email del perfil
+        """
+        return self.usuario.email
 
-        :return:
+    def apellido(self) -> str:
         """
+        :return: Obtener el apellido del usuario.
+        """
+        return self.usuario.last_name
+
+    def nombre(self) -> str:
+        """
+        Nombre real de usuario.
+
+        :return: Obtener el nombre del usuario.
+        """
+        return self.usuario.first_name
+
+    def username(self) -> str:
+        """
+        Nombre del usuario en el sistema, en el proyecto el nombre
+        del usuario siempre corresponde a la matrícula o al numero
+        de empleado.
+
+        :return: nombre de usuario.
+        """
+        return self.usuario.username
 
 
 class Orden(models.Model):
@@ -355,13 +383,12 @@ class Orden(models.Model):
     el Carrito, para que el encargado del Almacén sepa
     específicamente que entregar.
 
-    Attributes:
-        prestatario: Usuario que hace la solicitud.
-        lugar: Lugar donde se usara el material.
-        inicio: Fecha de inicio de la orden.
-        final: Fecha de devolución de la orden.
-        descripcion: Información adicional de la orden.
-        emision: fecha de emisión de la orden.
+    :param prestatario: Usuario que hace la solicitud.
+    :param lugar: Lugar donde se usara el material.
+    :param inicio: Fecha de inicio de la orden.
+    :param final: Fecha de devolución de la orden.
+    :param descripcion: Información adicional de la orden.
+    :param emision: Fecha de emisión de la orden.
     """
 
     class Estado(models.TextChoices):
@@ -389,7 +416,8 @@ class Orden(models.Model):
     descripcion = models.TextField(blank=True, max_length=512)
 
     def unidades(self) -> 'QuerySet[Unidad]':
-        """Devuelve las unidades con las que se suplió la orden.
+        """
+        Devuelve las unidades con las que se suplió la orden.
 
         :returns: QuerySet[Unidad]: Unidades asociadas a la orden.
         """
@@ -416,7 +444,7 @@ class Orden(models.Model):
         """
         Devuelve el estado de la Orden.
 
-        :returns: str: Estado de la orden (PENDIENTE, RECHAZADA o APROBADA).
+        :returns: Estado de la orden (PENDIENTE, RECHAZADA o APROBADA).
         """
         # TODO: falta implementar este método, Falta acordar detalles
         pass
@@ -431,14 +459,12 @@ class Orden(models.Model):
 
 
 class Materia(models.Model):
-    """Clase que representa una materia.
+    """
+    Las materias se encargan de limitar el material al que pueden acceder
+    los Prestatarios.
 
-    Las materias se encargan de limitar el material al que pueden
-    acceder los Prestatarios.
-
-    Attributes:
-        nombre (str): Nombre de la clase
-        periodo (str): Periodo de la clase ej. 2022-1
+    :param nombre (str): Nombre de la clase
+    :param periodo (str): Periodo de la clase ej. 2022-1
     """
 
     class Meta:
@@ -451,35 +477,33 @@ class Materia(models.Model):
 
     @staticmethod
     def alumnos() -> 'QuerySet[User]':
-        """Devuelve la lista de alumnos en la clase.
-
-        :returns: QuerySet[User]: Lista de alumnos de la materia.
+        """
+        :returns: Lista de alumnos de la materia.
         """
 
         return User.objects.exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
 
     @staticmethod
     def profesores() -> 'QuerySet[User]':
-        """Devuelve la lista de profesores en la clase.
-
-        :returns: QuerySet[User]: Lista de profesores asociados a la materia.
+        """
+        :returns: Lista de profesores asociados a la materia.
         """
 
         return User.objects.exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
 
     def articulos(self) -> 'QuerySet[Articulo]':
-        """Artículos que se pueden solicitar.
-
-        :returns: QuerySet[Articulo]: Lista de artículos de la materia.
+        """
+        :returns: Lista de artículos disponibles para la materia.
         """
 
         return Articulo.objects.filter(articulomateria__materia=self)
 
-    def agregar_articulo(self, articulo: 'Articulo') -> tuple['Articulo', bool]:
-        """Agrega un articulo a la lista de equipo disponible para esta materia
+    def agregar_articulo(self, articulo: 'Articulo') -> tuple['ArticuloMateria', bool]:
+        """
+        Agrega un Articulo a la lista de equipo disponible para esta materia
 
-         Attribute:
-            articulo (Articulo): Articulo que se quiere agregar
+        :param articulo: Articulo que se quiere agregar.
+        :return El objeto ArticuloMateria agregado y sí se creó el objeto.
         """
 
         return ArticuloMateria.objects.get_or_create(materia=self, articulo=articulo)
@@ -490,20 +514,20 @@ class Materia(models.Model):
         Attribute:
             usuario (User): Participante que se quiere agregar a la clase
         """
+
         return MateriaUsuario.objects.get_or_create(usuario=usuario, materia=self)
 
 
 class Carrito(models.Model):
-    """Clase que representa un carrito de compras.
+    """
+    La clase que representa un carrito de compras se utiliza para
+    seleccionar los artículos del catálogo. Una vez que los artículos
+    han sido seleccionados, el carrito puede convertirse en una Orden.
 
-    Se usa para seleccionar los artículos del cátalogo, cuando los
-    artículos ya se han seleccionado se puede convertir en una Orden.
-
-    Attributes:
-       prestatario (Prestatario): Usuario dueño del carrito
-       materia (Materia): materia a la que está ligado el equipo del carrito.
-       inicio (DateTime): fecha de inicio del préstamo.
-       final (DateTime): fecha de devolución del préstamo.
+    :param prestatario: Usuario dueño del carrito
+    :param materia: Materia a la que está ligado el equipo del carrito.
+    :param inicio: Fecha de inicio del préstamo.
+    :param final: Fecha de devolución del préstamo.
     """
 
     prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
@@ -515,12 +539,10 @@ class Carrito(models.Model):
         """
         Agrega un artículo al carrito.
 
-        Args:
-            articulo: El artículo que se va a agregar.
-            unidades: Unidades que se va a agregar del Artículo.
+        :param articulo: El artículo que se va a agregar.
+        :param unidades: Unidades que se va a agregar del Artículo.
 
-        Return:
-            Relación al artículo al carrito y si se agregó
+        :returns: Relación al artículo al carrito y si se agregó
         """
 
         # TODO: falta verificar casos
@@ -537,9 +559,10 @@ class Carrito(models.Model):
         return objeto, creado
 
     def articulos(self) -> 'QuerySet[Articulo]':
-        """Devuelve los artículos en el carrito.
+        """
+        Devuelve los artículos en el carrito.
 
-        :returns: [Articulo]: Artículos en el carrito.
+        :returns: Artículos en el carrito.
         """
 
         return Articulo.objects.filter(articulocarrito__carrito=self)
@@ -564,14 +587,14 @@ class Carrito(models.Model):
 
 
 class Reporte(models.Model):
-    """Clase que representa un reporte a una Orden.
+    """
+    Clase que representa un reporte a una Orden.
 
-    Attributes:
-        almacen (Almacen): Usuario que emitió el reporte
-        orden (Orden): Orden a la que se refiere el reporte
-        estado (Estado): Estado de la orden
-        descripcion (Descripcion): Información de la orden
-        emision (Emision): fecha de emisión del reporte
+    :param almacen: Usuario que emitió el reporte.
+    :param orden: Orden a la que se refiere el reporte.
+    :param estado: Estado de la orden.
+    :param descripcion: Información de la orden.
+    :param emision: Fecha de emisión del reporte.
     """
 
     class Meta:
@@ -590,13 +613,13 @@ class Reporte(models.Model):
 
 
 class Articulo(models.Model):
-    """Clase que representa un artículo.
+    """
+    Clase que representa un artículo.
 
-    Attributes:
-        nombre (str): Nombre
-        codigo (str): Identificador
-        descripcion (str): Descripción breve
-        imagen (Image): Imagen
+    :param nombre: Nombre
+    :param codigo: Identificador
+    :param descripcion: Descripción breve
+    :param imagen: Imagen
     """
 
     class Meta:
@@ -608,21 +631,21 @@ class Articulo(models.Model):
     descripcion = models.TextField(null=True, blank=True, max_length=250)
 
     def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
-        """registrar una unidad de un articulo
+        """
+        Registrar una unidad de un Articulo.
 
-        Attribute:
-            num_control (str): numero de control de la unidad
-            num_serie (str): numero de series de la unidad
+        :param num_control: numero de control de la unidad.
+        :param num_serie: numero de series de la unidad.
         """
 
         return Unidad.objects.get_or_create(articulo=self, num_control=num_control, num_serie=num_serie)
 
     def disponible(self, inicio, final) -> 'QuerySet[Unidad]':
-        """Lista con las unidades disponibles en el rango [inicio, final].
+        """
+        Lista con las unidades disponibles en el rango [inicio, final].
 
-        Args:
-            inicio (DateTime): Fecha y hora de inicio del rango.
-            final (DateTime): Fecha y hora de finalización del rango.
+        :param inicio: Fecha y hora de inicio del rango.
+        :param final : Fecha y hora de finalización del rango.
 
         :returns: QuerySet[Unidad]: Unidades disponibles en el rango especificado.
         """
@@ -632,39 +655,41 @@ class Articulo(models.Model):
         pass
 
     def categorias(self) -> 'QuerySet[Categoria]':
-        """Devuelve la lista de categorías en las que pertenece el artículo.
+        """
+        Devuelve la lista de categorías en las que pertenece el artículo.
 
-        :returns: QuerySet[Categoria]: Categorías a las que pertenece.
+        :returns: Categorías a las que pertenece.
         """
 
         return Categoria.objects.filter(categoriaarticulo__articulo=self)
 
     def materias(self) -> 'QuerySet[Materia]':
-        """Lista de materias en las que se encuentra el artículo.
+        """
+        Lista de materias en las que se encuentra el artículo.
 
-        :returns: QuerySet[Materia]: Materias asociadas al artículo.
+        :returns: Materias asociadas al artículo.
         """
 
         return Materia.objects.filter(articulomateria__articulo=self)
 
     def unidades(self) -> 'QuerySet[Unidad]':
-        """Devuelve la lista de unidades de un artículo.
+        """
+        Devuelve la lista de unidades de un artículo.
 
-        :returns: QuerySet[Unidad]: Unidades asociadas al artículo.
+        :returns: Unidades asociadas al artículo.
         """
 
         return Unidad.objects.filter(articulo=self)
 
 
 class Entrega(models.Model):
-    """Entrega al almacen.
+    """
+    Entrega al almacen. Se genera cada vez que Almacen entrega el
+    equipo al Prestatario.
 
-    Se genera cada vez que Almacen entrega el equipo al Prestatario.
-
-    Attributes:
-        almacen: encargado del Almacen
-        orden: orden que se entrega
-        emision: fecha en la que se hace la emisión
+    :param almacen: Encargado del Almacen.
+    :param orden: Orden que se entrega.
+    :param emision: Fecha en la que se hace la emisión.
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
@@ -673,14 +698,13 @@ class Entrega(models.Model):
 
 
 class Devolucion(models.Model):
-    """Devolución del equipo al Almacen
+    """
+    Devolución del equipo al Almacen de genera cada vez que
+    Prestatario devuelve el equipo al Almacen.
 
-    Se genera cada vez que Prestatario devuelve el equipo al Almacen.
-
-    Attributes:
-        orden (Orden): orden que se devuelve
-        almacen (Almacen): responsable del almacen
-        emision (DateTime): fecha de emisión
+    :param orden: Orden que se devuelve
+    :param almacen: Responsable del almacen
+    :param emision: Fecha de emisión
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
@@ -689,13 +713,13 @@ class Devolucion(models.Model):
 
 
 class Unidad(models.Model):
-    """Clase que representa una unidad de un artículo.
+    """
+    Clase que representa una unidad de un artículo.
 
-    Attributes:
-        articulo (Articulo): al que pertenece la unidad
-        estado (Estado): de la unidad
-        num_control (Str): para identificar la unidad
-        num_serie (Str): de la unidad
+    :param articulo: Al que pertenece la unidad
+    :param estado: De la unidad
+    :param num_control: Para identificar la unidad
+    :param num_serie: De la unidad
     """
 
     class Meta:
@@ -715,44 +739,42 @@ class Unidad(models.Model):
 
 
 class Categoria(models.Model):
-    """Clase que representa una categoría.
+    """
+    Clase que representa una categoría.
 
-    Attributes:
-        nombre (str): Nombre de la categoría
+    :param nombre (str): Nombre de la categoría
     """
 
     nombre = models.CharField(primary_key=True, max_length=250)
 
     def articulos(self) -> QuerySet[Articulo]:
-        """Devuelve los artículos que pertenecen a esta categoría.
+        """
+        Devuelve los artículos que pertenecen a esta categoría.
 
-        Return:
-            Artículos que pertenecen a la Categoría
+        :return: Artículos que pertenecen a la Categoría
         """
 
         return Articulo.objects.filter(categoriaarticulo__categoria=self)
 
     def agregar(self, articulo: 'Articulo') -> tuple['CategoriaArticulo', bool]:
-        """Agrega un Articulo a la Categoría
+        """
+        Agrega un Articulo a la Categoría
 
-        Args:
-            articulo (Articulo): Articulo que se agregará
+        :param articulo: Articulo que se agregará
 
-        Return:
-            Relación del Articulo con la Categoría y si el Articulo
-            ha sido creado
+        :returns: CategoriaArticulo y si ha sido creado
         """
 
         return CategoriaArticulo.objects.get_or_create(categoria=self, articulo=articulo)
 
 
 class AutorizacionOrdinaria(models.Model):
-    """Clase que representa una autorización ordinaria.
+    """
+    Clase que representa una autorización ordinaria.
 
-    Attributes:
-        orden (Orden): Orden a la que pertenece la autorización
-        maestro (Usuario): Usuario que autoriza la orden
-        autorizar (boolean): Estado de la autorización
+    :param orden: Orden a la que pertenece la autorización
+    :param maestro: Usuario que autoriza la orden
+    :param autorizar: Estado de la autorización
     """
 
     class Meta:
@@ -766,6 +788,10 @@ class AutorizacionOrdinaria(models.Model):
 class AutorizacionExtraordinaria(models.Model):
     """
     Clase que representa una autorización extraordinaria.
+
+    :param orden:
+    :param coordinador:
+    :param autorizar:
     """
 
     class Meta:
@@ -777,12 +803,12 @@ class AutorizacionExtraordinaria(models.Model):
 
 
 class CorresponsableOrden(models.Model):
-    """Corresponsable de una orden.
+    """
+    Corresponsable de una orden.
 
-    Attributes:
-        prestatario: Usuario que acepta ser corresponsable.
-        orden: de la que el prestatario es corresponsable.
-        aceptado: Si el Prestatario acepto la corresponsabilidad.
+    :param prestatario: Usuario que acepta ser corresponsable.
+    :param orden: Orden de la que el prestatario es corresponsable.
+    :param aceptado: Si el Prestatario acepto la corresponsabilidad.
     """
 
     class Meta:
@@ -794,11 +820,11 @@ class CorresponsableOrden(models.Model):
 
 
 class ArticuloMateria(models.Model):
-    """Relación entre un artículo y una materia.
+    """
+    Relación entre un artículo y una materia.
 
-    Attributes:
-        articulo (Articulo): Artículo disponible para la materia.
-        materia (Materia): Materia a la que se agrega el artículo.
+    :param articulo: Artículo disponible para la materia.
+    :param materia: Materia a la que se agrega el artículo.
     """
 
     class Meta:
@@ -809,12 +835,12 @@ class ArticuloMateria(models.Model):
 
 
 class ArticuloCarrito(models.Model):
-    """Relación entre un Artículo y un Carrito.
+    """
+    Relación entre un Artículo y un Carrito.
 
-    Attributes:
-        articulo (Articulo): Artículo que se encuentra en el carrito.
-        carrito (Carrito): Carrito de un usuario.
-        unidades (Int): Número de unidades que se van a solicitar del artículo.
+    :param articulo: Artículo que se encuentra en el carrito.
+    :param carrito: Carrito de un usuario.
+    :param unidades: Número de unidades que se van a solicitar del artículo.
     """
 
     class Meta:
@@ -826,11 +852,11 @@ class ArticuloCarrito(models.Model):
 
 
 class CategoriaArticulo(models.Model):
-    """Relación entre una Categoría y un Artículo.
+    """
+    Relación entre una Categoría y un Artículo.
 
-    Attributes:
-        categoria (Categoria): Categoría a la que pertenece Artículo.
-        articulo (Articulo): Artículo que se encuentra en la Categoría.
+    :param categoria: Categoría a la que pertenece Artículo.
+    :param articulo: Artículo que se encuentra en la Categoría.
     """
 
     class Meta:
@@ -841,11 +867,11 @@ class CategoriaArticulo(models.Model):
 
 
 class UnidadOrden(models.Model):
-    """Relación entre una unidad y una orden.
+    """
+    Relación entre una unidad y una orden.
 
-    Attributes:
-        unidad (Unidad): Unidad asignada a la orden.
-        orden (Orden): Orden a la que se asignan las unidades.
+    :param unidad: Unidad asignada a la orden.
+    :param orden: Orden a la que se asignan las unidades.
     """
 
     class Meta:
@@ -856,11 +882,11 @@ class UnidadOrden(models.Model):
 
 
 class MateriaUsuario(models.Model):
-    """Relación entre el Usuario y la materia
+    """
+    Relación entre el Usuario y la materia
 
-    Attributes:
-        materia (Materia): Materia asignada
-        usuario (Usuario): Usuario participante
+    :param materia: Materia asignada
+    :param usuario: Usuario participante
     """
 
     class Meta:
