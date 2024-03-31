@@ -23,15 +23,18 @@
                 }
             </style>
 
+            {% block nav %}
             <!--Imagen de la facultad-->
             <div class="image-container">
                 <img class="my-4" src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="50px" style="position: absolute; top: 0; left: 0;">
             </div>
 
         </div>
+        {% endblock %}
         {#        TODO: AGREGAR NAVBAR VIENE AQUI, HEADER ES POR MIENTRAS, ESTO SE USA COMO HERENCIA EN TODO PARA QUE NO TENGAN QUE AGREGAR NAVBAR#}
     </header>
     <body>
+
         <div class="container">
             {% if messages %}
                 {% for message in messages %}
@@ -49,6 +52,7 @@
                     {% endif %}
                 {% endfor %}
             {% endif %}
+
 
             {#  ESTE BLOQUE ES LO QUE VARIA, AQUI PUEDE SER EL LOGIN, DETALLES DE CARRITO. CUALQUIER CONTENIDO. #}
             {% block content %}
