@@ -26,7 +26,7 @@ services:
     command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && service apache2 start && apache2ctl configtest && python manage.py runserver 127.0.0.1:81"
     restart: always
     ports:
-      #- "8000:8000" # Mapea puerto 8000 del host al 8000 de contenedor (Desarrollo)
+      - "8000:8000" # Mapea puerto 8000 del host al 8000 de contenedor (Desarrollo)
       - "81:80" # Mapea puerto 80 del host al 80 del contenedor (Producción)
     volumes:
       - .:/app

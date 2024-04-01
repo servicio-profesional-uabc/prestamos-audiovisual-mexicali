@@ -129,7 +129,7 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = '/static/'
-STATIC_ROOT = '/app/staticfiles/'
+STATIC_ROOT = '/app/static/'
 
 # Media files
 MEDIA_URL = '/media/'

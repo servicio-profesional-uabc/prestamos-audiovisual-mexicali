@@ -1,0 +1,114 @@
+
+/**Estilos para solicitud de pedido**/
+body {
+    font-family: "Minion Pro", serif;
+    
+}
+body.custom-background-color {
+    background-color: #f9f9f9;
+}
+
+.navbar.custom-navbar-bg {
+    background-color: #f9f9f9;
+    
+}
+
+/* Estilos para el formulario */
+form {
+    max-width: 800px;
+    margin: 0 auto; 
+    padding: 20px; 
+    background-color: #f9f9f9; 
+    border-radius: 10px; 
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); 
+}
+
+/* Estilos para los campos de entrada */
+input[type="text"],
+input[type="email"] {
+    width: 100%; 
+    padding: 10px; 
+    margin-bottom: 15px; 
+    border: 1px solid #00723F; 
+    border-radius: 5px;
+    box-sizing: border-box; 
+}
+
+/* Estilos para el botón de confirmar */
+button[type="submit"] {
+    padding: 10px 20px; 
+    margin-bottom: 10px;
+    background-color: #00723F; 
+    color: #fff; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+
+}
+
+button[type="submit"]:hover {
+    background-color: #012616; /* Cambio de color de fondo al pasar el mouse */
+}
+
+/* Estilos para el botón de regresar */
+a.btn {
+    padding: 10px 20px; 
+    background-color: #DD971A; 
+    color: #fff; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+
+a.btn:hover {
+    background-color: #b38600; /* Cambio de color de fondo al pasar el mouse */
+}
+
+
+/**Estilos para detalles de orden*/
+
+.form-container {
+    margin-top: 100px; 
+    
+}
+
+.order-details-container {
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.order-items ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.buttons .btn-danger {
+    padding: 10px 20px; 
+    margin-bottom: 10px;
+    background-color: #00723F; 
+    color: #fff; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+
+.buttons .btn-danger:hover {
+    background-color: #012616; 
+}
+/**footer**/
+footer {
+    background-color: #00723F;
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+}
+
+footer p {
+    margin: 0;
+}

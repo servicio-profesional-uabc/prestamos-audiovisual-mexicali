@@ -30,7 +30,12 @@ COPY . /app/
 RUN chmod 775 /app
 RUN chmod 775 /app/PEMA
 RUN chmod 775 /app/prestamos
+RUN chmod 775 /app/PEMA/static
+RUN chmod 775 /app/staticfiles
 RUN chmod 775 /app/prestamos/wsgi.py
+
+#RUN chgrp -R www-data /app
+RUN chmod -R 2750 /app
 
 RUN a2ensite 000-default.conf
 #RUN a2dissite 000-default.conf
