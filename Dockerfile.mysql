@@ -1,0 +1,4 @@
+FROM mysql
+
+# Expose mySQL port
+EXPOSE 3306
