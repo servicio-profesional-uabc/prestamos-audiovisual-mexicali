@@ -14,35 +14,33 @@
 
     <main>
         <div class="container order-details-container">
-            <h2>Detalles de orden ###</h2>
+            <h2>Detalles de orden {{ orden.id }}</h2>
             <div class="order-items">
                 <h5>Artículos de la orden</h5>
                 <ul>
-                    <li>Artículo #1</li>
-                    <li>Artículo #2</li>
-                    <li>Artículo #3</li>
+                    {% for articulo in orden.articulos.all %}
+                        <li>{{ articulo }}</li>
+                    {% endfor %}
                 </ul>
             </div>
             <div class="order-info">
                 <h5>Nombre de la práctica</h5>
-                <p>Nombre de la práctica</p>
+                <p>{{ orden.nombre_practica }}</p>
                 <h5>Lugar de práctica o producción</h5>
-                <p>Lugar de práctica o producción</p>
+                <p>{{ orden.lugar_practica }}</p>
                 <h5>Fecha y hora de recepción</h5>
-                <p>Fecha y hora de recepción</p>
+                <p>{{ orden.fecha_recepcion }}</p>
                 <h5>Fecha y hora de devolución</h5>
-                <p>Fecha y hora de devolución</p>
+                <p>{{ orden.fecha_devolucion }}</p>
             </div>
             <div class="buttons">
                 <button type="button" class="btn-danger" onclick="confirmarCancelacion()">Cancelar Solicitud</button>
-                <a href="historial_solicitudes" class="btn btn-secondary">Regresar</a>
+                <a href="{% url 'historial_solicitudes' %}" class="btn btn-secondary">Regresar</a>
             </div>
         </div>
         
     </main>
-    <footer>
-        <p>© 2024</p>
-    </footer>
+
     <!-- Script -->
     <script src="{% static 'js/script.js' %}"></script>
 {% endblock %}

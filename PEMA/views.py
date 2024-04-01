@@ -56,12 +56,15 @@ class HistorialSolicitudesView(View):
 
 
 class DetallesOrdenView(View):
-    def get(self, request):
+    def get(self, request, orden_id=None): 
+        orden = Orden.objects.get(id=orden_id) if orden_id else None
+
         return render(
             request=request,
-            template_name="detalles_orden.html"
+            template_name="detalles_orden.html",
+            context={"orden": orden} 
         )
-
+    
 
 class CatalogoView(View):
     def get(self, request):
