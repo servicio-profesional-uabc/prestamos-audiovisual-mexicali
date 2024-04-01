@@ -6,23 +6,19 @@ file = 'Lista de personal del CEPA (docentes quienes piden).xlsx'
 
 dataPersonal = pd.read_excel(file)
 
-
 for index, row in dataPersonal.iterrows():
-    # Obtener datos de la fila
+    # obtener datos de la fila
     nombre = row['PERSONAL DEL CEPA']
     matricula = row['NUMERO DE EMPLEADO']
 
-    # Crear usuario prestatario
-    user = Prestatario.crear_usuario(username=matricula, password='contraseña_por_defecto')
+    # crear usuario prestatario
+    user = Prestatario.crear_usuario(username=matricula, password='')
 
-    # Asignar usuario al grupo 'prestatarios'
+    # asignar usuario al grupo 'prestatarios'
     group, _ = Prestatario.crear_grupo()
     group.user_set.add(user)
 
-    # Otorgar permisos al usuario prestatario
-    # Esto es un ejemplo, asegúrate de otorgar los permisos correctos según tus requisitos
+    # otorgar permisos al usuario prestatario
+    # esto es un ejemplo (revisar como se hace el mappeo):
     permisos = Permission.objects.filter(codename__in=['add_carrito', 'add_orden', 'add_corresponsableorden'])
     user.user_permissions.add(*permisos)
-
-    # Guardar cambios en la base de datos
-    user.save()
