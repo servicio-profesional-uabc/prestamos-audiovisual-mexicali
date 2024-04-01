@@ -1,16 +1,8 @@
-{% load static %}
+{% extends 'base.html' %}
 
-<!DOCTYPE html>
-<html lang="es">
+{% block content %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Importar bootstrap -->
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
-
-    <title>Vista de prueba</title>
+    <title>Carrito</title>
 </head>
 <body>
     <div class="container text-center mt-5">
@@ -27,10 +19,6 @@
           }
         </style>
 
-        <!--Imagen de la facultad-->
-        <div class="image-container">
-            <img class="my-4" src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="80px" style="position: absolute; top: 0; left: 0;">
-        </div>
         <a href="carrito.html">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16" style="position: absolute; top: 44px; right: 100px; width: 32px; height: 32px;">
                 <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
@@ -48,6 +36,5 @@
                 window.location.href = ''; // Redirige a la página de salida
             });
         </script>
-        
-</body>   
-</html>
+    </div>
+{% endblock %}

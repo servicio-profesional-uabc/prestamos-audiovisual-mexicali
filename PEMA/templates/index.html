@@ -23,7 +23,7 @@
                     {% csrf_token %}
                     <button class="btn btn-primary my-3"  data-bs-toggle="modal" data-bs-target="#exampleModal" type="submit">Salir</button>
                 </form>
-            {% else %}  
+            {% else %}
                 <h2>Inicia</h2>
                 <a href="{% url 'login' %}"> Iniciar</a>
             {% endif %}
