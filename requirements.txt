@@ -7,3 +7,4 @@ sqlparse==0.4.4
 typing_extensions==4.8.0
 pillow==10.2.0
 django-widget-tweaks==1.4.12
+pandas~=2.2.1
