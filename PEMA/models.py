@@ -163,7 +163,6 @@ class Coordinador(User):
         :param orden: Orden que se va a autorizar
         """
 
-        # crear la autorizacion extraordinaria
         autorizacion, created = AutorizacionExtraordinaria.objects.get_or_create(orden=orden, coordinador=self)
 
         # actualizar el estado de autorizacion
@@ -174,7 +173,7 @@ class Coordinador(User):
 
 class Maestro(User):
     """
-    Un maestro puede autorizar ordenes ordinarias y ser el
+    Un maestro puede autorizar órdenes ordinarias y ser el
     supervisor de una clase.
     """
 
@@ -192,7 +191,7 @@ class Maestro(User):
         """
         Crea el 'Permission Group' para el usuario maestro.
 
-        :returns: el grupo y sí se creó
+        :returns: El grupo y sí se creó
         """
 
         # grupo
@@ -209,7 +208,7 @@ class Maestro(User):
         Autoriza órdenes ordinarias.
 
         :param orden: La orden que se va a autorizar.
-        :returns: AutorizacionOrdinaria y si se creo
+        :returns: AutorizacionOrdinaria y si se crea.
         """
 
         # TODO: Este metodo esta pediente
@@ -231,7 +230,7 @@ class Maestro(User):
 class Almacen(User):
     """
     Clase que representa al usuario Almacén, Un usuario almacen 
-    puede surtir las Ordenes de los prestatarios también se encarga 
+    puede surtir las Órdenes de los prestatarios también se encarga
     de recibir el equipo.
     """
 
@@ -261,7 +260,7 @@ class Almacen(User):
     def crear_grupo() -> tuple['Group', bool]:
         """Crea el 'Permission Group' para el usuario almacén.
 
-        :returns: El grupo creado y sí se creo el grupo
+        :returns: El grupo creado y sí se creó el grupo
         """
         # crear grupo almacén
         group, created = Group.objects.get_or_create(name='almacen')
@@ -368,10 +367,10 @@ class Perfil(models.Model):
     def username(self) -> str:
         """
         Nombre del usuario en el sistema, en el proyecto el nombre
-        del usuario siempre corresponde a la matrícula o al numero
+        del usuario siempre corresponde a la matrícula o al número
         de empleado.
 
-        :return: nombre de usuario.
+        :return: Nombre de usuario.
         """
         return self.usuario.username
 
@@ -405,11 +404,11 @@ class Orden(models.Model):
 
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
-        CAPUS = "CA", _("CAPUS")
+        CAMPUS = "CA", _("CAMPUS")
         EXTERNO = "EX", _("EXTERNO")
 
     prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    lugar = models.CharField(default=Ubicacion.CAPUS, choices=Ubicacion.choices, max_length=2)
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
     emision = models.DateTimeField(auto_now_add=True)
@@ -425,7 +424,8 @@ class Orden(models.Model):
         return Unidad.objects.filter(unidadorden__orden=self)
 
     def articulos(self) -> 'QuerySet[Articulo]':
-        """Devuelve los artículos en la orden.
+        """
+        Devuelve los artículos en la orden.
 
         :returns: Artículos asociados a la orden.
         """
@@ -500,9 +500,9 @@ class Materia(models.Model):
 
     def agregar_articulo(self, articulo: 'Articulo') -> tuple['ArticuloMateria', bool]:
         """
-        Agrega un Articulo a la lista de equipo disponible para esta materia
+        Agrega un Artículo a la lista de equipo disponible para esta materia
 
-        :param articulo: Articulo que se quiere agregar.
+        :param articulo: Artículo que se quiere agregar.
         :returns: ArticuloMateria agregado y sí se creó el objeto.
         """
 
@@ -574,7 +574,7 @@ class Carrito(models.Model):
         :returns: None
         """
 
-        # TODO: reimplementar este metodo cuando haya mas detalles
+        # TODO: re-implementar este método cuando haya mas detalles
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
         # TODO: Como identificar el 'lugar' de la orden
 
@@ -699,11 +699,11 @@ class Entrega(models.Model):
 
 class Devolucion(models.Model):
     """
-    Devolución del equipo al Almacen de genera cada vez que
-    Prestatario devuelve el equipo al Almacen.
+    Devolución del equipo al Almacén se genera cada vez que
+    Prestatario devuelve el equipo al Almacén.
 
     :param orden: Orden que se devuelve
-    :param almacen: Responsable del almacen
+    :param almacen: Responsable del almacén
     :param emision: Fecha de emisión
     """
 
