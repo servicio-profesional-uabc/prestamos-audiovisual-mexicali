@@ -7,10 +7,33 @@ from PEMA.models import Perfil, Prestatario
 
 
 class TestPerfil(TestCase):
+
     def setUp(self):
-        # hay un trigger que crea automaticasmente el perfil
-        self.prestatario = Prestatario.crear_usuario(id=0, username="<NAME>", password="<PASSWORD>")
+        # hay un trigger que crea automáticamente el perfil
+
+        self.username = "username"
+        self.email = "name@test.com"
+        self.password = "password"
+        self.first_name = "John"
+        self.last_name = "Doe"
+
+        self.prestatario = Prestatario.crear_usuario(
+            id=0,
+            username=self.username,
+            email=self.email,
+            password=self.password,
+            first_name=self.first_name,
+            last_name=self.last_name
+        )
 
     def test_crear_perfil(self):
         perfil, creado = Perfil.user_data(self.prestatario)
         self.assertFalse(creado, msg="El Usuario No tiene perfil")
+
+    def test_obtener_informacion(self):
+        perfil, creado = Perfil.user_data(self.prestatario)
+
+        self.assertEqual(perfil.nombre(), self.first_name)
+        self.assertEqual(perfil.apellido(), self.last_name)
+        self.assertEqual(perfil.email(), self.email)
+        self.assertEqual(perfil.username(), self.username)
