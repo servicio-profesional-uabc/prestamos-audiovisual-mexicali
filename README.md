@@ -29,7 +29,7 @@ git clone https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mex
 cd prestamos-audiovisual-mexicali/
 
 python -m venv .venv
-source ./.venv/Scripts/activate
+.venv\Scripts\activate.bat
 pip install -r requirements.txt
 
 python manage.py makemigrations PEMA
