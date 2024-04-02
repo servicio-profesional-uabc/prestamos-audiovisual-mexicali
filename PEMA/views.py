@@ -1,15 +1,11 @@
 from django.contrib.auth import authenticate, login
-from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.hashers import check_password
-from .models import User
+from django.contrib import messages
 from .models import Orden
-from django.template import loader
 
 
 class IndexView(View):
@@ -22,10 +18,16 @@ class IndexView(View):
 
 class MenuView(View):
     def get(self, request):
-        return render(
-            request=request,
-            template_name="menu.html"
-        )
+        if request.user.is_authenticated:
+            return render(
+                request=request,
+                template_name="menu.html"
+            )
+        else:
+            return redirect("login")
+
+    def post(self, request):
+        pass
 
 
 class CarritoView(View):
