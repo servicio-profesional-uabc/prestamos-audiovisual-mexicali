@@ -258,7 +258,8 @@ class Almacen(User):
 
     @staticmethod
     def crear_grupo() -> tuple['Group', bool]:
-        """Crea el 'Permission Group' para el usuario almacén.
+        """
+        Crea el 'Permission Group' para el usuario almacén.
 
         :returns: El grupo creado y sí se creó el grupo
         """
@@ -450,10 +451,10 @@ class Orden(models.Model):
         pass
 
     def agregar_unidad(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
-        """Agrega una unidad especifíca a la orden
+        """
+        Agrega una unidad especifíca a la orden
 
-         Attributes:
-             unidad (Unidad): Unidad que se agregará
+        :param unidad: Unidad que se agregará
         """
         return UnidadOrden.objects.get_or_create(orden=self, unidad=unidad)
 
@@ -558,7 +559,7 @@ class Carrito(models.Model):
 
         return objeto, creado
 
-    def articulos(self) -> 'QuerySet[Articulo]':
+    def articulos(self) -> QuerySet['Articulo']:
         """
         Devuelve los artículos en el carrito.
 
