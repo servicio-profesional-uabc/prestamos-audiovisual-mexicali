@@ -18,7 +18,7 @@ class TestPrestatario(TestCase):
         # ordenes
         self.orden1 = Orden.objects.create(
             prestatario=self.user_prestatario,
-            lugar=Orden.Ubicacion.CAPUS,
+            lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5))
         )
