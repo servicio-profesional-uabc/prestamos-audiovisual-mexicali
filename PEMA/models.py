@@ -405,11 +405,11 @@ class Orden(models.Model):
 
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
-        CAPUS = "CA", _("CAPUS")
+        CAMPUS = "CA", _("CAMPUS")
         EXTERNO = "EX", _("EXTERNO")
 
     prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    lugar = models.CharField(default=Ubicacion.CAPUS, choices=Ubicacion.choices, max_length=2)
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
     emision = models.DateTimeField(auto_now_add=True)

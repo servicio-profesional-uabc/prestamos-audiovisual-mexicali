@@ -126,7 +126,7 @@ class Migration(migrations.Migration):
             name='Orden',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('lugar', models.CharField(choices=[('CA', 'CAPUS'), ('EX', 'EXTERNO')], default='CA', max_length=2)),
+                ('lugar', models.CharField(choices=[('CA', 'CAMPUS'), ('EX', 'EXTERNO')], default='CA', max_length=2)),
                 ('inicio', models.DateTimeField()),
                 ('final', models.DateTimeField()),
                 ('emision', models.DateTimeField(auto_now_add=True)),
