@@ -23,6 +23,7 @@ urlpatterns = [
         name='logout'
     ),
 
+
     path(
         route='menu',
         view=views.MenuView.as_view(),

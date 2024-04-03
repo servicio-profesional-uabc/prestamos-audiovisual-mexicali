@@ -49,6 +49,7 @@ class SolicitudView(View):
         )
 
 
+
 class HistorialSolicitudesView(View):
     def get(self, request):
         return render(

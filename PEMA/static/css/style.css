@@ -112,3 +112,10 @@ footer {
 footer p {
     margin: 0;
 }
+
+.select-text {
+    position: absolute;
+    top: -20px; /* Ajusta esta distancia según tu preferencia */
+    left: 50%; /* Centra horizontalmente */
+    transform: translateX(-50%); /* Centra horizontalmente */
+}
