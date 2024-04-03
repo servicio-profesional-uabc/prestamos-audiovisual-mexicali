@@ -18,17 +18,13 @@ class IndexView(View):
 
 class MenuView(View):
     def get(self, request):
-        if request.user.is_authenticated:
-            return render(
-                request=request,
-                template_name="menu.html"
-            )
-        else:
-            return redirect("login")
+        return render(
+            request=request,
+            template_name="menu.html"
+        )
 
     def post(self, request):
         pass
-
 
 class CarritoView(View):
     def get(self, request):
