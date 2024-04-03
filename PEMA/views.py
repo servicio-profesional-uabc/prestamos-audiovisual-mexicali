@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
 from django.contrib import messages
-from .models import Orden
+from .models import Orden, User
 
 
 class IndexView(View):
@@ -15,16 +15,18 @@ class IndexView(View):
             template_name="index.html"
         )
 
-
 class MenuView(View):
     def get(self, request):
+        matricula = request.user.username
         return render(
             request=request,
-            template_name="menu.html"
+            template_name="menu.html",
+            context={'matricula':matricula}
         )
 
     def post(self, request):
         pass
+
 
 class CarritoView(View):
     def get(self, request):
