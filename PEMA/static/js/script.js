@@ -54,11 +54,3 @@ document.getElementById('solicitudForm').addEventListener('submit', function(eve
     }
 });
 
-function confirmarCancelacion() {
-    // Muestra un cuadro de diálogo de confirmación
-    var confirmacion = confirm("¿Seguro que deseas cancelar la orden?");
-
-    if (confirmacion) {
-        window.location.href = "prestatario"; 
-    }
-}
