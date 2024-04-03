@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  docs:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
