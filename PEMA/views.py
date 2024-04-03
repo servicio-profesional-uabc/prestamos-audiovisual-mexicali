@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
 from django.contrib import messages
-from .models import Orden, User
+from .models import Orden, User, Prestatario
 
 
 class IndexView(View):
@@ -47,7 +47,11 @@ class SolicitudView(View):
 
 class HistorialSolicitudesView(View):
     def get(self, request):
-        solicitudes = Orden.objects.all() 
+
+        # TODO : Acceder al metodo ordenes a traves de la clase proxy Prestatario siendo un usuario User
+
+        solicitudes = Orden.objects.all()
+        print(solicitudes)
         return render(
             request=request,
             template_name="historial_solicitudes.html",
