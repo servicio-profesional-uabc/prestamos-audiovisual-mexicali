@@ -13,29 +13,17 @@
 <body class="text-center">
     <div class="container mt-5">
 
-        <h2 class="text-center">Ordenes autorizadas</h2>
-        <table class="table table-bordered table-striped mx-auto mt-4" style="max-width: 400px;">
-            <tbody>
-                <tr>
-                    <td><button class="btn btn-success btn-lg btn-block">Orden #</button></td>
-                </tr>
-                <tr>
-                    <td><button class="btn btn-success btn-lg btn-block">Orden #</button></td>
-                </tr>
-                <tr>
-                    <td><button class="btn btn-success btn-lg btn-block">Orden #</button></td>
-                </tr>
-                <tr>
-                    <td><button class="btn btn-success btn-lg btn-block">Orden #</button></td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="text-center mt-4">
-            <a href="menu" class="btn btn-secondary">Regresar</a>
-        </div>
-
         <h4>Historial de Solicitudes</h4>
-        {% if solicitudes %}
+        <h3 class="text-center">Ordenes autorizadas</h2>
+        {% if solicitudes_autorizadas %}
+            <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 400px;">
+                <tbody>
+                    <tr>
+                        <td><button class="btn btn-success btn-lg btn-block">Orden #</button></td>
+                    </tr>
+                </tbody>
+            </table>
+
             <div class="table-responsive mt-3">
                 <table class="table table-bordered">
                     <thead>
@@ -57,6 +45,23 @@
         {% else %}
             <p>No tienes solicitudes.</p>
         {% endif %}
+        
+        <h3 class="text-center">Ordenes pendientes</h2>
+        {% if solicitudes_pendientes %}
+        <table class="table table-bordered table-striped mx-auto mt-4" style="max-width: 400px;">
+            <tbody>
+                <tr>
+                    <td><button class="btn btn-success btn-lg btn-block">Orden #</button></td>
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+            <p>No tienes solicitudes.</p>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="menu" class="btn btn-secondary">Regresar</a>
+        </div>
 
     </div>
 </body>

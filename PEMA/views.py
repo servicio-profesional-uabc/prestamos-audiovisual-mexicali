@@ -63,7 +63,7 @@ class HistorialSolicitudesView(View):
             return render(
                 request=request,
                 template_name="historial_solicitudes.html",
-                context={'solicitudes': solicitudes}  
+#                context={'solicitudes': solicitudes}  
             )
 
 
@@ -102,12 +102,6 @@ class CancelarOrdenView(View):
             template_name="cancelar_orden.html"
         )
 
-class FiltrosView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="filtros.html"
-        )
 
 def test(request):
     send_mail(
