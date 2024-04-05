@@ -35,6 +35,12 @@ class CarritoView(View):
             template_name="carrito.html"
         )
 
+class FiltrosView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="filtros.html"
+        )
 
 class SolicitudView(View):
     def get(self, request):
@@ -96,6 +102,12 @@ class CancelarOrdenView(View):
             template_name="cancelar_orden.html"
         )
 
+class FiltrosView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="filtros.html"
+        )
 
 def test(request):
     send_mail(
