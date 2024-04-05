@@ -47,16 +47,19 @@ class SolicitudView(View):
 
 class HistorialSolicitudesView(View):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        
+        if prestatario:
+            solicitudes = Orden.objects.get(prestatario=prestatario)
+            print(solicitudes)
 
-        # TODO : Acceder al metodo ordenes a traves de la clase proxy Prestatario siendo un usuario User
+        if solicitudes:
+            return render(
+                request=request,
+                template_name="historial_solicitudes.html",
+                context={'solicitudes': solicitudes}  
+            )
 
-        solicitudes = Orden.objects.all()
-        print(solicitudes)
-        return render(
-            request=request,
-            template_name="historial_solicitudes.html",
-            context={'solicitudes': solicitudes}  
-        )
 
 
 class DetallesOrdenView(View):
