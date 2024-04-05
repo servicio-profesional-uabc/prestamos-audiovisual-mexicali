@@ -376,89 +376,6 @@ class Perfil(models.Model):
         return self.usuario.username
 
 
-class Orden(models.Model):
-    """Clase que representa una orden del almacén.
-
-    Una orden es un conjunto de Unidades de cada Artículo definido
-    el Carrito, para que el encargado del Almacén sepa
-    específicamente que entregar.
-
-    :param prestatario: Usuario que hace la solicitud.
-    :param lugar: Lugar donde se usara el material.
-    :param inicio: Fecha de inicio de la orden.
-    :param final: Fecha de devolución de la orden.
-    :param descripcion: Información adicional de la orden.
-    :param emision: Fecha de emisión de la orden.
-    """
-
-    class Estado(models.TextChoices):
-        """Opciones para el estado de la orden."""
-        PENDIENTE = "PN", _("PENDIENTE")
-        RECHAZADA = "RE", _("RECHAZADA")
-        APROBADA = "AP", _("APROBADA")
-        CANCELADO = "CN", _("CANCELADO")
-
-    class Tipo(models.TextChoices):
-        """Opciones para el tipo de orden."""
-        ORDINARIA = "OR", _("ORDINARIA")
-        EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
-
-    class Ubicacion(models.TextChoices):
-        """Opciones para el lugar de la orden"""
-        CAMPUS = "CA", _("CAMPUS")
-        EXTERNO = "EX", _("EXTERNO")
-
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
-    inicio = models.DateTimeField(null=False)
-    final = models.DateTimeField(null=False)
-    emision = models.DateTimeField(auto_now_add=True)
-    descripcion = models.TextField(blank=True, max_length=512)
-
-    def unidades(self) -> 'QuerySet[Unidad]':
-        """
-        Devuelve las unidades con las que se suplió la orden.
-
-        :returns: QuerySet[Unidad]: Unidades asociadas a la orden.
-        """
-
-        return Unidad.objects.filter(unidadorden__orden=self)
-
-    def articulos(self) -> 'QuerySet[Articulo]':
-        """
-        Devuelve los artículos en la orden.
-
-        :returns: Artículos asociados a la orden.
-        """
-
-        return Articulo.objects.filter(unidad__in=self.unidades())
-
-    def reporte(self) -> 'Reporte':
-        """Retorna el Reporte de la Orden o nada sí no tiene reporte.
-
-        :returns: Reporte: Reporte asociado a la orden o None si no tiene reporte.
-        """
-
-        return Reporte.objects.filter(orden=self).first()
-
-    def estado(self) -> str:
-        """
-        Devuelve el estado de la Orden.
-
-        :returns: Estado de la orden (PENDIENTE, RECHAZADA o APROBADA).
-        """
-        # TODO: falta implementar este método, Falta acordar detalles
-        pass
-
-    def agregar_unidad(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
-        """
-        Agrega una unidad especifíca a la orden
-
-        :param unidad: Unidad que se agregará
-        """
-        return UnidadOrden.objects.get_or_create(orden=self, unidad=unidad)
-
-
 class Materia(models.Model):
     """
     Las materias se encargan de limitar el material al que pueden acceder
@@ -517,6 +434,101 @@ class Materia(models.Model):
         """
 
         return MateriaUsuario.objects.get_or_create(usuario=usuario, materia=self)
+
+
+class Orden(models.Model):
+    """
+    Una orden es un conjunto de Unidades de cada Artículo definido
+    el Carrito, para que el encargado del Almacén sepa
+    específicamente que entregar.
+
+    .. warning::
+        Utilizar ``estado`` unicamente en filtros
+
+    :param prestatario: Usuario que hace la solicitud.
+    :param lugar: Lugar donde se usara el material.
+    :param inicio: Fecha de inicio de la orden.
+    :param estado: Guarda el último estado de la orden.
+    :param final: Fecha de devolución de la orden.
+    :param descripcion: Información adicional de la orden.
+    :param emision: Fecha de emisión de la orden.
+    """
+
+    class Estado(models.TextChoices):
+        """
+        Opciones para el estado de la orden:
+            * PENDIENTE_CR: Esperando confirmación de los corresponsables.
+            * PENDIENTE_AP: Esperando aprobación del maestro o coordinador
+            * RECHAZADA: Orden rechazada por el maestro o coordinador.
+            * APROBADA: Orden aprobada por el maestro o coordinador.
+            * CANCELADA: Orden cancelado por el prestatario.
+        """
+        PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
+        PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
+        RECHAZADA = "RE", _("RECHAZADA")
+        APROBADA = "AP", _("APROBADA")
+        CANCELADA = "CN", _("CANCELADO")
+
+    class Tipo(models.TextChoices):
+        """Opciones para el tipo de orden."""
+        ORDINARIA = "OR", _("ORDINARIA")
+        EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
+
+    class Ubicacion(models.TextChoices):
+        """Opciones para el lugar de la orden"""
+        CAMPUS = "CA", _("CAMPUS")
+        EXTERNO = "EX", _("EXTERNO")
+
+    materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
+    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
+    estado = models.CharField(default=Estado.PENDIENTE_CR, choices=Estado.choices, max_length=2)
+
+    inicio = models.DateTimeField(null=False)
+    final = models.DateTimeField(null=False)
+    emision = models.DateTimeField(auto_now_add=True)
+    descripcion = models.TextField(blank=True, max_length=512)
+
+    def estado_actual(self) -> tuple[bool, str]:
+        """
+        La función retorna una tupla `(bool, str)`, donde `bool` es
+        `True` si la orden puede aprobarse, y en caso contrario, la
+        cadena `str` proporciona una explicación del motivo de la no
+        aprobación.
+        """
+        pass
+
+    def unidades(self) -> 'QuerySet[Unidad]':
+        """
+        Devuelve las unidades con las que se suplió la orden.
+
+        :returns: Unidades asociadas a la orden.
+        """
+        return Unidad.objects.filter(unidadorden__orden=self)
+
+    def articulos(self) -> 'QuerySet[Articulo]':
+        """
+        Devuelve los artículos en la orden.
+
+        :returns: Artículos asociados a la orden.
+        """
+        return Articulo.objects.filter(unidad__in=self.unidades())
+
+    def reporte(self) -> 'Reporte':
+        """
+        Retorna el Reporte de la Orden o nada sí no tiene reporte.
+
+        :returns: Reporte: Reporte asociado a la orden o None si no tiene reporte.
+        """
+        return Reporte.objects.filter(orden=self).first()
+
+    def agregar_unidad(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
+        """
+        Agrega una unidad a la orden.
+
+        :param unidad: Unidad que se agregará
+        """
+        return UnidadOrden.objects.get_or_create(orden=self, unidad=unidad)
 
 
 class Carrito(models.Model):
