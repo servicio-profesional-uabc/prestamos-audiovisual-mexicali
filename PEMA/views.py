@@ -1,14 +1,11 @@
 from django.contrib.auth import authenticate, login
-from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.hashers import check_password
-from .models import User
-from django.template import loader
+from django.contrib import messages
+from .models import Orden, User, Prestatario
 
 
 class IndexView(View):
@@ -18,13 +15,17 @@ class IndexView(View):
             template_name="index.html"
         )
 
-
 class MenuView(View):
     def get(self, request):
+        matricula = request.user.username
         return render(
             request=request,
-            template_name="menu.html"
+            template_name="menu.html",
+            context={'matricula':matricula}
         )
+
+    def post(self, request):
+        pass
 
 
 class CarritoView(View):
@@ -52,19 +53,28 @@ class SolicitudView(View):
 
 class HistorialSolicitudesView(View):
     def get(self, request):
+
+        # TODO : Acceder al metodo ordenes a traves de la clase proxy Prestatario siendo un usuario User
+
+        solicitudes = Orden.objects.all()
+        print(solicitudes)
         return render(
             request=request,
-            template_name="historial_solicitudes.html"
+            template_name="historial_solicitudes.html",
+            context={'solicitudes': solicitudes}  
         )
 
 
 class DetallesOrdenView(View):
-    def get(self, request):
+    def get(self, request, orden_id=None): 
+        orden = Orden.objects.get(id=orden_id) if orden_id else None
+
         return render(
             request=request,
-            template_name="detalles_orden.html"
+            template_name="detalles_orden.html",
+            context={"orden": orden} 
         )
-
+    
 
 class CatalogoView(View):
     def get(self, request):
