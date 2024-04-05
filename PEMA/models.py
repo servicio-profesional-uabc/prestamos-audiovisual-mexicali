@@ -381,8 +381,8 @@ class Materia(models.Model):
     Las materias se encargan de limitar el material al que pueden acceder
     los Prestatarios.
 
-    :param nombre (str): Nombre de la clase
-    :param periodo (str): Periodo de la clase ej. 2022-1
+    :param nombre: Nombre de la clase
+    :param periodo: Periodo de la clase ej. 2022-1
     """
 
     class Meta:
@@ -592,7 +592,12 @@ class Carrito(models.Model):
         # TODO: Como identificar el 'lugar' de la orden
 
         with transaction.atomic():
-            Orden.objects.create(prestatario=self.prestatario, inicio=self.inicio, final=self.final)
+            Orden.objects.create(
+                materia=self.materia,
+                prestatario=self.prestatario,
+                inicio=self.inicio,
+                final=self.final
+            )
 
             # TODO: convertir los ArticuloCarrito a UnidadOrden
 

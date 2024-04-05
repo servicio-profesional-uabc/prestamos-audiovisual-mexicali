@@ -33,7 +33,10 @@ class TestArticulo(TestCase):
             num_serie="num_series 2"
         )
 
+        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
         self.orden_antes = Orden.objects.create(
+            materia=materia,
             prestatario=self.user,
             lugar="Prueba antes",
             inicio=self.generar_fechas(-1),
@@ -41,6 +44,7 @@ class TestArticulo(TestCase):
         )
 
         self.orden_despues = Orden.objects.create(
+            materia=materia,
             prestatario=self.user,
             lugar="prueba despues",
             inicio=self.generar_fechas(0),
