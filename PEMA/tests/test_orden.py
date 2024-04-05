@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from django.utils.timezone import make_aware
 
-from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen
+from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia
 
 
 class TestOrden(TestCase):
@@ -20,7 +20,10 @@ class TestOrden(TestCase):
         self.unidad1, _ = self.articulo1.crear_unidad(num_control="000", num_serie="000")
         self.unidad2, _ = self.articulo2.crear_unidad(num_control="100", num_serie="200")
 
+        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
         self.orden = Orden.objects.create(
+            materia=materia,
             prestatario=self.prestataio,
             inicio=make_aware(datetime(2024, 3, 16, 12)),
             final=make_aware(datetime(2024, 3, 16, 18)),

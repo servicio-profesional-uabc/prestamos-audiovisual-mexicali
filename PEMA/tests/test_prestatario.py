@@ -15,8 +15,11 @@ class TestPrestatario(TestCase):
         self.user_prestatario = Prestatario.crear_usuario(id=1, username="prestatario", password="<PASSWORD>")
         self.user_almacen = Almacen.crear_usuario(id=2, username="almacen", password="<PASSWORD>")
 
+        materia = Materia.objects.create(nombre="Fotografia2", periodo="2024-1")
+
         # ordenes
         self.orden1 = Orden.objects.create(
+            materia=materia,
             prestatario=self.user_prestatario,
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
@@ -24,6 +27,7 @@ class TestPrestatario(TestCase):
         )
 
         self.orden2 = Orden.objects.create(
+            materia=materia,
             prestatario=self.user_prestatario,
             lugar=Orden.Ubicacion.EXTERNO,
             inicio=make_aware(datetime(2024, 10, 5)),
