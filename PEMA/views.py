@@ -54,17 +54,17 @@ class SolicitudView(View):
 class HistorialSolicitudesView(View):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
-        
-        if prestatario:
-            solicitudes = Orden.objects.get(prestatario=prestatario)
-            print(solicitudes)
+        print(prestatario)
+        solicitudes_pendientes_ap = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_AP)
+        print(solicitudes_pendientes_ap)
 
-        if solicitudes:
-            return render(
-                request=request,
-                template_name="historial_solicitudes.html",
-#                context={'solicitudes': solicitudes}  
-            )
+
+#        if solicitudes:
+        return render(
+            request=request,
+            template_name="historial_solicitudes.html",
+            context={'solicitudes_pendientes_ap' : solicitudes_pendientes_ap}
+        )
 
 
 

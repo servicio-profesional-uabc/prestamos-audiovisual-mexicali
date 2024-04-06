@@ -4,57 +4,99 @@
 
 {% block content %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historial de Solicitudes</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body class="text-center">
-    <div class="container mt-5">
-
-        <h4>Historial de Solicitudes</h4>
-        <h3 class="text-center">Ordenes autorizadas</h2>
-        {% if solicitudes_autorizadas %}
+<body>
+    <div class="container mt-5 order-details-container">
+        <h4 class="text-center">Historial de Solicitudes</h4>
+        <br/>
+        <h4>Ordenes aprobadas</h4>
+        <hr class="hr"/>
+        {% if solicitudes_aprobadas %}
             <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 400px;">
                 <tbody>
-                    <tr>
-                        <td><button class="btn btn-success btn-lg btn-block">Orden #</button></td>
-                    </tr>
+                    {% for solicitud in solicitudes_aprobadas %}
+                      <thead>
+                        <tr>
+                          <td><button class="btn btn-success btn-lg btn-block">Orden #{{forloop.counter}}</button></td>
+                        </tr>
+                      </thead>
+                    {% endfor %}
                 </tbody>
             </table>
-
-            <div class="table-responsive mt-3">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for solicitud in solicitudes %}
-                            <tr>
-                                <td>
-                                    <a href="{% url 'detalles_solicitud' solicitud.id %}" class="list-group-item list-group-item-action">{{ solicitud.nombre }}</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
         {% else %}
             <p>No tienes solicitudes.</p>
         {% endif %}
         
-        <h3 class="text-center">Ordenes pendientes</h2>
-        {% if solicitudes_pendientes %}
-        <table class="table table-bordered table-striped mx-auto mt-4" style="max-width: 400px;">
-            <tbody>
-                <tr>
-                    <td><button class="btn btn-success btn-lg btn-block">Orden #</button></td>
-                </tr>
-            </tbody>
-        </table>
+
+        <h4>Ordenes pendientes en aprobación</h4>
+        <hr class="hr"/>
+        {% if solicitudes_pendientes_ap %}
+            <table class="table table-responsive table-bordered table-striped mt-4" style="max-width: 400px;">
+                {% for solicitud in solicitudes_pendientes_ap %}
+                    <tbody>
+                    <tr>
+                        <td>
+                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color:#00723F; font-size: 20px">Orden #{{ forloop.counter }}</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No tienes solicitudes.</p>
+        {% endif %}
+
+        <h4>Ordenes pendientes por corresponsables</h4>
+        <hr class="hr"/>
+        {% if solicitudes_pendientes_cr %}
+            <table class="table table-responsive table-bordered table-striped mt-4" style="max-width: 400px;">
+                {% for solicitud in solicitudes_pendientes_cr %}
+                    <tbody>
+                    <tr>
+                        <td>
+                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color:#00723F; font-size: 20px">Orden #{{ forloop.counter }}</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No tienes solicitudes.</p>
+        {% endif %}
+
+        <h4>Ordenes rechazadas</h4>
+        <hr class="hr"/>
+        {% if solicitudes_rechazadas %}
+            <table class="table table-responsive table-bordered table-striped mt-4" style="max-width: 400px;">
+                {% for solicitud in solicitudes_rechazadas %}
+                    <tbody>
+                    <tr>
+                        <td>
+                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color:#00723F; font-size: 20px">Orden #{{ forloop.counter }}</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No tienes solicitudes.</p>
+        {% endif %}
+
+        <h4>Ordenes canceladas</h4>
+        <hr class="hr"/>
+        {% if solicitudes_canceladas %}
+            <table class="table table-responsive table-bordered table-striped mt-4" style="max-width: 400px;">
+                {% for solicitud in solicitudes_canceladas %}
+                    <tbody>
+                    <tr>
+                        <td>
+                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color:#00723F; font-size: 20px">Orden #{{ forloop.counter }}</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                {% endfor %}
+            </table>
         {% else %}
             <p>No tienes solicitudes.</p>
         {% endif %}
@@ -62,7 +104,6 @@
         <div class="text-center mt-4">
             <a href="menu" class="btn btn-secondary">Regresar</a>
         </div>
-
     </div>
 </body>
 
