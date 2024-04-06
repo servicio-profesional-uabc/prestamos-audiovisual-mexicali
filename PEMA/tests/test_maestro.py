@@ -32,7 +32,10 @@ class TestMaestro(TestCase):
 
 
    def test_autorizar_ordinaria(self):
+       materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
        orden = Orden.objects.create(
+           materia=materia,
            prestatario=self.prestatario,
            inicio=datetime.now(),
            final=datetime.now()
