@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
@@ -54,16 +54,47 @@ class SolicitudView(View):
 class HistorialSolicitudesView(View):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
-        print(prestatario)
-        solicitudes_pendientes_ap = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_AP)
-        print(solicitudes_pendientes_ap)
 
+        try:
+            solicitudes_pendientes_ap = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_AP)
+            solicitudes_pendientes_ap.order_by('emision')
+        except:
+            solicitudes_pendientes_ap = None
 
-#        if solicitudes:
+        try:
+            solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_CR)
+            solicitudes_pendientes_cr.order_by('emision')
+        except:
+            solicitudes_pendientes_cr = None
+
+        try:
+            solicitudes_aprobadas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.APROBADA)
+            solicitudes_aprobadas.order_by('emision')
+        except:
+            solicitudes_aprobadas = None
+
+        try:
+            solicitudes_rechazadas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.RECHAZADA)
+            solicitudes_rechazadas.order_by('emision')
+        except:
+            solicitudes_rechazadas = None
+
+        try:
+            solicitudes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.CANCELADA)
+            solicitudes_canceladas.order_by('emision')
+        except:
+            solicitudes_canceladas = None
+
+        context = {'solicitudes_pendientes_ap' : solicitudes_pendientes_ap,
+                   'solicitudes_pendientes_cr' : solicitudes_pendientes_cr,
+                   'solicitudes_aprobadas' : solicitudes_aprobadas,
+                   'solicitudes_rechazadas' : solicitudes_rechazadas,
+                   'solicitudes_canceladas' : solicitudes_canceladas,}
+
         return render(
             request=request,
             template_name="historial_solicitudes.html",
-            context={'solicitudes_pendientes_ap' : solicitudes_pendientes_ap}
+            context=context,
         )
 
 
