@@ -99,7 +99,7 @@ class Prestatario(User):
         :returns: Materias a las que está integrado el prestatario.
         """
 
-        return Materia.objects.filter(materiausuario__usuario=self)
+        return Materia.objects.filter(usuariomateria__usuario=self)
 
     def carrito(self) -> Any | None:
         """
