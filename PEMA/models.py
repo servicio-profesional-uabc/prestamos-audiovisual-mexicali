@@ -11,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
 
+# Roles de Usuario
+
 class Prestatario(User):
     """
     Es un tipo de usuario con permisos específicos para solicitar
@@ -97,7 +99,7 @@ class Prestatario(User):
         :returns: Materias a las que está integrado el prestatario.
         """
 
-        return Materia.objects.filter(materiausuario__usuario=self)
+        return Materia.objects.filter(usuariomateria__usuario=self)
 
     def carrito(self) -> Any | None:
         """
@@ -170,6 +172,17 @@ class Coordinador(User):
 
         return autorizacion, created
 
+    @classmethod
+    def crear_usuario(cls, *args, **kwargs) -> User:
+        """
+        :returns: usuario en el grupo
+        """
+        grupo, _ = cls.crear_grupo()
+        user = User.objects.create_user(*args, **kwargs)
+        grupo.user_set.add(user)
+
+        return user
+
 
 class Maestro(User):
     """
@@ -225,6 +238,16 @@ class Maestro(User):
         # TODO: este método esta pendiente
 
         pass
+
+    @classmethod
+    def crear_usuario(cls, *args, **kwargs) -> User:
+        """Crea un usuario de tipo prestatario"""
+
+        grupo, _ = cls.crear_grupo()
+        user = User.objects.create_user(*args, **kwargs)
+        grupo.user_set.add(user)
+
+        return user
 
 
 class Almacen(User):
@@ -320,6 +343,8 @@ class Almacen(User):
         return Reporte.objects.get_or_create(almacen=self, orden=orden, descripcion=descripcion)
 
 
+# Modelos
+
 class Perfil(models.Model):
     """
     Esta clase proporciona acceso a todos los datos de un usuario.
@@ -393,47 +418,44 @@ class Materia(models.Model):
     # TODO: separar año y periodo
     periodo = models.CharField(max_length=6, null=False, blank=False)
 
-    @staticmethod
-    def alumnos() -> 'QuerySet[User]':
+    def alumnos(self) -> QuerySet['User']:
         """
         :returns: Lista de alumnos de la materia.
         """
+        return User.objects.filter(usuariomateria__materia=self)
 
-        return User.objects.exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
-
-    @staticmethod
-    def profesores() -> 'QuerySet[User]':
+    def maestros(self) -> QuerySet['Maestro']:
         """
         :returns: Lista de profesores asociados a la materia.
         """
-
-        return User.objects.exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
+        return Maestro.objects.filter(maestromateria__materia=self)
 
     def articulos(self) -> QuerySet['Articulo']:
         """
         :returns: Lista de artículos disponibles para la materia.
         """
-
         return Articulo.objects.filter(articulomateria__materia=self)
 
     def agregar_articulo(self, articulo: 'Articulo') -> tuple['ArticuloMateria', bool]:
         """
-        Agrega un Artículo a la lista de equipo disponible para esta materia
-
         :param articulo: Artículo que se quiere agregar.
         :returns: ArticuloMateria agregado y sí se creó el objeto.
         """
-
         return ArticuloMateria.objects.get_or_create(materia=self, articulo=articulo)
 
-    def agregar_participante(self, usuario: 'User') -> tuple['MateriaUsuario', bool]:
-        """Agrega un participante a la clase
-
-        Attribute:
-            usuario (User): Participante que se quiere agregar a la clase
+    def agregar_maestro(self, maestro: 'Maestro') -> tuple['MaestroMateria', bool]:
         """
+        :param maestro:
+        :return:
+        """
+        return MaestroMateria.objects.get_or_create(maestro=maestro, materia=self)
 
-        return MateriaUsuario.objects.get_or_create(usuario=usuario, materia=self)
+    def agregar_alumno(self, usuario: 'User') -> tuple['UsuarioMateria', bool]:
+        """
+        :param usuario: Participante que se agregara como alumno a la Materia.
+        :return:
+        """
+        return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
 
 
 class Orden(models.Model):
@@ -445,6 +467,7 @@ class Orden(models.Model):
     .. warning::
         Utilizar ``estado`` unicamente en filtros
 
+    :ivar nombre: Nombre de la produccion.
     :ivar materia: Materia de la orden.
     :ivar prestatario: Usuario que hace la solicitud.
     :ivar lugar: Lugar donde se usara el material.
@@ -490,6 +513,7 @@ class Orden(models.Model):
     final = models.DateTimeField(null=False)
     emision = models.DateTimeField(auto_now_add=True)
     descripcion = models.TextField(blank=True, max_length=512)
+    nombre = models.TextField(blank=True, max_length=125)
 
     def estado_actual(self) -> tuple[bool, str]:
         """
@@ -842,6 +866,8 @@ class AutorizacionExtraordinaria(models.Model):
     autorizar = models.BooleanField(default=False)
 
 
+# Clases de relación
+
 class CorresponsableOrden(models.Model):
     """
     Corresponsable de una orden.
@@ -874,8 +900,8 @@ class ArticuloMateria(models.Model):
     """
     Relación entre un artículo y una materia.
 
-    :param articulo: Artículo disponible para la materia.
-    :param materia: Materia a la que se agrega el artículo.
+    :ivar articulo: Artículo disponible para la materia.
+    :ivar materia: Materia a la que se agrega el artículo.
     """
 
     class Meta:
@@ -889,9 +915,9 @@ class ArticuloCarrito(models.Model):
     """
     Relación entre un Artículo y un Carrito.
 
-    :param articulo: Artículo que se encuentra en el carrito.
-    :param carrito: Carrito de un usuario.
-    :param unidades: Número de unidades que se van a solicitar del artículo.
+    :ivar articulo: Artículo que se encuentra en el carrito.
+    :ivar carrito: Carrito de un usuario.
+    :ivar unidades: Número de unidades que se van a solicitar del artículo.
     """
 
     class Meta:
@@ -906,8 +932,8 @@ class CategoriaArticulo(models.Model):
     """
     Relación entre una Categoría y un Artículo.
 
-    :param categoria: Categoría a la que pertenece Artículo.
-    :param articulo: Artículo que se encuentra en la Categoría.
+    :ivar categoria: Categoría a la que pertenece Artículo.
+    :ivar articulo: Artículo que se encuentra en la Categoría.
     """
 
     class Meta:
@@ -921,8 +947,8 @@ class UnidadOrden(models.Model):
     """
     Relación entre una unidad y una orden.
 
-    :param unidad: Unidad asignada a la orden.
-    :param orden: Orden a la que se asignan las unidades.
+    :ivar unidad: Unidad asignada a la orden.
+    :ivar orden: Orden a la que se asignan las unidades.
     """
 
     class Meta:
@@ -932,12 +958,27 @@ class UnidadOrden(models.Model):
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
 
 
-class MateriaUsuario(models.Model):
+class MaestroMateria(models.Model):
     """
-    Relación entre el Usuario y la materia
+    Relacion entre el maestro y una materia.
 
-    :param materia: Materia asignada
-    :param usuario: Usuario participante
+    :ivar materia: Materia asignada.
+    :ivar maestro: Usuario Maestro.
+    """
+
+    class Meta:
+        unique_together = ('materia', 'maestro')
+
+    materia = models.ForeignKey(to=Materia, on_delete=models.CASCADE)
+    maestro = models.ForeignKey(to=Maestro, on_delete=models.CASCADE)
+
+
+class UsuarioMateria(models.Model):
+    """
+    Relación entre el Usuario y la materia.
+
+    :ivar materia: Materia asignada.
+    :ivar usuario: Usuario participante.
     """
 
     class Meta:
