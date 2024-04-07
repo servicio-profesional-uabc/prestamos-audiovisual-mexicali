@@ -445,13 +445,14 @@ class Orden(models.Model):
     .. warning::
         Utilizar ``estado`` unicamente en filtros
 
-    :param prestatario: Usuario que hace la solicitud.
-    :param lugar: Lugar donde se usara el material.
-    :param inicio: Fecha de inicio de la orden.
-    :param estado: Guarda el último estado de la orden.
-    :param final: Fecha de devolución de la orden.
-    :param descripcion: Información adicional de la orden.
-    :param emision: Fecha de emisión de la orden.
+    :ivar materia: Materia de la orden.
+    :ivar prestatario: Usuario que hace la solicitud.
+    :ivar lugar: Lugar donde se usara el material.
+    :ivar inicio: Fecha de inicio de la orden.
+    :ivar estado: Guarda el último estado de la orden.
+    :ivar final: Fecha de devolución de la orden.
+    :ivar descripcion: Información adicional de la orden.
+    :ivar emision: Fecha de emisión de la orden.
     """
 
     class Estado(models.TextChoices):
@@ -537,14 +538,14 @@ class Carrito(models.Model):
     seleccionar los artículos del catálogo. Una vez que los artículos
     han sido seleccionados, el carrito puede convertirse en una Orden.
 
-    :param prestatario: Usuario dueño del carrito
-    :param materia: Materia a la que está ligado el equipo del carrito.
-    :param inicio: Fecha de inicio del préstamo.
-    :param final: Fecha de devolución del préstamo.
+    :ivar prestatario: Usuario dueño del carrito
+    :ivar materia: Materia a la que está ligado el equipo del carrito.
+    :ivar inicio: Fecha de inicio del préstamo.
+    :ivar final: Fecha de devolución del préstamo.
     """
 
     prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
-    materia = models.OneToOneField(to=Materia, on_delete=models.DO_NOTHING)
+    materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
 
@@ -592,7 +593,7 @@ class Carrito(models.Model):
         # TODO: Como identificar el 'lugar' de la orden
 
         with transaction.atomic():
-            Orden.objects.create(
+            orden = Orden.objects.create(
                 materia=self.materia,
                 prestatario=self.prestatario,
                 inicio=self.inicio,
@@ -600,6 +601,8 @@ class Carrito(models.Model):
             )
 
             # TODO: convertir los ArticuloCarrito a UnidadOrden
+
+            CorresponsableOrden.objects.create(prestatario=self.prestatario, orden=orden)
 
             self.delete()
 
@@ -720,9 +723,9 @@ class Devolucion(models.Model):
     Devolución del equipo al Almacén se genera cada vez que
     Prestatario devuelve el equipo al Almacén.
 
-    :param orden: Orden que se devuelve
-    :param almacen: Responsable del almacén
-    :param emision: Fecha de emisión
+    :ivar orden: Orden que se devuelve
+    :ivar almacen: Responsable del almacén
+    :ivar emision: Fecha de emisión
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
@@ -734,10 +737,10 @@ class Unidad(models.Model):
     """
     Clase que representa una unidad de un artículo.
 
-    :param articulo: Al que pertenece la unidad
-    :param estado: De la unidad
-    :param num_control: Para identificar la unidad
-    :param num_serie: De la unidad
+    :ivar articulo: Al que pertenece la unidad
+    :ivar estado: De la unidad
+    :ivar num_control: Para identificar la unidad
+    :ivar num_serie: De la unidad
     """
 
     class Meta:
@@ -760,7 +763,7 @@ class Categoria(models.Model):
     """
     Clase que representa una categoría.
 
-    :param nombre (str): Nombre de la categoría
+    :ivar nombre (str): Nombre de la categoría
     """
 
     nombre = models.CharField(primary_key=True, max_length=250)
@@ -790,9 +793,9 @@ class AutorizacionOrdinaria(models.Model):
     """
     Clase que representa una autorización ordinaria.
 
-    :param orden: Orden a la que pertenece la autorización
-    :param maestro: Usuario que autoriza la orden
-    :param autorizar: Estado de la autorización
+    :ivar orden: Orden a la que pertenece la autorización
+    :ivar maestro: Usuario que autoriza la orden
+    :ivar autorizar: Estado de la autorización
     """
 
     class Meta:
@@ -807,9 +810,9 @@ class AutorizacionExtraordinaria(models.Model):
     """
     Clase que representa una autorización extraordinaria.
 
-    :param orden:
-    :param coordinador:
-    :param autorizar:
+    :ivar orden:
+    :ivar coordinador:
+    :ivar autorizar:
     """
 
     class Meta:
@@ -824,17 +827,28 @@ class CorresponsableOrden(models.Model):
     """
     Corresponsable de una orden.
 
-    :param prestatario: Usuario que acepta ser corresponsable.
-    :param orden: Orden de la que el prestatario es corresponsable.
-    :param aceptado: Si el Prestatario acepto la corresponsabilidad.
+    :ivar prestatario: Usuario que acepta ser corresponsable.
+    :ivar orden: Orden de la que el prestatario es corresponsable.
+    :ivar estado: Estado actualde la orden (default=PENDIENTE).
     """
 
     class Meta:
         unique_together = ('orden', 'prestatario')
 
-    prestatario = models.OneToOneField(to=Prestatario, on_delete=models.CASCADE, )
-    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
-    aceptado = models.BooleanField(default=False, )
+    class Estado(models.TextChoices):
+        """
+        Opciones para el estado de la orden:
+            * PENDIENTE: Esperando confirmación.
+            * RECHAZADA: Corresponsabilidad rechazada.
+            * ACEPTADA: Corresponsabilidad aceptada.
+        """
+        PENDIENTE = "PN", _("PENDIENTE")
+        RECHAZADA = "RE", _("RECHAZADA")
+        ACEPTADA = "AC", _("ACEPTADA")
+
+    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE, )
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+    estado = models.CharField(default=Estado.PENDIENTE, choices=Estado.choices, max_length=2)
 
 
 class ArticuloMateria(models.Model):
