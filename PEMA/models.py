@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
+
 # Roles de Usuario
 
 class Prestatario(User):
@@ -171,6 +172,17 @@ class Coordinador(User):
 
         return autorizacion, created
 
+    @classmethod
+    def crear_usuario(cls, *args, **kwargs) -> User:
+        """
+        :returns: usuario en el grupo
+        """
+        grupo, _ = cls.crear_grupo()
+        user = User.objects.create_user(*args, **kwargs)
+        grupo.user_set.add(user)
+
+        return user
+
 
 class Maestro(User):
     """
@@ -226,6 +238,16 @@ class Maestro(User):
         # TODO: este método esta pendiente
 
         pass
+
+    @classmethod
+    def crear_usuario(cls, *args, **kwargs) -> User:
+        """Crea un usuario de tipo prestatario"""
+
+        grupo, _ = cls.crear_grupo()
+        user = User.objects.create_user(*args, **kwargs)
+        grupo.user_set.add(user)
+
+        return user
 
 
 class Almacen(User):
@@ -421,14 +443,19 @@ class Materia(models.Model):
         """
         return ArticuloMateria.objects.get_or_create(materia=self, articulo=articulo)
 
-    def agregar_participante(self, usuario: 'User') -> tuple['MateriaUsuario', bool]:
-        """Agrega un participante a la clase
-
-        Attribute:
-            usuario (User): Participante que se quiere agregar a la clase
+    def agregar_maestro(self, maestro: 'Maestro') -> tuple['MaestroMateria', bool]:
         """
+        :param maestro:
+        :return:
+        """
+        return MaestroMateria.objects.get_or_create(maestro=maestro, materia=self)
 
-        return MateriaUsuario.objects.get_or_create(usuario=usuario, materia=self)
+    def agregar_alumno(self, usuario: 'User') -> tuple['UsuarioMateria', bool]:
+        """
+        :param usuario: Participante que se agregara como alumno a la Materia.
+        :return:
+        """
+        return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
 
 
 class Orden(models.Model):
@@ -936,6 +963,7 @@ class MaestroMateria(models.Model):
     :ivar materia: Materia asignada.
     :ivar maestro: Usuario Maestro.
     """
+
     class Meta:
         unique_together = ('materia', 'maestro')
 
@@ -950,6 +978,7 @@ class UsuarioMateria(models.Model):
     :ivar materia: Materia asignada.
     :ivar usuario: Usuario participante.
     """
+
     class Meta:
         unique_together = ('materia', 'usuario')
 
