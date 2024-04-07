@@ -396,37 +396,29 @@ class Materia(models.Model):
     # TODO: separar año y periodo
     periodo = models.CharField(max_length=6, null=False, blank=False)
 
-    @staticmethod
-    def alumnos() -> 'QuerySet[User]':
+    def alumnos(self) -> QuerySet['User']:
         """
         :returns: Lista de alumnos de la materia.
         """
+        return User.objects.filter(usuariomateria__materia=self)
 
-        return User.objects.exclude(groups__name__in=['coordinador', 'maestro', 'almacen'])
-
-    @staticmethod
-    def profesores() -> 'QuerySet[User]':
+    def maestros(self) -> QuerySet['Maestro']:
         """
         :returns: Lista de profesores asociados a la materia.
         """
-
-        return User.objects.exclude(groups__name__in=['coordinador', 'prestatarios', 'almacen'])
+        return Maestro.objects.filter(maestromateria__materia=self)
 
     def articulos(self) -> QuerySet['Articulo']:
         """
         :returns: Lista de artículos disponibles para la materia.
         """
-
         return Articulo.objects.filter(articulomateria__materia=self)
 
     def agregar_articulo(self, articulo: 'Articulo') -> tuple['ArticuloMateria', bool]:
         """
-        Agrega un Artículo a la lista de equipo disponible para esta materia
-
         :param articulo: Artículo que se quiere agregar.
         :returns: ArticuloMateria agregado y sí se creó el objeto.
         """
-
         return ArticuloMateria.objects.get_or_create(materia=self, articulo=articulo)
 
     def agregar_participante(self, usuario: 'User') -> tuple['MateriaUsuario', bool]:
