@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
+# Roles de Usuario
 
 class Prestatario(User):
     """
@@ -319,6 +320,8 @@ class Almacen(User):
 
         return Reporte.objects.get_or_create(almacen=self, orden=orden, descripcion=descripcion)
 
+
+# Modelos
 
 class Perfil(models.Model):
     """
@@ -842,6 +845,8 @@ class AutorizacionExtraordinaria(models.Model):
     autorizar = models.BooleanField(default=False)
 
 
+# Clases de relación
+
 class CorresponsableOrden(models.Model):
     """
     Corresponsable de una orden.
@@ -874,8 +879,8 @@ class ArticuloMateria(models.Model):
     """
     Relación entre un artículo y una materia.
 
-    :param articulo: Artículo disponible para la materia.
-    :param materia: Materia a la que se agrega el artículo.
+    :ivar articulo: Artículo disponible para la materia.
+    :ivar materia: Materia a la que se agrega el artículo.
     """
 
     class Meta:
@@ -889,9 +894,9 @@ class ArticuloCarrito(models.Model):
     """
     Relación entre un Artículo y un Carrito.
 
-    :param articulo: Artículo que se encuentra en el carrito.
-    :param carrito: Carrito de un usuario.
-    :param unidades: Número de unidades que se van a solicitar del artículo.
+    :ivar articulo: Artículo que se encuentra en el carrito.
+    :ivar carrito: Carrito de un usuario.
+    :ivar unidades: Número de unidades que se van a solicitar del artículo.
     """
 
     class Meta:
@@ -906,8 +911,8 @@ class CategoriaArticulo(models.Model):
     """
     Relación entre una Categoría y un Artículo.
 
-    :param categoria: Categoría a la que pertenece Artículo.
-    :param articulo: Artículo que se encuentra en la Categoría.
+    :ivar categoria: Categoría a la que pertenece Artículo.
+    :ivar articulo: Artículo que se encuentra en la Categoría.
     """
 
     class Meta:
@@ -921,8 +926,8 @@ class UnidadOrden(models.Model):
     """
     Relación entre una unidad y una orden.
 
-    :param unidad: Unidad asignada a la orden.
-    :param orden: Orden a la que se asignan las unidades.
+    :ivar unidad: Unidad asignada a la orden.
+    :ivar orden: Orden a la que se asignan las unidades.
     """
 
     class Meta:
@@ -932,14 +937,27 @@ class UnidadOrden(models.Model):
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
 
 
-class MateriaUsuario(models.Model):
+class MaestroMateria(models.Model):
     """
-    Relación entre el Usuario y la materia
+    Relacion entre el maestro y una materia.
 
-    :param materia: Materia asignada
-    :param usuario: Usuario participante
+    :ivar materia: Materia asignada.
+    :ivar maestro: Usuario Maestro.
     """
+    class Meta:
+        unique_together = ('materia', 'maestro')
 
+    materia = models.ForeignKey(to=Materia, on_delete=models.CASCADE)
+    maestro = models.ForeignKey(to=Maestro, on_delete=models.CASCADE)
+
+
+class UsuarioMateria(models.Model):
+    """
+    Relación entre el Usuario y la materia.
+
+    :ivar materia: Materia asignada.
+    :ivar usuario: Usuario participante.
+    """
     class Meta:
         unique_together = ('materia', 'usuario')
 
