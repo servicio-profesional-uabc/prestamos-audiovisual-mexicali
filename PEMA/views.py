@@ -53,16 +53,19 @@ class SolicitudView(View):
 
 class HistorialSolicitudesView(View):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        print(prestatario)
+        solicitudes_pendientes_ap = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_AP)
+        print(solicitudes_pendientes_ap)
 
-        # TODO : Acceder al metodo ordenes a traves de la clase proxy Prestatario siendo un usuario User
 
-        solicitudes = Orden.objects.all()
-        print(solicitudes)
+#        if solicitudes:
         return render(
             request=request,
             template_name="historial_solicitudes.html",
-            context={'solicitudes': solicitudes}  
+            context={'solicitudes_pendientes_ap' : solicitudes_pendientes_ap}
         )
+
 
 
 class DetallesOrdenView(View):
@@ -99,12 +102,6 @@ class CancelarOrdenView(View):
             template_name="cancelar_orden.html"
         )
 
-class FiltrosView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="filtros.html"
-        )
 
 def test(request):
     send_mail(

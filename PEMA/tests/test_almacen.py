@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
-from PEMA.models import Almacen, Orden, Prestatario, Entrega, Devolucion, Reporte
+from PEMA.models import Almacen, Orden, Prestatario, Entrega, Devolucion, Reporte, Materia
 
 
 class TestCaseAlmacen(TestCase):
@@ -29,7 +29,15 @@ class TestCaseAlmacen(TestCase):
         my_group = Group.objects.get(name='prestatarios')
         my_group.user_set.add(user_prestatario)
 
+        materia = Materia.objects.create(
+            nombre="materia",
+            periodo="2022-1"
+        )
+
+        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
         orden = Orden.objects.create(
+            materia=materia,
             prestatario=user_prestatario,
             lugar='Un lugar',
             inicio=datetime.datetime.now(datetime.timezone.utc),
@@ -60,7 +68,10 @@ class TestCaseAlmacen(TestCase):
         user_almacen.groups.add(grupo_almacen)
         user_prestatario.groups.add(grupo_prestatario)
 
+        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
         orden = Orden.objects.create(
+            materia=materia,
             prestatario=user_prestatario,
             lugar='Un lugar',
             inicio=datetime.datetime.now(datetime.timezone.utc),
@@ -92,8 +103,10 @@ class TestCaseAlmacen(TestCase):
 
         user_almacen.groups.add(grupo_almacen)
         user_prestatario.groups.add(grupo_prestatario)
+        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
 
         orden = Orden.objects.create(
+            materia=materia,
             prestatario=user_prestatario,
             lugar='Un lugar',
             inicio=datetime.datetime.now(datetime.timezone.utc),
@@ -126,7 +139,10 @@ class TestCaseAlmacen(TestCase):
         user_almacen.groups.add(grupo_almacen)
         user_prestatario.groups.add(grupo_prestatario)
 
+        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
         orden = Orden.objects.create(
+            materia=materia,
             prestatario=user_prestatario,
             lugar='Un lugar',
             inicio=datetime.datetime.now(datetime.timezone.utc),
@@ -134,6 +150,7 @@ class TestCaseAlmacen(TestCase):
         )
 
         otra_orden = Orden.objects.create(
+            materia=materia,
             prestatario=user_prestatario,
             lugar='Otro lugar',
             inicio=datetime.datetime.now(datetime.timezone.utc),
