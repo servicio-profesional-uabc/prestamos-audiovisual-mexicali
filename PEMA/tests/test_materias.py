@@ -46,17 +46,16 @@ class MateriaTestCase(TestCase):
         self.assertIn(maestro_dos, lista_maestros_actualizada, msg="El profesor 2 ha sido eliminado")
 
     def test_metodo_articulos(self):
-        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
-
+        # TODO: rehacer esta pruebas
         articulo1 = Articulo.objects.create(nombre="Camara Canon", codigo="123",
                                             descripcion="Camara de alta definicion - hdr")
 
         articulo2 = Articulo.objects.create(nombre="Camara Blackmagic", codigo="124",
                                             descripcion="Camara de alta definicion - hdr - blackmagic")
 
-        ArticuloMateria.objects.get_or_create(materia=materia, articulo=articulo1)
+        ArticuloMateria.objects.get_or_create(materia=self.materia, articulo=articulo1)
 
-        ArticuloMateria.objects.get_or_create(materia=materia, articulo=articulo2)
+        ArticuloMateria.objects.get_or_create(materia=self.materia, articulo=articulo2)
 
         # Ejemplo: Comparte articulo1 con materia1
         materia2 = Materia.objects.create(nombre="Video", periodo="2024-1", )
@@ -66,8 +65,8 @@ class MateriaTestCase(TestCase):
         # No tiene articulos
         materia3 = Materia.objects.create(nombre="Guion", periodo="2024-1", )
 
-        materia_articulos = materia.articulos()
-        materia_articulos_esperadas = Articulo.objects.filter(articulomateria__materia=materia)
+        materia_articulos = self.materia.articulos()
+        materia_articulos_esperadas = Articulo.objects.filter(articulomateria__materia=self.materia)
 
         for a in materia_articulos:
             self.assertIn(a, materia_articulos_esperadas)
