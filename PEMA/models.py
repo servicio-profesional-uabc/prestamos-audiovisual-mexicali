@@ -532,7 +532,7 @@ class Orden(models.Model):
         """
         return UnidadOrden.objects.get_or_create(orden=self, unidad=unidad)
 
-    def estado_cooresponsables(self) -> str:
+    def estado_corresponsables(self) -> str:
         corresponsables_orden = CorresponsableOrden.objects.filter(orden=self)
         estados = set([orden.estado for orden in corresponsables_orden])
 
