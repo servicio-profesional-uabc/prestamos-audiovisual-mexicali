@@ -40,7 +40,7 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
     # si el registro se actualiza
     orden = instance.orden
 
-    match orden.estado_cooresponsables():
+    match orden.estado_corresponsables():
         case CorresponsableOrden.Estado.PENDIENTE:
             # Si todavía faltán corresponsables de aceptar
             orden.estado = Orden.Estado.PENDIENTE_CR
