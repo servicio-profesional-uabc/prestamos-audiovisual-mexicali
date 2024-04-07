@@ -26,7 +26,7 @@ urlpatterns = [
 
     path(
         route='menu',
-        view=views.MenuView.as_view(),
+        view=views.Permisos.as_view(),
         name='menu'
     ),
 

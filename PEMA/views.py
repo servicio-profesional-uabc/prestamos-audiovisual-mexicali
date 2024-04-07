@@ -1,3 +1,4 @@
+
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.views import View
@@ -5,7 +6,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
 from django.contrib import messages
-from .models import Orden, User, Prestatario
+from django.contrib.auth.decorators import login_required
+
+from .models import Orden, User, Prestatario, Maestro, Coordinador, Almacen,  Perfil, Group
 
 
 class IndexView(View):
@@ -49,7 +52,30 @@ class SolicitudView(View):
             template_name="solicitud.html"
         )
 
+class Permisos(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            nombre_grupo_perteneciente = request.user.groups.first().name
+            if nombre_grupo_perteneciente:
+                if nombre_grupo_perteneciente == "prestatario":
+                    prestatario_group = Group.objects.get(name='prestatarios')
+                    permisos = prestatario_group.permissions.all()
+                elif nombre_grupo_perteneciente == "maestro":
+                    maestro_group = Group.objects.get(name='maestro')
+                    permisos = maestro_group.permissions.all()
+                elif nombre_grupo_perteneciente == "coordinador":
+                    coordinador_group = Group.objects.get(name='coordinador')
+                    permisos = coordinador_group.permissions.all()
+                elif nombre_grupo_perteneciente == "almacen":
+                    almacen_group = Group.objects.get(name='almacen')
+                    permisos = almacen_group.permissions.all()
 
+
+        return render(
+            request=request,
+            template_name="menu.html",
+            context={'permisos': permisos}
+        )
 
 class HistorialSolicitudesView(View):
     def get(self, request):
