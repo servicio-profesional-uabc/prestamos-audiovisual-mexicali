@@ -467,6 +467,7 @@ class Orden(models.Model):
     .. warning::
         Utilizar ``estado`` unicamente en filtros
 
+    :ivar nombre: Nombre de la produccion.
     :ivar materia: Materia de la orden.
     :ivar prestatario: Usuario que hace la solicitud.
     :ivar lugar: Lugar donde se usara el material.
@@ -512,6 +513,7 @@ class Orden(models.Model):
     final = models.DateTimeField(null=False)
     emision = models.DateTimeField(auto_now_add=True)
     descripcion = models.TextField(blank=True, max_length=512)
+    nombre = models.TextField(blank=True, max_length=125)
 
     def estado_actual(self) -> tuple[bool, str]:
         """

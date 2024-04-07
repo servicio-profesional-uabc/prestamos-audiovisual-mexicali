@@ -54,7 +54,6 @@ class MateriaTestCase(TestCase):
                                             descripcion="Camara de alta definicion - hdr - blackmagic")
 
         ArticuloMateria.objects.get_or_create(materia=self.materia, articulo=articulo1)
-
         ArticuloMateria.objects.get_or_create(materia=self.materia, articulo=articulo2)
 
         # Ejemplo: Comparte articulo1 con materia1
