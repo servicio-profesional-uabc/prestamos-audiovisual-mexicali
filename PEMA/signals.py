@@ -15,7 +15,8 @@ def user_post_save(sender, instance, created, **kwargs):
     más detalles sobre qué datos contiene este perfil, revisa el modelo
     PEMA.Perfil.
     """
-    if not created: return
+    if not created:
+        return
     Perfil.objects.create(usuario=instance)
 
 
