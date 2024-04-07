@@ -327,9 +327,9 @@ class Perfil(models.Model):
     Django. Además, este método facilita el acceso a los datos que ya
     están incluidos mediante métodos específicos.
 
-    :param usuario: Usuario del perfil.
-    :param imagen: Imagen del perfil.
-    :param telefono: Número de teléfono.
+    :ivar usuario: Usuario del perfil.
+    :ivar imagen: Imagen del perfil.
+    :ivar telefono: Número de teléfono.
     """
 
     usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
@@ -484,6 +484,7 @@ class Orden(models.Model):
     prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
     estado = models.CharField(default=Estado.PENDIENTE_CR, choices=Estado.choices, max_length=2)
+    tipo = models.CharField(default=Tipo.ORDINARIA, choices=Tipo.choices, max_length=2)
 
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
@@ -530,6 +531,24 @@ class Orden(models.Model):
         :param unidad: Unidad que se agregará
         """
         return UnidadOrden.objects.get_or_create(orden=self, unidad=unidad)
+
+    def estado_cooresponsables(self) -> str:
+        corresponsables_orden = CorresponsableOrden.objects.filter(orden=self)
+        estados = set([orden.estado for orden in corresponsables_orden])
+
+        if CorresponsableOrden.Estado.RECHAZADA in estados:
+            # Sí alguno de los cooresponsables rechazo la orden
+            return CorresponsableOrden.Estado.RECHAZADA
+
+        if CorresponsableOrden.Estado.PENDIENTE in estados:
+            # Si todavía faltán corresponsables de aceptar
+            return CorresponsableOrden.Estado.PENDIENTE
+
+        if len(estados) == 1 and CorresponsableOrden.Estado.ACEPTADA in estados:
+            # Si todos los corresponsables aceptaron
+            return CorresponsableOrden.Estado.ACEPTADA
+
+        # TODO: ¿Qué hacer sí ocurre un error?, En mi opnión se debería enviar un correo al administrador
 
 
 class Carrito(models.Model):
@@ -588,9 +607,7 @@ class Carrito(models.Model):
         :returns: None
         """
 
-        # TODO: re-implementar este método cuando haya mas detalles
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
-        # TODO: Como identificar el 'lugar' de la orden
 
         with transaction.atomic():
             orden = Orden.objects.create(
@@ -605,6 +622,8 @@ class Carrito(models.Model):
             CorresponsableOrden.objects.create(prestatario=self.prestatario, orden=orden)
 
             self.delete()
+
+            # TODO: enviar correo a los Cooresponsables
 
 
 class Reporte(models.Model):
