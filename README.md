@@ -23,6 +23,7 @@ python manage.py makemigrations PEMA
 python manage.py migrate
 python manage.py crear_roles
 python manage.py developer_setup
+python manage.py crear_orden *ideal para probar historial y detalles de orden. crea 6 ordenes con caracteristicas diferentes sin articulos, 2 materias y 1 usuario*
 
 python manage.py runserver
 ```
@@ -40,6 +41,7 @@ python manage.py makemigrations PEMA
 python manage.py migrate
 python manage.py crear_roles
 python manage.py developer_setup
+python manage.py crear_orden
 
 python manage.py runserver
 ```
