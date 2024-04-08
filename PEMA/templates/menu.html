@@ -7,7 +7,7 @@
     <title>Menu</title>
 </head>
 <body>
-    <div class="container text-center mt-5">
+    <div class="container text-center mt-5 justify-content-center">
 
         <style>
           .image-container {
@@ -21,62 +21,59 @@
           }
         </style>
 
-        <a href="carrito.html">
+        <a href="carrito">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16" style="position: absolute; top: 44px; right: 100px; width: 32px; height: 32px;">
                 <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
             </svg>
         </a>
 
+
+        <a href="login">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16" style="position: absolute; top: 44px; right: 45px; width: 32px; height: 32px;">
             <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
             <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
         </svg>
+        </a>
+
     </div>
 
     <div class="container d-flex justify-content-center align-items-center text-center mt-5">
         <div>
             <h3 style="font-family: 'Minion Pro', sans-serif;">Nombre usuario</h3>
-            <h5 style="font-family: 'Minion Pro', sans-serif;">Matricula</h5>
+            <h5 style="font-family: 'Minion Pro', sans-serif;"> {{matricula}}</h5>
         </div>
     </div>
 
-<div class="container text-center mt-5 d-flex align-items-center">
-    <div class="row justify-content-center">
-        <div class="col">
-            <!-- Contenido adicional aquí -->
-        </div>
-        <div class="col">
-            <div class="card" style="width: 32rem;">
-                <img class="card-img-top" src="..." alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">Nuevo Pedido</h5>
-                    <p class="card-text">Empieza una nueva solicitud de prestamos de equipo audiovisual.</p>
-                    <a href="catalogo.html" class="btn btn-primary">Ir</a>
+    <div class="container text-center mt-5 d-flex align-items-center justify-content-center">
+        <div class="row justify-content-center">
+            <div class="col">
+                <div class="card" style="width: 32rem;">
+                    <img class="card-img-top" src="..." alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Nuevo Pedido</h5>
+                        <p class="card-text">Empieza una nueva solicitud de prestamos de equipo audiovisual.</p>
+                        <a href="filtros" class="btn btn-primary">Ir</a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col">
-            <div class="card" style="width: 32rem;">
-                <img class="card-img-top" src="..." alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">Historial de Solicitudes</h5>
-                    <p class="card-text">Consulta el estado de tus solicitudes.</p>
-                    <a href="historial.html" class="btn btn-primary">Ir</a>
+            <div class="col">
+                <div class="card" style="width: 32rem;">
+                    <img class="card-img-top" src="..." alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Historial de Solicitudes</h5>
+                        <p class="card-text">Consulta el estado de tus solicitudes.</p>
+                        <a href="historial_solicitudes" class="btn btn-primary">Ir</a>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="col">
-            <!-- Contenido adicional aquí -->
         </div>
     </div>
-</div>
 
     <script>
         var carrito = document.querySelector('.bi-cart');
         carrito.addEventListener('click', function() {
-            window.location.href = "carrito.html";
+            window.location.href = "carrito";
         });
     </script>
 {% endblock %}

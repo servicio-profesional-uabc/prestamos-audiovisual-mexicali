@@ -34,7 +34,12 @@ urlpatterns = [
         view=views.CarritoView.as_view(),
         name='carrito'
     ),
-    
+    path(
+        route='filtros',
+        view=views.FiltrosView.as_view(),
+        name='filtros'
+    ),
+
     path(
         route='solicitud',
         view=views.SolicitudView.as_view(),
@@ -52,7 +57,7 @@ urlpatterns = [
         name='historial_solicitudes'
     ),
     path(
-        route="detalles_orden",
+        route="detalles_orden/<int:id>",
         view=views.DetallesOrdenView.as_view(),
         name='detalles_orden'
     ),

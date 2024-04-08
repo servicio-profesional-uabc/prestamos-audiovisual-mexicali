@@ -25,9 +25,14 @@ Usuarios
 Modelos
 ------------------
 
+.. autoclass:: PEMA.models.Orden
+   :members:
+   :exclude-members: DoesNotExist, MultipleObjectsReturned
+
+
 .. automodule:: PEMA.models
    :members: 
-   :exclude-members: Almacen, Prestatario, Coordinador, Maestro, ArticuloMateria, ArticuloCarrito, CategoriaArticulo, UnidadOrden
+   :exclude-members: Orden, Almacen, Prestatario, Coordinador, Maestro, ArticuloMateria, ArticuloCarrito, CategoriaArticulo, UnidadOrden
    :undoc-members:
    :show-inheritance:
 

@@ -5,174 +5,67 @@ from PEMA.models import Materia, Prestatario, Coordinador, Almacen, Maestro, Art
 
 
 class MateriaTestCase(TestCase):
-    def test_crear_materia(self):
-        self.materia = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
 
+    def setUp(self):
+        self.materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+        self.user_prestatario = Prestatario.crear_usuario(id=0, username="prestatario_prueba", password="<PASSWORD>")
+        self.user_coordinador = Coordinador.crear_usuario(id=1, username="coordinador_prueba", password="<PASSWORD>")
+        self.user_almacen = Almacen.crear_usuario(id=2, username="almacen_prueba", password="<PASSWORD>")
+        self.user_maestro = Maestro.crear_usuario(id=3, username="maestro_prueba", password="<PASSWORD>")
+
+    def test_crear_materia(self):
         self.assertEqual(self.materia.nombre, "Fotografia")
         self.assertEqual(self.materia.periodo, "2024-1")
 
     def test_metodo_alumnos(self):
-        Prestatario.crear_grupo()
-        Coordinador.crear_grupo()
-        Almacen.crear_grupo()
-        Maestro.crear_grupo()
+        # alumno unico
+        self.materia.agregar_alumno(self.user_prestatario)
+        self.assertIn(self.user_prestatario, self.materia.alumnos(), msg="No se agrego al profesor")
 
-        self.user_prestatario = User.objects.create(
-            id=0,
-            username="prestatario_prueba",
-            password="<PASSWORD>"
-        )
+        # agregar otro alumno
+        alumno_dos = Prestatario.crear_usuario(id=99, username="alumno2", password="<PASSWORD>")
+        self.materia.agregar_alumno(alumno_dos)
 
-        self.user_coordinador = User.objects.create(
-            id=1,
-            username="coordinador_prueba",
-            password="<PASSWORD>"
-        )
-
-        self.user_almacen = User.objects.create(
-            id=2,
-            username="almacen_prueba",
-            password="<PASSWORD>"
-        )
-
-        self.user_maestro = User.objects.create(
-            id=3,
-            username="maestro_prueba",
-            password="<PASSWORD>"
-        )
-
-        my_group = Group.objects.get(name='prestatarios')
-        my_group.user_set.add(self.user_prestatario)
-
-        my_group = Group.objects.get(name='coordinador')
-        my_group.user_set.add(self.user_coordinador)
-
-        my_group = Group.objects.get(name='almacen')
-        my_group.user_set.add(self.user_almacen)
-
-        my_group = Group.objects.get(name='maestro')
-        my_group.user_set.add(self.user_maestro)
-
-        self.user_prestatario.save()
-        self.user_almacen.save()
-        self.user_coordinador.save()
-        self.user_maestro.save()
-
-        materia = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
-
-        respuesta = User.objects.exclude(groups__name__in=['coordinador', 'almacen', 'maestro'])
-
-        self.assertQuerysetEqual(materia.alumnos(), respuesta)
+        # ambos están en la clase
+        lista_alumnos_actualizada = self.materia.alumnos()
+        self.assertIn(self.user_prestatario, lista_alumnos_actualizada, msg="El profesor 1 ha sido eliminado")
+        self.assertIn(alumno_dos, lista_alumnos_actualizada, msg="El profesor 2 ha sido eliminado")
 
     def test_metodo_profesores(self):
-        Prestatario.crear_grupo()
-        Coordinador.crear_grupo()
-        Almacen.crear_grupo()
-        Maestro.crear_grupo()
+        # maestro unico
+        self.materia.agregar_maestro(self.user_maestro)
+        self.assertIn(self.user_maestro, self.materia.maestros(), msg="No se agrego al profesor")
 
-        self.user_prestatario = User.objects.create(
-            id=0,
-            username="prestatario_prueba",
-            password="<PASSWORD>"
-        )
+        # agregar otro maestro
+        maestro_dos = Maestro.crear_usuario(id=99, username="maestro2", password="<PASSWORD>")
+        self.materia.agregar_maestro(maestro_dos)
 
-        self.user_coordinador = User.objects.create(
-            id=1,
-            username="coordinador_prueba",
-            password="<PASSWORD>"
-        )
-
-        self.user_almacen = User.objects.create(
-            id=2,
-            username="almacen_prueba",
-            password="<PASSWORD>"
-        )
-
-        self.user_maestro = User.objects.create(
-            id=3,
-            username="maestro_prueba",
-            password="<PASSWORD>"
-        )
-
-        my_group = Group.objects.get(name='prestatarios')
-        my_group.user_set.add(self.user_prestatario)
-
-        my_group = Group.objects.get(name='coordinador')
-        my_group.user_set.add(self.user_coordinador)
-
-        my_group = Group.objects.get(name='almacen')
-        my_group.user_set.add(self.user_almacen)
-
-        my_group = Group.objects.get(name='maestro')
-        my_group.user_set.add(self.user_maestro)
-
-        self.user_prestatario.save()
-        self.user_almacen.save()
-        self.user_coordinador.save()
-        self.user_maestro.save()
-
-        materia = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
-
-        respuesta = User.objects.exclude(groups__name__in=['coordinador', 'almacen', 'prestatarios'])
-
-        self.assertQuerysetEqual(materia.profesores(), respuesta)
+        # verificar si ambos estan en el query set
+        lista_maestros_actualizada = self.materia.maestros()
+        self.assertIn(self.user_maestro, lista_maestros_actualizada, msg="El profesor 1 ha sido eliminado")
+        self.assertIn(maestro_dos, lista_maestros_actualizada, msg="El profesor 2 ha sido eliminado")
 
     def test_metodo_articulos(self):
-        materia = Materia.objects.create(
-            nombre="Fotografia",
-            periodo="2024-1"
-        )
+        # TODO: rehacer esta pruebas
+        articulo1 = Articulo.objects.create(nombre="Camara Canon", codigo="123",
+                                            descripcion="Camara de alta definicion - hdr")
 
-        articulo1 = Articulo.objects.create(
-            nombre="Camara Canon",
-            codigo="123",
-            descripcion="Camara de alta definicion - hdr"
-        )
+        articulo2 = Articulo.objects.create(nombre="Camara Blackmagic", codigo="124",
+                                            descripcion="Camara de alta definicion - hdr - blackmagic")
 
-        articulo2 = Articulo.objects.create(
-            nombre="Camara Blackmagic",
-            codigo="124",
-            descripcion="Camara de alta definicion - hdr - blackmagic"
-        )
-
-        ArticuloMateria.objects.get_or_create(
-            materia=materia,
-            articulo=articulo1
-        )
-
-        ArticuloMateria.objects.get_or_create(
-            materia=materia,
-            articulo=articulo2
-        )
+        ArticuloMateria.objects.get_or_create(materia=self.materia, articulo=articulo1)
+        ArticuloMateria.objects.get_or_create(materia=self.materia, articulo=articulo2)
 
         # Ejemplo: Comparte articulo1 con materia1
-        materia2 = Materia.objects.create(
-            nombre="Video",
-            periodo="2024-1",
-        )
+        materia2 = Materia.objects.create(nombre="Video", periodo="2024-1", )
 
-        ArticuloMateria.objects.get_or_create(
-            materia=materia2,
-            articulo=articulo1,
-        )
+        ArticuloMateria.objects.get_or_create(materia=materia2, articulo=articulo1, )
 
         # No tiene articulos
-        materia3 = Materia.objects.create(
-            nombre="Guion",
-            periodo="2024-1",
-        )
+        materia3 = Materia.objects.create(nombre="Guion", periodo="2024-1", )
 
-        materia_articulos = materia.articulos()
-        materia_articulos_esperadas = Articulo.objects.filter(articulomateria__materia=materia)
+        materia_articulos = self.materia.articulos()
+        materia_articulos_esperadas = Articulo.objects.filter(articulomateria__materia=self.materia)
 
         for a in materia_articulos:
             self.assertIn(a, materia_articulos_esperadas)
