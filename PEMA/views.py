@@ -58,23 +58,23 @@ class Permisos(View):
             nombre_grupo_perteneciente = request.user.groups.first().name
             if nombre_grupo_perteneciente:
                 if nombre_grupo_perteneciente == "prestatario":
-                    prestatario_group = Group.objects.get(name='prestatarios')
-                    permisos = prestatario_group.permissions.all()
+                    grupo = Group.objects.get(name='prestatarios')
+                    permisos = grupo.permissions.all()
                 elif nombre_grupo_perteneciente == "maestro":
-                    maestro_group = Group.objects.get(name='maestro')
-                    permisos = maestro_group.permissions.all()
+                    grupo = Group.objects.get(name='maestro')
+                    permisos = grupo.permissions.all()
                 elif nombre_grupo_perteneciente == "coordinador":
-                    coordinador_group = Group.objects.get(name='coordinador')
-                    permisos = coordinador_group.permissions.all()
+                    grupo = Group.objects.get(name='coordinador')
+                    permisos = grupo.permissions.all()
                 elif nombre_grupo_perteneciente == "almacen":
-                    almacen_group = Group.objects.get(name='almacen')
-                    permisos = almacen_group.permissions.all()
+                    grupo = Group.objects.get(name='almacen')
+                    permisos = grupo.permissions.all()
 
 
         return render(
             request=request,
             template_name="menu.html",
-            context={'permisos': permisos}
+            context={'grupo': nombre_grupo_perteneciente}
         )
 
 class HistorialSolicitudesView(View):
