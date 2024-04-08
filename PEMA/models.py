@@ -486,12 +486,14 @@ class Orden(models.Model):
             * RECHAZADA: Orden rechazada por el maestro o coordinador.
             * APROBADA: Orden aprobada por el maestro o coordinador.
             * CANCELADA: Orden cancelado por el prestatario.
+            * CONCLUIDA: Orden que se llevo a cabo sin incidentes de principio a fin.
         """
         PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
         PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
         RECHAZADA = "RE", _("RECHAZADA")
         APROBADA = "AP", _("APROBADA")
         CANCELADA = "CN", _("CANCELADO")
+        CONCLUIDA = "CC", _("CONCLUIDA")
 
     class Tipo(models.TextChoices):
         """Opciones para el tipo de orden."""
@@ -714,6 +716,34 @@ class Articulo(models.Model):
         :returns: Unidades disponibles en el rango especificado.
         """
 
+        """_summary_
+        1-Tener lista de ordenes aprobadas de la misma materia que la orden en proceso
+        2-Iterar lista de ordenes aprobadas
+        3-Comparar conflicto de horarios
+        4-Guardar ordenes que tienen conflicto en horario
+        TODO:
+        5-Iterar lista de ordenes conflicto
+        6-Crear lista con la cantidad de unidades de cada articulo en esas ordenes
+        7-Restar unidades ocupadas del total de unidades de cada articulo
+        8-Regresar lista con unidades libres de cada articulo en el horario solicitado
+        
+        
+        Posibles optimizaciones de momento
+        -No utilizar tantas listas
+        -Filtrar la mayor cantidad de ordenes con filters para reducir iteraciones del for
+        -Buscar mejor combinación de comparaciones de horarios
+        
+        """
+        
+        ordenesAprobadas = Orden.objects.filter(estado=Estado.APROBADA, materia__in=materias(self))
+        ordenesConflicto = []
+        for ord in ordenesAprobadas.iterator:
+            if(ord.inicio == inicio or 
+               ord.final == final or
+            (ord.inicio < inicio and ord.final > inicio) or
+            (ord.inicio < final and ord.final > final) or
+            (ord.inicio > inicio and ord.final < final)):
+                ordenesConflicto.append(ord)
         # TODO: Me esta volviendo loco este método, lo intentare luego
 
         pass
