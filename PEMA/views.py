@@ -4,6 +4,7 @@ from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
 from .models import Orden, User, Prestatario
 
@@ -64,6 +65,7 @@ class HistorialSolicitudesView(View):
         try:
             solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_CR)
             solicitudes_pendientes_cr.order_by('emision')
+            #print(solicitudes_pendientes_cr.get(lugar=Orden.Ubicacion.EXTERNO))
         except:
             solicitudes_pendientes_cr = None
 
@@ -85,6 +87,7 @@ class HistorialSolicitudesView(View):
         except:
             solicitudes_canceladas = None
 
+
         context = {'solicitudes_pendientes_ap' : solicitudes_pendientes_ap,
                    'solicitudes_pendientes_cr' : solicitudes_pendientes_cr,
                    'solicitudes_aprobadas' : solicitudes_aprobadas,
@@ -99,16 +102,20 @@ class HistorialSolicitudesView(View):
 
 
 
-class DetallesOrdenView(View):
-    def get(self, request, orden_id=None): 
-        orden = Orden.objects.get(id=orden_id) if orden_id else None
+class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        orden = Orden.objects.get(id=self.kwargs['id'])
+        return prestatario == orden.prestatario
 
+    def get(self, request, id):
+        orden = Orden.objects.get(id=id)
         return render(
             request=request,
             template_name="detalles_orden.html",
-            context={"orden": orden} 
+            context={"orden": orden}
         )
-    
+
 
 class CatalogoView(View):
     def get(self, request):

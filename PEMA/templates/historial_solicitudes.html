@@ -22,7 +22,7 @@
                 {% for solicitud in solicitudes_aprobadas %}
                     <tr>
                         <td class="d-flex">
-                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color: #00723f; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color: #00723f; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -41,7 +41,7 @@
                     <tbody>
                     <tr>
                         <td style="display: flex">
-                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color:#686865; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color:#686865; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
                         </td>
                     </tr>
                     </tbody>
@@ -61,7 +61,7 @@
                     <tbody>
                     <tr>
                         <td style="display: flex">
-                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color:#686865; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color:#686865; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
                         </td>
                     </tr>
                     </tbody>
@@ -80,7 +80,7 @@
                     <tbody>
                     <tr>
                         <td style="display: flex">
-                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color:#d91a1a; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color:#d91a1a; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
                         </td>
                     </tr>
                     </tbody>
@@ -99,7 +99,7 @@
                     <tbody>
                     <tr>
                         <td style="display: flex">
-                            <a href="{% url 'detalles_orden' %}" class="btn btn-success btn-lg btn-block" style="background-color:#1c1b1b; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color:#1c1b1b; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
                         </td>
                     </tr>
                     </tbody>
