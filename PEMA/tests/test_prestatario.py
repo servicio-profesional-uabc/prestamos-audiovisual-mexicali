@@ -78,8 +78,8 @@ class TestPrestatario(TestCase):
         materia1 = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
         materia2 = Materia.objects.create(nombre="Edicion y diseño", periodo="2024-1")
 
-        materia1.agregar_participante(prestatario)
-        materia2.agregar_participante(prestatario)
+        materia1.agregar_alumno(prestatario)
+        materia2.agregar_alumno(prestatario)
 
         materias = prestatario.materias()
         self.assertIn(materia1, materias)

@@ -23,7 +23,6 @@ urlpatterns = [
         name='logout'
     ),
 
-
     path(
         route='menu',
         view=views.Permisos.as_view(),
@@ -58,7 +57,7 @@ urlpatterns = [
         name='historial_solicitudes'
     ),
     path(
-        route="detalles_orden",
+        route="detalles_orden/<int:id>",
         view=views.DetallesOrdenView.as_view(),
         name='detalles_orden'
     ),

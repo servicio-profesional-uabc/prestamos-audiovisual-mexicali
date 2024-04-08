@@ -5,13 +5,15 @@
 {% block content %}
     <head>
         <title>Detalles de orden</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
     </head>
 
     <main>
         <div class="container order-details-container">
-            <h2>Detalles de orden {{ orden.id }}</h2>
+            <h2>Detalles de orden</h2>
+            <hr class="hr"/>
             <div class="order-items">
-                <h5>Artículos de la orden</h5>
+                <h4>Artículos de la orden</h4>
                 <ul>
                     {% for articulo in orden.articulos.all %}
                         <li>{{ articulo }}</li>
@@ -19,14 +21,18 @@
                 </ul>
             </div>
             <div class="order-info">
-                <h5>Nombre de la práctica</h5>
-                <p>{{ orden.nombre_practica }}</p>
-                <h5>Lugar de práctica o producción</h5>
-                <p>{{ orden.lugar_practica }}</p>
-                <h5>Fecha y hora de recepción</h5>
-                <p>{{ orden.fecha_recepcion }}</p>
-                <h5>Fecha y hora de devolución</h5>
-                <p>{{ orden.fecha_devolucion }}</p>
+                <h4>Nombre de la práctica o producción</h4>
+                <p>{{ orden.nombre }}</p>
+                <h4>Lugar</h4>
+                <p>{{ orden.lugar }}</p>
+                <h4>Fecha y hora de recepción</h4>
+                <p>{{ orden.inicio }}</p>
+                <h4>Fecha y hora de devolución</h4>
+                <p>{{ orden.final }}</p>
+                <h4>Tipo</h4>
+                <p>{{ orden.tipo }}</p>
+                <h4>Materia</h4>
+                <p>{{ orden.materia.nombre }}</p>
             </div>
             <div class="buttons">
                 <button type="button" class="btn-danger" onclick="confirmarCancelacion()">Cancelar Solicitud</button>
