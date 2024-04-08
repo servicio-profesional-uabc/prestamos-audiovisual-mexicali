@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load widget_tweaks %}
 
 {% block content %}
     <head>
@@ -10,6 +11,11 @@
 
     <main>
         <div class="container order-details-container">
+            {% if form.errors %}
+                <div class="alert alert-danger mt-2 small" role="alert">
+                    Error al cancelar la orden. Intenta de nuevo o contacta al administrador.
+                </div>
+            {% endif %}
             <h2>Detalles de la orden</h2>
             <hr class="hr"/>
             <div class="order-items">
@@ -46,12 +52,15 @@
                 <h4>Tipo</h4>
                 <p>{{ orden.get_tipo_display }}</p>
             </div>
-            <div class="buttons">
-                <button type="button" class="btn-danger" onclick="confirmarCancelacion()">Cancelar Solicitud</button>
-                <a href="{% url 'historial_solicitudes' %}" class="btn btn-secondary">Regresar</a>
-            </div>
         </div>
-        
+        <div class="buttons">
+            <form action="{% url 'detalles_orden' orden.id %}" method="POST">
+                {% csrf_token %}
+                <button id="boton_cancelar" type="submit" class="btn-danger" name="boton_cancelar">Cancelar Solicitud</button>
+                <a href="{% url 'historial_solicitudes' %}" class="btn btn-secondary">Regresar</a>
+            </form>
+        </div>
+
     </main>
 
     <!-- Script -->

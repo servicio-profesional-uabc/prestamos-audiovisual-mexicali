@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
 from .models import Orden, User, Prestatario
+from .forms import ActualizarEstadoOrdenForm
 
 
 class IndexView(View):
@@ -110,12 +111,16 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def get(self, request, id):
         orden = Orden.objects.get(id=id)
+        # https://docs.djangoproject.com/en/5.0/topics/forms/modelforms/
+
         return render(
             request=request,
             template_name="detalles_orden.html",
-            context={"orden": orden}
+            context={"orden": orden, "form": form},
         )
 
+    def post(self, request, id):
+        pass
 
 class CatalogoView(View):
     def get(self, request):
