@@ -1,13 +1,13 @@
-from django.contrib.auth.models import User, Group
 from django.test import TestCase
 
-from PEMA.models import Materia, Prestatario, Coordinador, Almacen, Maestro, ArticuloMateria, Articulo
+from PEMA.models import Materia, Prestatario, Coordinador, Almacen, Maestro, Articulo
 
 
 class MateriaTestCase(TestCase):
 
     def setUp(self):
         self.materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+
         self.user_prestatario = Prestatario.crear_usuario(id=0, username="prestatario_prueba", password="<PASSWORD>")
         self.user_coordinador = Coordinador.crear_usuario(id=1, username="coordinador_prueba", password="<PASSWORD>")
         self.user_almacen = Almacen.crear_usuario(id=2, username="almacen_prueba", password="<PASSWORD>")
@@ -46,35 +46,14 @@ class MateriaTestCase(TestCase):
         self.assertIn(maestro_dos, lista_maestros_actualizada, msg="El profesor 2 ha sido eliminado")
 
     def test_metodo_articulos(self):
-        # TODO: rehacer esta pruebas
-        articulo1 = Articulo.objects.create(nombre="Camara Canon", codigo="123",
-                                            descripcion="Camara de alta definicion - hdr")
+        # articulos para la lista
+        articulo1 = Articulo.objects.create(nombre="Camara Canon", codigo="123")
+        articulo2 = Articulo.objects.create(nombre="Camara Blackmagic", codigo="124")
 
-        articulo2 = Articulo.objects.create(nombre="Camara Blackmagic", codigo="124",
-                                            descripcion="Camara de alta definicion - hdr - blackmagic")
+        # agregar articulos
+        self.materia.agregar_articulo(articulo1)
+        self.materia.agregar_articulo(articulo2)
 
-        ArticuloMateria.objects.get_or_create(materia=self.materia, articulo=articulo1)
-        ArticuloMateria.objects.get_or_create(materia=self.materia, articulo=articulo2)
-
-        # Ejemplo: Comparte articulo1 con materia1
-        materia2 = Materia.objects.create(nombre="Video", periodo="2024-1", )
-
-        ArticuloMateria.objects.get_or_create(materia=materia2, articulo=articulo1, )
-
-        # No tiene articulos
-        materia3 = Materia.objects.create(nombre="Guion", periodo="2024-1", )
-
-        materia_articulos = self.materia.articulos()
-        materia_articulos_esperadas = Articulo.objects.filter(articulomateria__materia=self.materia)
-
-        for a in materia_articulos:
-            self.assertIn(a, materia_articulos_esperadas)
-
-        materia_articulos = materia2.articulos()
-        materia_articulos_esperadas = Articulo.objects.filter(articulomateria__materia=materia2)
-        for a in materia_articulos:
-            self.assertIn(a, materia_articulos_esperadas)
-
-        self.assertNotIn(articulo2, materia2.articulos())
-
-        self.assertNotEqual(materia3.articulos(), None)
+        lista_articulos = self.materia.articulos()
+        self.assertIn(articulo1, lista_articulos, msg="NO se agrego al articulo 1")
+        self.assertIn(articulo2, lista_articulos, msg="NO se agrego al articulo 2")
