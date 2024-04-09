@@ -1,5 +1,3 @@
-![escudo-uabc-2022-color-cont](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/assets/78140218/278844f1-a8bf-43fd-b276-8fc5c6386be2)
-
 # Sistema PEMA
 PEMA es un programa diseñado para facilitar la gestión de préstamos de material de grabación audiovisual en la Facultad de Artes, campus Mexicali. El objetivo principal de este software es proporcionar una plataforma eficiente que permita a alumnos, profesores y personal administrativo realizar solicitudes, autorizaciones y dar seguimiento a los préstamos de manera efectiva.
 
