@@ -5,6 +5,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -832,53 +833,11 @@ class Categoria(models.Model):
         return CategoriaArticulo.objects.get_or_create(categoria=self, articulo=articulo)
 
 
-class AutorizacionOrdinaria(models.Model):
-    """
-    Clase que representa una autorización ordinaria.
+# Autorizaciones
 
-    :ivar orden: Orden a la que pertenece la autorización
-    :ivar maestro: Usuario que autoriza la orden
-    :ivar autorizar: Estado de la autorización
-    """
-
+class Autorizacion(models.Model):
     class Meta:
-        unique_together = ('orden', 'maestro')
-
-    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
-    maestro = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
-    autorizar = models.BooleanField(default=False)
-
-
-class AutorizacionExtraordinaria(models.Model):
-    """
-    Clase que representa una autorización extraordinaria.
-
-    :ivar orden:
-    :ivar coordinador:
-    :ivar autorizar:
-    """
-
-    class Meta:
-        unique_together = ('orden', 'coordinador')
-
-    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
-    coordinador = models.OneToOneField(to=Coordinador, on_delete=models.CASCADE)
-    autorizar = models.BooleanField(default=False)
-
-
-# Clases de relación
-
-class CorresponsableOrden(models.Model):
-    """
-    Corresponsable de una orden.
-
-    :ivar prestatario: Usuario que acepta ser corresponsable.
-    :ivar orden: Orden de la que el prestatario es corresponsable.
-    :ivar estado: Estado actualde la orden (default=PENDIENTE).
-    """
-
-    class Meta:
-        unique_together = ('orden', 'prestatario')
+        abstract = True
 
     class Estado(models.TextChoices):
         """
@@ -891,10 +850,63 @@ class CorresponsableOrden(models.Model):
         RECHAZADA = "RE", _("RECHAZADA")
         ACEPTADA = "AC", _("ACEPTADA")
 
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE, )
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     estado = models.CharField(default=Estado.PENDIENTE, choices=Estado.choices, max_length=2)
 
+    def aceptar(self):
+        self.estado = self.Estado.ACEPTADA
+
+    def rechazar(self):
+        self.estado = self.Estado.RECHAZADA
+
+
+class AutorizacionOrdinaria(Autorizacion):
+    """
+    Clase que representa una autorización ordinaria.
+
+    :ivar orden: Orden a la que pertenece la autorización
+    :ivar maestro: Usuario que autoriza la orden
+    :ivar autorizar: Estado de la autorización
+    """
+
+    class Meta:
+        verbose_name_plural = 'Autorizaciones Ordinarias'
+        unique_together = ('orden', 'maestro')
+
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
+    maestro = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+
+
+class AutorizacionExtraordinaria(Autorizacion):
+    """
+    Clase que representa una autorización extraordinaria.
+
+    :ivar orden:
+    :ivar coordinador:
+    """
+
+    class Meta:
+        unique_together = ('orden', 'coordinador')
+
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
+    coordinador = models.OneToOneField(to=Coordinador, on_delete=models.CASCADE)
+
+
+class CorresponsableOrden(Autorizacion):
+    """
+    Corresponsable de una orden.
+
+    :ivar prestatario: Usuario que acepta ser corresponsable.
+    :ivar orden: Orden de la que el prestatario es corresponsable.
+    """
+
+    class Meta:
+        unique_together = ('orden', 'prestatario')
+
+    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE, )
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+
+
+# Clases de relación
 
 class ArticuloMateria(models.Model):
     """
