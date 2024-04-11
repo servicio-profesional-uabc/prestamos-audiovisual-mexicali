@@ -144,7 +144,7 @@ class Coordinador(User):
     def solicitar_autorizacion(orden: 'Orden'):
         # TODO: que hacer si no hay coordinador
         for coordinador in Coordinador.objects.all():
-            AutorizacionExtraordinaria.objects.create(coordinador=coordinador, orden=orden)
+            AutorizacionOrden.objects.create(autorizador=coordinador, orden=orden, tipo=orden.tipo)
 
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
@@ -209,7 +209,7 @@ class Maestro(User):
     def solicitar_autorizacion(orden: 'Orden'):
         # TODO: que hacer si no hay maestro asignado a la clase
         for maestro in orden.materia.maestros():
-            AutorizacionOrdinaria.objects.create(maestro=maestro, orden=orden)
+            AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:

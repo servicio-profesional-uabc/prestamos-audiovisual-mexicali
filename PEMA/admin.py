@@ -16,8 +16,11 @@ admin.site.register(Reporte)
 admin.site.register(Articulo)
 admin.site.register(Unidad)
 admin.site.register(Categoria)
+
+admin.site.register(AutorizacionOrden)
 admin.site.register(AutorizacionOrdinaria)
 admin.site.register(AutorizacionExtraordinaria)
+
 admin.site.register(ArticuloCarrito)
 admin.site.register(ArticuloMateria)
 admin.site.register(CategoriaArticulo)
