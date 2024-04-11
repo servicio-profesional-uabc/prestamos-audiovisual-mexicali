@@ -45,6 +45,7 @@ class FiltrosView(View):
         )
 
 class SolicitudView(View):
+    # https://docs.djangoproject.com/en/5.0/topics/forms/modelforms/
     def get(self, request):
         return render(
             request=request,
@@ -104,6 +105,12 @@ class HistorialSolicitudesView(View):
 
 
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """
+    Vista para ver los detalles de una Orden específica mediante su ID.
+    LoginRequiredMixin obliga al usuario a estar autenticado para acceder a esta vista.
+    UserPassesTestMixin nos da test_func() para comprobar si ID de la orden es
+    del usuario autenticado. Si pasa la prueba si ejecuta get() caso contrario muestra un error 403.
+    """
     def test_func(self):
         prestatario = Prestatario.get_user(self.request.user)
         orden = Orden.objects.get(id=self.kwargs['id'])
@@ -111,16 +118,23 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def get(self, request, id):
         orden = Orden.objects.get(id=id)
-        # https://docs.djangoproject.com/en/5.0/topics/forms/modelforms/
 
         return render(
             request=request,
             template_name="detalles_orden.html",
-            context={"orden": orden, "form": form},
+            context={"orden": orden, "OrdenEstados" : orden.Estado},
         )
 
     def post(self, request, id):
-        pass
+        try:
+            orden = Orden.objects.get(id=id)
+            orden.estado = Orden.Estado.CANCELADA
+            orden.save()
+            messages.success(request, "Haz cancelado tu orden exitosamente.")
+            return redirect("historial_solicitudes")
+        except Orden.DoesNotExist:
+            messages.error(request, "La orden no fue encontrada...")
+            return redirect("historial_solicitudes")
 
 class CatalogoView(View):
     def get(self, request):
@@ -128,7 +142,6 @@ class CatalogoView(View):
             request=request,
             template_name="catalogo.html"
         )
-
 
 class DetallesArticuloView(View):
     def get(self, request):
