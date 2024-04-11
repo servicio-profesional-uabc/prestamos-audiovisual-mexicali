@@ -493,7 +493,6 @@ class Orden(models.Model):
         RECHAZADA = "RE", _("RECHAZADA")
         APROBADA = "AP", _("APROBADA")
         CANCELADA = "CN", _("CANCELADO")
-        CONCLUIDA = "CC", _("CONCLUIDA")
 
     class Tipo(models.TextChoices):
         """Opciones para el tipo de orden."""
@@ -737,6 +736,7 @@ class Articulo(models.Model):
         
         ordenesAprobadas = Orden.objects.filter(estado=Estado.APROBADA, materia__in=materias(self))
         ordenesConflicto = []
+        unidadesConflicto = []
         for ord in ordenesAprobadas.iterator:
             if(ord.inicio == inicio or 
                ord.final == final or
@@ -744,6 +744,11 @@ class Articulo(models.Model):
             (ord.inicio < final and ord.final > final) or
             (ord.inicio > inicio and ord.final < final)):
                 ordenesConflicto.append(ord)
+                unidadesConflicto.append(ord.unidades(ord))
+        
+        #unidadesTotales = self.unidades()
+        
+        return Unidad.objects.difference(unidadesConflicto)      
         # TODO: Me esta volviendo loco este método, lo intentare luego
 
         pass
