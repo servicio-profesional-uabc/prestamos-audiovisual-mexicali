@@ -5,7 +5,6 @@ from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
-from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -141,6 +140,12 @@ class Coordinador(User):
     class Meta:
         proxy = True
 
+    @staticmethod
+    def solicitar_autorizacion(orden: 'Orden'):
+        # TODO: que hacer si no hay coordinador
+        for coordinador in Coordinador.objects.all():
+            AutorizacionExtraordinaria.objects.create(coordinador=coordinador, orden=orden)
+
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
         """
@@ -201,6 +206,13 @@ class Maestro(User):
         proxy = True
 
     @staticmethod
+    def solicitar_autorizacion(orden: 'Orden'):
+
+        # TODO: que hacer si no hay maestro asignado a la clase
+        for maestro in orden.materia.maestros():
+            AutorizacionOrdinaria.objects.create(maestro=maestro, orden=orden)
+
+    @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
         """
         Crea el 'Permission Group' para el usuario maestro.
@@ -216,29 +228,6 @@ class Maestro(User):
         group.permissions.add(Permission.objects.get(codename='change_autorizacionordinaria'))
 
         return group, created
-
-    def autorizar(self, orden: 'Orden') -> tuple['AutorizacionOrdinaria', bool]:
-        """
-        Autoriza órdenes ordinarias.
-
-        :param orden: La orden que se va a autorizar.
-        :returns: AutorizacionOrdinaria y si se crea.
-        """
-
-        # TODO: Este metodo esta pediente
-
-        pass
-
-    def materias(self) -> QuerySet['Materia']:
-        """
-        Materias que supervisa el maestro.
-
-        :returns: Materias supervisadas por el maestro.
-        """
-
-        # TODO: este método esta pendiente
-
-        pass
 
     @classmethod
     def crear_usuario(cls, *args, **kwargs) -> User:
@@ -504,17 +493,24 @@ class Orden(models.Model):
         CAMPUS = "CA", _("CAMPUS")
         EXTERNO = "EX", _("EXTERNO")
 
+    # obligatorio
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
-    estado = models.CharField(default=Estado.PENDIENTE_CR, choices=Estado.choices, max_length=2)
     tipo = models.CharField(default=Tipo.ORDINARIA, choices=Tipo.choices, max_length=2)
-
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
-    emision = models.DateTimeField(auto_now_add=True)
+
+    # opcional
     descripcion = models.TextField(blank=True, max_length=512)
     nombre = models.TextField(blank=True, max_length=125)
+
+    # automatico
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
+    estado = models.CharField(default=Estado.PENDIENTE_CR, choices=Estado.choices, max_length=2)
+    emision = models.DateTimeField(auto_now_add=True)
+
+    def es_ordinaria(self) -> bool:
+        return self.tipo == self.Tipo.ORDINARIA
 
     def estado_actual(self) -> tuple[bool, str]:
         """
@@ -528,16 +524,12 @@ class Orden(models.Model):
     def unidades(self) -> 'QuerySet[Unidad]':
         """
         Devuelve las unidades con las que se suplió la orden.
-
-        :returns: Unidades asociadas a la orden.
         """
         return Unidad.objects.filter(unidadorden__orden=self)
 
     def articulos(self) -> 'QuerySet[Articulo]':
         """
         Devuelve los artículos en la orden.
-
-        :returns: Artículos asociados a la orden.
         """
         return Articulo.objects.filter(unidad__in=self.unidades())
 
@@ -635,12 +627,8 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
 
         with transaction.atomic():
-            orden = Orden.objects.create(
-                materia=self.materia,
-                prestatario=self.prestatario,
-                inicio=self.inicio,
-                final=self.final
-            )
+            orden = Orden.objects.create(materia=self.materia, prestatario=self.prestatario, inicio=self.inicio,
+                                         final=self.final)
 
             # TODO: convertir los ArticuloCarrito a UnidadOrden
 
@@ -657,7 +645,7 @@ class Reporte(models.Model):
 
     :param almacen: Usuario que emitió el reporte.
     :param orden: Orden a la que se refiere el reporte.
-    :param estado: Estado de la orden.
+    :param estado: Estado de la orden.automatico
     :param descripcion: Información de la orden.
     :param emision: Fecha de emisión del reporte.
     """

@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from PEMA.models import Perfil, CorresponsableOrden, Orden, AutorizacionOrdinaria
+from PEMA.models import Perfil, CorresponsableOrden, Orden, Maestro, Coordinador
 
 
 @receiver(post_save, sender=User)
@@ -38,26 +38,28 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
         return
 
     # si el registro se actualiza
-    orden = instance.orden
+    orden: Orden = instance.orden
+    estado = CorresponsableOrden.Estado
 
+    # verificar las respuestas de los corresponsables
     match orden.estado_corresponsables():
-        case CorresponsableOrden.Estado.PENDIENTE:
-            # Si todavía faltán corresponsables de aceptar
-            orden.estado = Orden.Estado.PENDIENTE_CR
+        case estado.ACEPTADA:  # Si todos aceptaron
 
-        case CorresponsableOrden.Estado.RECHAZADA:
-            # Sí alguno de los cooresponsables rechazo la orden
-            orden.estado = Orden.Estado.RECHAZADA
-
-        case CorresponsableOrden.Estado.ACEPTADA:
-            # Si todos los corresponsables aceptaron
+            # cambiar estado `pendiente corresponsables` a `pendiente autorizacion`
             orden.estado = Orden.Estado.PENDIENTE_AP
 
-            # TODO: Falta identificar al Maestro de una clase
-            # TODO: Falta identificar al Coordinador
+            if orden.es_ordinaria():
+                Maestro.solicitar_autorizacion(orden)
+            else:
+                Coordinador.solicitar_autorizacion(orden)
 
-            # TODO: enviar correo de autorizacion a quien corresponda
+        case estado.RECHAZADA:  # Si alguno rechazo
+            orden.estado = Orden.Estado.RECHAZADA
 
+        case estado.PENDIENTE:  # Si todavía falta alguno de aceptar
+            orden.estado = Orden.Estado.PENDIENTE_CR
+
+    # guardar orden actualizada
     orden.save()
 
 
