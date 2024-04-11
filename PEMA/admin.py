@@ -7,6 +7,7 @@ admin.site.register(Almacen)
 admin.site.register(Maestro)
 admin.site.register(Coordinador)
 admin.site.register(Perfil)
+
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
 admin.site.register(Carrito)
@@ -18,8 +19,6 @@ admin.site.register(Unidad)
 admin.site.register(Categoria)
 
 admin.site.register(AutorizacionOrden)
-admin.site.register(AutorizacionOrdinaria)
-admin.site.register(AutorizacionExtraordinaria)
 
 admin.site.register(ArticuloCarrito)
 admin.site.register(ArticuloMateria)

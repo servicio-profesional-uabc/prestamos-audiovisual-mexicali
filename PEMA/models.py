@@ -20,6 +20,7 @@ class Prestatario(User):
     """
 
     class Meta:
+        verbose_name_plural = "Prestatarios"
         proxy = True
 
     class PrestatarioManager(models.Manager):
@@ -138,6 +139,7 @@ class Coordinador(User):
     objects = CoordinadorManager()
 
     class Meta:
+        verbose_name_plural = "Coordinadores"
         proxy = True
 
     @staticmethod
@@ -164,20 +166,6 @@ class Coordinador(User):
 
         return group, created
 
-    def autorizar(self, orden: 'Orden') -> tuple['AutorizacionExtraordinaria', bool]:
-        """
-        Autoriza una orden específica.
-
-        :param orden: Orden que se va a autorizar
-        """
-
-        autorizacion, created = AutorizacionExtraordinaria.objects.get_or_create(orden=orden, coordinador=self)
-
-        # actualizar el estado de autorizacion
-        autorizacion.autorizar = True
-
-        return autorizacion, created
-
     @classmethod
     def crear_usuario(cls, *args, **kwargs) -> User:
         """
@@ -203,6 +191,7 @@ class Maestro(User):
     objects = MaestroManager()
 
     class Meta:
+        verbose_name_plural = "Maestros"
         proxy = True
 
     @staticmethod
@@ -253,6 +242,7 @@ class Almacen(User):
     objects = AlmacenManager()
 
     class Meta:
+        verbose_name_plural = "Encargados de Almacén"
         proxy = True
 
     @staticmethod
@@ -451,8 +441,8 @@ class Materia(models.Model):
 
 class TipoOrden(models.TextChoices):
     """Opciones para el tipo de orden."""
-    ORDINARIA = "OR", _("ORDINARIA")
-    EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
+    ORDINARIA = "OR", _("Ordinaria")
+    EXTRAORDINARIA = "EX", _("Extraordinaria")
 
 
 class EstadoOrden(models.TextChoices):
@@ -857,43 +847,15 @@ class Autorizacion(models.Model):
 
 class AutorizacionOrden(Autorizacion):
     class Meta:
+        verbose_name_plural = "Autorizaciones"
         unique_together = ('orden', 'autorizador')
 
     autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
-
-class AutorizacionOrdinaria(Autorizacion):
-    """
-    Clase que representa una autorización ordinaria.
-
-    :ivar orden: Orden a la que pertenece la autorización
-    :ivar maestro: Usuario que autoriza la orden
-    :ivar estado: Estado de la autorización
-    """
-
-    class Meta:
-        verbose_name_plural = 'Autorizaciones Ordinarias'
-        unique_together = ('orden', 'maestro')
-
-    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
-    maestro = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
-
-
-class AutorizacionExtraordinaria(Autorizacion):
-    """
-    Clase que representa una autorización extraordinaria.
-
-    :ivar orden:
-    :ivar coordinador:
-    """
-
-    class Meta:
-        unique_together = ('orden', 'coordinador')
-
-    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
-    coordinador = models.OneToOneField(to=Coordinador, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"({self.get_tipo_display()}) {self.orden}"
 
 
 class CorresponsableOrden(Autorizacion):
