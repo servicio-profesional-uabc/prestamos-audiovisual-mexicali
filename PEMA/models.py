@@ -510,6 +510,9 @@ class Orden(models.Model):
     estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
     emision = models.DateTimeField(auto_now_add=True)
 
+    # en caso de que lugar sea Ubicacion.EXTERNO
+    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125)
+
     # opcional
     descripcion = models.TextField(blank=True, max_length=512)
 
