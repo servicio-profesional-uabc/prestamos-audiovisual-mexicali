@@ -145,6 +145,7 @@ class Coordinador(User):
     @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
         # TODO: que hacer si no hay coordinador
+        # TODO: enviar los correos
         for coordinador in Coordinador.objects.all():
             AutorizacionOrden.objects.create(autorizador=coordinador, orden=orden, tipo=orden.tipo)
 
@@ -197,6 +198,7 @@ class Maestro(User):
     @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
         # TODO: que hacer si no hay maestro asignado a la clase
+        # TODO: evnviar los correos
         for maestro in orden.materia.maestros():
             AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
 
@@ -848,6 +850,15 @@ class Autorizacion(models.Model):
 
     estado = models.CharField(default=Estado.PENDIENTE, choices=Estado.choices, max_length=2)
 
+    def esta_pendiente(self) -> bool:
+        return self.estado == self.Estado.PENDIENTE
+
+    def aceptada(self) -> bool:
+        return self.estado == self.Estado.ACEPTADA
+
+    def rechazada(self) -> bool:
+        return self.estado == self.Estado.RECHAZADA
+
     def aceptar(self):
         self.estado = self.Estado.ACEPTADA
 
@@ -861,7 +872,7 @@ class AutorizacionOrden(Autorizacion):
         unique_together = ('orden', 'autorizador')
 
     autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
     def __str__(self):
