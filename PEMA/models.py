@@ -447,6 +447,10 @@ class Materia(models.Model):
         """
         return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
 
+class TipoOrden(models.TextChoices):
+    """Opciones para el tipo de orden."""
+    ORDINARIA = "OR", _("ORDINARIA")
+    EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
 
 class Orden(models.Model):
     """
@@ -486,11 +490,6 @@ class Orden(models.Model):
         APROBADA = "AP", _("APROBADA")
         CANCELADA = "CN", _("CANCELADO")
 
-    class Tipo(models.TextChoices):
-        """Opciones para el tipo de orden."""
-        ORDINARIA = "OR", _("ORDINARIA")
-        EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
-
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
         CAMPUS = "CA", _("CAMPUS")
@@ -507,13 +506,13 @@ class Orden(models.Model):
     nombre = models.TextField(blank=True, max_length=125)
 
     # automatico
-    tipo = models.CharField(default=Tipo.ORDINARIA, choices=Tipo.choices, max_length=2)
+    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
     estado = models.CharField(default=Estado.PENDIENTE_CR, choices=Estado.choices, max_length=2)
     emision = models.DateTimeField(auto_now_add=True)
 
     def es_ordinaria(self) -> bool:
-        return self.tipo == self.Tipo.ORDINARIA
+        return self.tipo == TipoOrden.ORDINARIA
 
     def estado_actual(self) -> tuple[bool, str]:
         """
@@ -848,6 +847,15 @@ class Autorizacion(models.Model):
 
     def rechazar(self):
         self.estado = self.Estado.RECHAZADA
+
+
+class AutorizacionOrden(Autorizacion):
+
+    class Meta:
+        unique_together = ('orden', 'autorizador')
+
+    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
 
 
 class AutorizacionOrdinaria(Autorizacion):
