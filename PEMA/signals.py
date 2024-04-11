@@ -41,6 +41,8 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
         # si el registro se crea
         return
 
+    # TODO: bloquear el estado una vez que se rechaze o acepte
+
     # verificar las respuestas de los corresponsables
     match orden.estado_corresponsables():
         case estado.ACEPTADA:  # Si todos aceptaron
@@ -62,5 +64,28 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
     orden.save()
 
 
+@receiver(post_save, sender=AutorizacionOrden)
+def autorizacion_orden_updated(sender, instance, created, **kwargs):
+    # TODO: faltan pruebas unitarias para este trigger
+
+    autorizacion = instance
+    orden = instance.orden
+
+    if created:
+        # si se creo no hacer nada
+        return
+
+    # TODO: bloquear el estado una vez que se rechaze o acepte
+
+    if autorizacion.aceptada():
+        orden.estado = EstadoOrden.APROBADA
+
+    if autorizacion.rechazada():
+        orden.estado = EstadoOrden.RECHAZADA
+
+    orden.save()
+
+
 post_save.connect(user_post_save, sender=User)
 post_save.connect(corresponsable_orden_updated, sender=CorresponsableOrden)
+post_save.connect(autorizacion_orden_updated, sender=AutorizacionOrden)
