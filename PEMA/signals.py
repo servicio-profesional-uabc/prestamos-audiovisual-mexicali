@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from PEMA.models import Perfil, CorresponsableOrden, Orden, Maestro, Coordinador
+from PEMA.models import Perfil, CorresponsableOrden, Orden, Maestro, Coordinador, EstadoOrden, AutorizacionOrden
 
 
 @receiver(post_save, sender=User)
@@ -13,7 +13,7 @@ def user_post_save(sender, instance, created, **kwargs):
     Crea un perfil asociado a ese usuario, el cual contiene información
     adicional para el modelo estándar de usuario de Django. Para obtener
     más detalles sobre qué datos contiene este perfil, revisa el modelo
-    PEMA.Perfil.
+    `Perfil`.
     """
     if not created:
         return
@@ -34,30 +34,29 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
 
     # TODO: faltan pruebas unitarias para este trigger
 
-    if created:  # si el registro se crea
-        return
-
-    # si el registro se actualiza
-    orden: Orden = instance.orden
+    orden = instance.orden
     estado = CorresponsableOrden.Estado
+
+    if created:
+        # si el registro se crea
+        return
 
     # verificar las respuestas de los corresponsables
     match orden.estado_corresponsables():
         case estado.ACEPTADA:  # Si todos aceptaron
 
             # cambiar estado `pendiente corresponsables` a `pendiente autorizacion`
-            orden.estado = Orden.Estado.PENDIENTE_AP
+            orden.estado = EstadoOrden.PENDIENTE_AP
 
+            # solicitar las autorizaciones
             if orden.es_ordinaria():
                 Maestro.solicitar_autorizacion(orden)
-            else:
+
+            if orden.es_extraordinaria():
                 Coordinador.solicitar_autorizacion(orden)
 
         case estado.RECHAZADA:  # Si alguno rechazo
-            orden.estado = Orden.Estado.RECHAZADA
-
-        case estado.PENDIENTE:  # Si todavía falta alguno de aceptar
-            orden.estado = Orden.Estado.PENDIENTE_CR
+            orden.estado = EstadoOrden.RECHAZADA
 
     # guardar orden actualizada
     orden.save()

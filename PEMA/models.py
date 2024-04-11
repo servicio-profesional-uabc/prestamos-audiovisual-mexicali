@@ -207,7 +207,6 @@ class Maestro(User):
 
     @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
-
         # TODO: que hacer si no hay maestro asignado a la clase
         for maestro in orden.materia.maestros():
             AutorizacionOrdinaria.objects.create(maestro=maestro, orden=orden)
@@ -290,7 +289,9 @@ class Almacen(User):
 
     @staticmethod
     def crear_usuario(*args, **kwargs) -> User:
-        """Crea un usuario de tipo prestatario"""
+        """
+        Crea un usuario de tipo prestatario
+        """
 
         grupo, _ = Almacen.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
@@ -447,10 +448,27 @@ class Materia(models.Model):
         """
         return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
 
+
 class TipoOrden(models.TextChoices):
     """Opciones para el tipo de orden."""
     ORDINARIA = "OR", _("ORDINARIA")
     EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
+
+
+class EstadoOrden(models.TextChoices):
+    """
+     * `PENDIENTE_CR`: Esperando confirmación de los corresponsables.
+     * `PENDIENTE_AP`: Esperando aprobación del maestro o coordinador
+     * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
+     * `APROBADA`: Orden aprobada por el maestro o coordinador.
+     * `CANCELADA`: Orden cancelado por el prestatario.
+    """
+    PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
+    PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
+    RECHAZADA = "RE", _("RECHAZADA")
+    APROBADA = "AP", _("APROBADA")
+    CANCELADA = "CN", _("CANCELADO")
+
 
 class Orden(models.Model):
     """
@@ -475,21 +493,6 @@ class Orden(models.Model):
     :ivar emision: Fecha de emisión de la orden.
     """
 
-    class Estado(models.TextChoices):
-        """
-        Opciones para el estado de la orden:
-            * PENDIENTE_CR: Esperando confirmación de los corresponsables.
-            * PENDIENTE_AP: Esperando aprobación del maestro o coordinador
-            * RECHAZADA: Orden rechazada por el maestro o coordinador.
-            * APROBADA: Orden aprobada por el maestro o coordinador.
-            * CANCELADA: Orden cancelado por el prestatario.
-        """
-        PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
-        PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
-        RECHAZADA = "RE", _("RECHAZADA")
-        APROBADA = "AP", _("APROBADA")
-        CANCELADA = "CN", _("CANCELADO")
-
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
         CAMPUS = "CA", _("CAMPUS")
@@ -505,14 +508,17 @@ class Orden(models.Model):
     descripcion = models.TextField(blank=True, max_length=512)
     nombre = models.TextField(blank=True, max_length=125)
 
-    # automatico
+    # automático
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
-    estado = models.CharField(default=Estado.PENDIENTE_CR, choices=Estado.choices, max_length=2)
+    estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
     emision = models.DateTimeField(auto_now_add=True)
 
     def es_ordinaria(self) -> bool:
         return self.tipo == TipoOrden.ORDINARIA
+
+    def es_extraordinaria(self):
+        return self.tipo == TipoOrden.EXTRAORDINARIA
 
     def estado_actual(self) -> tuple[bool, str]:
         """
@@ -556,7 +562,7 @@ class Orden(models.Model):
         estados = set([orden.estado for orden in corresponsables_orden])
 
         if CorresponsableOrden.Estado.RECHAZADA in estados:
-            # Sí alguno de los cooresponsables rechazo la orden
+            # Sí alguno de los corresponsables rechazo la orden
             return CorresponsableOrden.Estado.RECHAZADA
 
         if CorresponsableOrden.Estado.PENDIENTE in estados:
@@ -567,7 +573,7 @@ class Orden(models.Model):
             # Si todos los corresponsables aceptaron
             return CorresponsableOrden.Estado.ACEPTADA
 
-        # TODO: ¿Qué hacer sí ocurre un error?, En mi opnión se debería enviar un correo al administrador
+        # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
 
 
 class Carrito(models.Model):
@@ -850,12 +856,12 @@ class Autorizacion(models.Model):
 
 
 class AutorizacionOrden(Autorizacion):
-
     class Meta:
         unique_together = ('orden', 'autorizador')
 
     autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
+    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
 
 class AutorizacionOrdinaria(Autorizacion):
@@ -901,7 +907,7 @@ class CorresponsableOrden(Autorizacion):
     class Meta:
         unique_together = ('orden', 'prestatario')
 
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE, )
+    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
 
 
