@@ -457,14 +457,17 @@ class Orden(models.Model):
     .. warning::
         Utilizar ``estado`` unicamente en filtros
 
-    :ivar nombre: Nombre de la produccion.
     :ivar materia: Materia de la orden.
     :ivar prestatario: Usuario que hace la solicitud.
-    :ivar lugar: Lugar donde se usara el material.
     :ivar inicio: Fecha de inicio de la orden.
-    :ivar estado: Guarda el último estado de la orden.
     :ivar final: Fecha de devolución de la orden.
+
+    :ivar nombre: Nombre de la produccion.
     :ivar descripcion: Información adicional de la orden.
+
+    :ivar tipo: Tipo de orden, ordinaria o extraordinaria.
+    :ivar lugar: Lugar donde se usara el material.
+    :ivar estado: Guarda el último estado de la orden.
     :ivar emision: Fecha de emisión de la orden.
     """
 
@@ -496,7 +499,6 @@ class Orden(models.Model):
     # obligatorio
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    tipo = models.CharField(default=Tipo.ORDINARIA, choices=Tipo.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
 
@@ -505,6 +507,7 @@ class Orden(models.Model):
     nombre = models.TextField(blank=True, max_length=125)
 
     # automatico
+    tipo = models.CharField(default=Tipo.ORDINARIA, choices=Tipo.choices, max_length=2)
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
     estado = models.CharField(default=Estado.PENDIENTE_CR, choices=Estado.choices, max_length=2)
     emision = models.DateTimeField(auto_now_add=True)
@@ -853,7 +856,7 @@ class AutorizacionOrdinaria(Autorizacion):
 
     :ivar orden: Orden a la que pertenece la autorización
     :ivar maestro: Usuario que autoriza la orden
-    :ivar autorizar: Estado de la autorización
+    :ivar estado: Estado de la autorización
     """
 
     class Meta:
