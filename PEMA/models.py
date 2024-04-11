@@ -20,6 +20,7 @@ class Prestatario(User):
     """
 
     class Meta:
+        verbose_name_plural = "Prestatarios"
         proxy = True
 
     class PrestatarioManager(models.Manager):
@@ -138,13 +139,14 @@ class Coordinador(User):
     objects = CoordinadorManager()
 
     class Meta:
+        verbose_name_plural = "Coordinadores"
         proxy = True
 
     @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
         # TODO: que hacer si no hay coordinador
         for coordinador in Coordinador.objects.all():
-            AutorizacionExtraordinaria.objects.create(coordinador=coordinador, orden=orden)
+            AutorizacionOrden.objects.create(autorizador=coordinador, orden=orden, tipo=orden.tipo)
 
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
@@ -158,25 +160,11 @@ class Coordinador(User):
         group, created = Group.objects.get_or_create(name='coordinador')
 
         # permisos
-        group.permissions.add(Permission.objects.get(codename='add_autorizacionextraordinaria'))
+        group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='change_reporte'))
 
         return group, created
-
-    def autorizar(self, orden: 'Orden') -> tuple['AutorizacionExtraordinaria', bool]:
-        """
-        Autoriza una orden específica.
-
-        :param orden: Orden que se va a autorizar
-        """
-
-        autorizacion, created = AutorizacionExtraordinaria.objects.get_or_create(orden=orden, coordinador=self)
-
-        # actualizar el estado de autorizacion
-        autorizacion.autorizar = True
-
-        return autorizacion, created
 
     @classmethod
     def crear_usuario(cls, *args, **kwargs) -> User:
@@ -203,14 +191,14 @@ class Maestro(User):
     objects = MaestroManager()
 
     class Meta:
+        verbose_name_plural = "Maestros"
         proxy = True
 
     @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
-
         # TODO: que hacer si no hay maestro asignado a la clase
         for maestro in orden.materia.maestros():
-            AutorizacionOrdinaria.objects.create(maestro=maestro, orden=orden)
+            AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -224,8 +212,8 @@ class Maestro(User):
         group, created = Group.objects.get_or_create(name='maestro')
 
         # permisos
-        group.permissions.add(Permission.objects.get(codename='add_autorizacionordinaria'))
-        group.permissions.add(Permission.objects.get(codename='change_autorizacionordinaria'))
+        group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
+        group.permissions.add(Permission.objects.get(codename='change_autorizacionorden'))
 
         return group, created
 
@@ -254,6 +242,7 @@ class Almacen(User):
     objects = AlmacenManager()
 
     class Meta:
+        verbose_name_plural = "Encargados de Almacén"
         proxy = True
 
     @staticmethod
@@ -290,7 +279,9 @@ class Almacen(User):
 
     @staticmethod
     def crear_usuario(*args, **kwargs) -> User:
-        """Crea un usuario de tipo prestatario"""
+        """
+        Crea un usuario de tipo prestatario
+        """
 
         grupo, _ = Almacen.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
@@ -405,6 +396,7 @@ class Materia(models.Model):
 
     nombre = models.CharField(primary_key=True, max_length=250, null=False, blank=False)
 
+    # TODO: falta grupo
     # TODO: separar año y periodo
     periodo = models.CharField(max_length=6, null=False, blank=False)
 
@@ -447,6 +439,30 @@ class Materia(models.Model):
         """
         return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
 
+    def __str__(self):
+        return f"{self.nombre} ({self.periodo} )"
+
+
+class TipoOrden(models.TextChoices):
+    """Opciones para el tipo de orden."""
+    ORDINARIA = "OR", _("Ordinaria")
+    EXTRAORDINARIA = "EX", _("Extraordinaria")
+
+
+class EstadoOrden(models.TextChoices):
+    """
+     * `PENDIENTE_CR`: Esperando confirmación de los corresponsables.
+     * `PENDIENTE_AP`: Esperando aprobación del maestro o coordinador
+     * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
+     * `APROBADA`: Orden aprobada por el maestro o coordinador.
+     * `CANCELADA`: Orden cancelado por el prestatario.
+    """
+    PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
+    PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
+    RECHAZADA = "RE", _("RECHAZADA")
+    APROBADA = "AP", _("APROBADA")
+    CANCELADA = "CN", _("CANCELADO")
+
 
 class Orden(models.Model):
     """
@@ -457,36 +473,22 @@ class Orden(models.Model):
     .. warning::
         Utilizar ``estado`` unicamente en filtros
 
-    :ivar nombre: Nombre de la produccion.
     :ivar materia: Materia de la orden.
     :ivar prestatario: Usuario que hace la solicitud.
-    :ivar lugar: Lugar donde se usara el material.
     :ivar inicio: Fecha de inicio de la orden.
-    :ivar estado: Guarda el último estado de la orden.
     :ivar final: Fecha de devolución de la orden.
+
+    :ivar nombre: Nombre de la produccion.
     :ivar descripcion: Información adicional de la orden.
+
+    :ivar tipo: Tipo de orden, ordinaria o extraordinaria.
+    :ivar lugar: Lugar donde se usara el material.
+    :ivar estado: Guarda el último estado de la orden.
     :ivar emision: Fecha de emisión de la orden.
     """
 
-    class Estado(models.TextChoices):
-        """
-        Opciones para el estado de la orden:
-            * PENDIENTE_CR: Esperando confirmación de los corresponsables.
-            * PENDIENTE_AP: Esperando aprobación del maestro o coordinador
-            * RECHAZADA: Orden rechazada por el maestro o coordinador.
-            * APROBADA: Orden aprobada por el maestro o coordinador.
-            * CANCELADA: Orden cancelado por el prestatario.
-        """
-        PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
-        PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
-        RECHAZADA = "RE", _("RECHAZADA")
-        APROBADA = "AP", _("APROBADA")
-        CANCELADA = "CN", _("CANCELADO")
-
-    class Tipo(models.TextChoices):
-        """Opciones para el tipo de orden."""
-        ORDINARIA = "OR", _("ORDINARIA")
-        EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
+    class Meta:
+        verbose_name_plural = "Ordenes"
 
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
@@ -494,23 +496,26 @@ class Orden(models.Model):
         EXTERNO = "EX", _("EXTERNO")
 
     # obligatorio
+    nombre = models.CharField(blank=False, max_length=125)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    tipo = models.CharField(default=Tipo.ORDINARIA, choices=Tipo.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
 
-    # opcional
-    descripcion = models.TextField(blank=True, max_length=512)
-    nombre = models.TextField(blank=True, max_length=125)
-
-    # automatico
+    # automático
+    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
-    estado = models.CharField(default=Estado.PENDIENTE_CR, choices=Estado.choices, max_length=2)
+    estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
     emision = models.DateTimeField(auto_now_add=True)
 
+    # opcional
+    descripcion = models.TextField(blank=True, max_length=512)
+
     def es_ordinaria(self) -> bool:
-        return self.tipo == self.Tipo.ORDINARIA
+        return self.tipo == TipoOrden.ORDINARIA
+
+    def es_extraordinaria(self):
+        return self.tipo == TipoOrden.EXTRAORDINARIA
 
     def estado_actual(self) -> tuple[bool, str]:
         """
@@ -554,7 +559,7 @@ class Orden(models.Model):
         estados = set([orden.estado for orden in corresponsables_orden])
 
         if CorresponsableOrden.Estado.RECHAZADA in estados:
-            # Sí alguno de los cooresponsables rechazo la orden
+            # Sí alguno de los corresponsables rechazo la orden
             return CorresponsableOrden.Estado.RECHAZADA
 
         if CorresponsableOrden.Estado.PENDIENTE in estados:
@@ -565,7 +570,10 @@ class Orden(models.Model):
             # Si todos los corresponsables aceptaron
             return CorresponsableOrden.Estado.ACEPTADA
 
-        # TODO: ¿Qué hacer sí ocurre un error?, En mi opnión se debería enviar un correo al administrador
+        # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
+
+    def __str__(self):
+        return f"{self.nombre}"
 
 
 class Carrito(models.Model):
@@ -834,9 +842,9 @@ class Autorizacion(models.Model):
             * RECHAZADA: Corresponsabilidad rechazada.
             * ACEPTADA: Corresponsabilidad aceptada.
         """
-        PENDIENTE = "PN", _("PENDIENTE")
-        RECHAZADA = "RE", _("RECHAZADA")
-        ACEPTADA = "AC", _("ACEPTADA")
+        PENDIENTE = "PN", _("Pendiente")
+        RECHAZADA = "RE", _("Rechazada")
+        ACEPTADA = "AC", _("Aceptada")
 
     estado = models.CharField(default=Estado.PENDIENTE, choices=Estado.choices, max_length=2)
 
@@ -847,36 +855,17 @@ class Autorizacion(models.Model):
         self.estado = self.Estado.RECHAZADA
 
 
-class AutorizacionOrdinaria(Autorizacion):
-    """
-    Clase que representa una autorización ordinaria.
-
-    :ivar orden: Orden a la que pertenece la autorización
-    :ivar maestro: Usuario que autoriza la orden
-    :ivar autorizar: Estado de la autorización
-    """
-
+class AutorizacionOrden(Autorizacion):
     class Meta:
-        verbose_name_plural = 'Autorizaciones Ordinarias'
-        unique_together = ('orden', 'maestro')
+        verbose_name_plural = "Autorizaciones"
+        unique_together = ('orden', 'autorizador')
 
+    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
-    maestro = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
-
-class AutorizacionExtraordinaria(Autorizacion):
-    """
-    Clase que representa una autorización extraordinaria.
-
-    :ivar orden:
-    :ivar coordinador:
-    """
-
-    class Meta:
-        unique_together = ('orden', 'coordinador')
-
-    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
-    coordinador = models.OneToOneField(to=Coordinador, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"({self.get_tipo_display()}) {self.orden}"
 
 
 class CorresponsableOrden(Autorizacion):
@@ -890,7 +879,7 @@ class CorresponsableOrden(Autorizacion):
     class Meta:
         unique_together = ('orden', 'prestatario')
 
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE, )
+    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
 
 
