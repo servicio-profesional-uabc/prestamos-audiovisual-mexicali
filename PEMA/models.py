@@ -160,7 +160,7 @@ class Coordinador(User):
         group, created = Group.objects.get_or_create(name='coordinador')
 
         # permisos
-        group.permissions.add(Permission.objects.get(codename='add_autorizacionextraordinaria'))
+        group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='change_reporte'))
 
@@ -212,8 +212,8 @@ class Maestro(User):
         group, created = Group.objects.get_or_create(name='maestro')
 
         # permisos
-        group.permissions.add(Permission.objects.get(codename='add_autorizacionordinaria'))
-        group.permissions.add(Permission.objects.get(codename='change_autorizacionordinaria'))
+        group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
+        group.permissions.add(Permission.objects.get(codename='change_autorizacionorden'))
 
         return group, created
 
@@ -396,6 +396,7 @@ class Materia(models.Model):
 
     nombre = models.CharField(primary_key=True, max_length=250, null=False, blank=False)
 
+    # TODO: falta grupo
     # TODO: separar año y periodo
     periodo = models.CharField(max_length=6, null=False, blank=False)
 
@@ -437,6 +438,9 @@ class Materia(models.Model):
         :return:
         """
         return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
+
+    def __str__(self):
+        return f"{self.nombre} ({self.periodo} )"
 
 
 class TipoOrden(models.TextChoices):
@@ -483,26 +487,29 @@ class Orden(models.Model):
     :ivar emision: Fecha de emisión de la orden.
     """
 
+    class Meta:
+        verbose_name_plural = "Ordenes"
+
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
         CAMPUS = "CA", _("CAMPUS")
         EXTERNO = "EX", _("EXTERNO")
 
     # obligatorio
+    nombre = models.CharField(blank=False, max_length=125)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
-
-    # opcional
-    descripcion = models.TextField(blank=True, max_length=512)
-    nombre = models.TextField(blank=True, max_length=125)
 
     # automático
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
     estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
     emision = models.DateTimeField(auto_now_add=True)
+
+    # opcional
+    descripcion = models.TextField(blank=True, max_length=512)
 
     def es_ordinaria(self) -> bool:
         return self.tipo == TipoOrden.ORDINARIA
@@ -564,6 +571,9 @@ class Orden(models.Model):
             return CorresponsableOrden.Estado.ACEPTADA
 
         # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
+
+    def __str__(self):
+        return f"{self.nombre}"
 
 
 class Carrito(models.Model):
@@ -832,9 +842,9 @@ class Autorizacion(models.Model):
             * RECHAZADA: Corresponsabilidad rechazada.
             * ACEPTADA: Corresponsabilidad aceptada.
         """
-        PENDIENTE = "PN", _("PENDIENTE")
-        RECHAZADA = "RE", _("RECHAZADA")
-        ACEPTADA = "AC", _("ACEPTADA")
+        PENDIENTE = "PN", _("Pendiente")
+        RECHAZADA = "RE", _("Rechazada")
+        ACEPTADA = "AC", _("Aceptada")
 
     estado = models.CharField(default=Estado.PENDIENTE, choices=Estado.choices, max_length=2)
 
