@@ -4,24 +4,27 @@ PEMA es una herramienta diseñada para simplificar la gestión de préstamos de 
 Facultad de Artes del campus Mexicali.
 
 ## Documentación
+La documentación del sistema se ha elaborado utilizando [Sphinx](https://www.sphinx-doc.org/en/master/). Para generarla,
+ejecuta el siguiente comando. Los archivos resultantes se guardarán en `docs/_build`.
 
-La documentación del sistema se ha elaborado utilizando Sphinx. Para generarla, ejecuta el siguiente comando. Los 
-archivos resultantes se guardarán en `docs/_build`.
+- Generar documentación:
 
-```sh
-sphinx-build ./docs ./docs/_build/html
-```
+  ```sh
+  sphinx-build ./docs ./docs/_build/html
+  ```
 
 ## Pruebas
 El proyecto utiliza las herramientas de Django para hacer pruebas unitarias, se recomienda mantener las pruebas 
 actualizadas para garantizar una mayor calidad en el código:
 
-- Pruebas Unitarias
+- Pruebas unitarias:
+
     ```sh
     python manage.py test PEMA/tests
     ```
 
-- Cobertura de Código
+- Cobertura de código:
+
     ```sh
     coverage run --source='./PEMA' manage.py test PEMA
     coverage report
@@ -47,6 +50,9 @@ sigue estos pasos:
   ```
   
 ## Datos de Prueba
-```sh
-python manage.py developer_setup
-```
+- Crear usuarios y órdenes de prueba: 
+
+  ```sh
+  python manage.py developer_setup
+  python manage.py crear_orden
+  ```
