@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from .models import Orden, User, Prestatario, EstadoOrden
+from .models import Orden, User, Prestatario, EstadoOrden, UsuarioMateria, Materia
 from .forms import ActualizarEstadoOrdenForm
 
 
@@ -39,9 +39,14 @@ class CarritoView(View):
 
 class FiltrosView(View):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        context = {
+            'prestatario':prestatario,
+        }
         return render(
             request=request,
-            template_name="filtros.html"
+            template_name="filtros.html",
+            context=context,
         )
 
 class SolicitudView(View):
