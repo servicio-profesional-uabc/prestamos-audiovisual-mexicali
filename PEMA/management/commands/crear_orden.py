@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
-from PEMA.models import Prestatario, Orden, Materia
+from PEMA.models import Prestatario, Orden, Materia, EstadoOrden, TipoOrden
 from django.utils.timezone import make_aware
 from datetime import datetime
 from django.conf import settings
@@ -39,56 +39,63 @@ class Command(BaseCommand):
         # ordenes
         orden1 = Orden.objects.create(
             prestatario=user,
+            nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.PENDIENTE_AP,
+            estado=EstadoOrden.PENDIENTE_AP,
             materia=materia1,
         )
 
         orden2 = Orden.objects.create(
             prestatario=user,
+            nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.EXTERNO,
+            tipo=TipoOrden.EXTRAORDINARIA,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.PENDIENTE_CR,
+            estado=EstadoOrden.PENDIENTE_CR,
             materia=materia1,
             descripcion="Esta solicitud es para mi practica de Cinematografia en la laguna salada."
         )
 
         orden3 = Orden.objects.create(
             prestatario=user,
+            nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.APROBADA,
+            estado=EstadoOrden.APROBADA,
             materia=materia2,
         )
 
         orden4 = Orden.objects.create(
             prestatario=user,
+            nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.CANCELADA,
+            estado=EstadoOrden.CANCELADA,
             materia=materia2,
         )
 
         orden5 = Orden.objects.create(
             prestatario=user,
+            nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.RECHAZADA,
+            estado=EstadoOrden.RECHAZADA,
             materia=materia1,
         )
 
         orden6 = Orden.objects.create(
             prestatario=user,
+            nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.APROBADA,
+            estado=EstadoOrden.APROBADA,
             materia=materia1,
         )
 

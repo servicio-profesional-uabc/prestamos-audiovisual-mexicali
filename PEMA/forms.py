@@ -23,3 +23,6 @@ class UserLoginForm(AuthenticationForm):
             'placeholder': ''
         })
     )
+
+class ActualizarEstadoOrdenForm(forms.Form):
+    update_button = forms.CharField(widget=forms.HiddenInput(), initial='update_order')
