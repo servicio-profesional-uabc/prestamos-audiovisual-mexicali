@@ -291,40 +291,6 @@ class Almacen(User):
 
         return user
 
-    def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
-        """
-        Generar el registro que el Almacén entrego el equipo.
-
-        :param orden: La orden entregada
-        :returns: Registro de entrega y si el registro se creó
-        """
-
-        return Entrega.objects.get_or_create(almacen=self, orden=orden)
-
-    def devolver(self, orden: 'Orden') -> tuple['Devolucion', bool]:
-        """
-        Generar el registro que el Almacén recibió el equipo de vuelta.
-
-        :param orden: La orden que se va a devolver.
-        :returns: El registro de devolución, si el registro se creó
-        """
-
-        return Devolucion.objects.get_or_create(almacen=self, orden=orden)
-
-    def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
-        """
-        Este método genera un Reporte para una orden solicitada. Las órdenes
-        reportadas utilizando este método siempre se consideran activas.
-        Si se desea desactivar el informe, se requiere la intervención de un
-        Coordinador.
-
-        :param orden: La orden que se va a reportar.
-        :param descripcion: Información adicional del Reporte.
-        :returns: Reporte y sí el objeto se creó.
-        """
-
-        return Reporte.objects.get_or_create(almacen=self, orden=orden, descripcion=descripcion)
-
 
 # Modelos
 
@@ -596,6 +562,40 @@ class Orden(models.Model):
             return CorresponsableOrden.Estado.ACEPTADA
 
         # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
+
+    def entregar(self, almacen: 'Almacen') -> tuple['Entrega', bool]:
+        """
+        Generar el registro que el Almacén entrego el equipo.
+
+        :param almacen: Almacén que entrega el equipo.
+        :returns: Registro de entrega y si el registro se creó
+        """
+
+        return Entrega.objects.get_or_create(almacen=almacen, orden=self)
+
+    def recibir(self, almacen: 'Almacen') -> tuple['Devolucion', bool]:
+        """
+        Generar el registro que el Almacén recibió el equipo de vuelta.
+
+        :param almacen: Almacén que recibe el equipo.
+        :returns: El registro de devolución, si el registro se creó
+        """
+
+        return Devolucion.objects.get_or_create(almacen=almacen, orden=self)
+
+    def reportar(self, almacen: 'Almacen', descripcion: str) -> tuple['Reporte', bool]:
+        """
+        Este método genera un Reporte para una orden solicitada. Las órdenes
+        reportadas utilizando este método siempre se consideran activas.
+        Si se desea desactivar el informe, se requiere la intervención de un
+        Coordinador.
+
+        :param almacen: Almacén que reporta la orden.
+        :param descripcion: Información adicional del Reporte.
+        :returns: Reporte y sí el objeto se creó.
+        """
+
+        return Reporte.objects.get_or_create(almacen=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
         return f"{self.nombre}"
