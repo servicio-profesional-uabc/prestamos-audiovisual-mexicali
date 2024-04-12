@@ -13,7 +13,8 @@ sphinx-build ./docs ./docs/_build/html
 ```
 
 ## Pruebas
-El proyecto utiliza las herramientas de pruebas unitarias de Django, se recomienda mantener las pruebas actualizadas
+El proyecto utiliza las herramientas de Django para hacer pruebas unitarias, se recomienda mantener las pruebas 
+actualizadas para garantizar una mayor calidad en el código:
 
 - Pruebas Unitarias
     ```sh
@@ -31,23 +32,21 @@ El sistema está desarrollado en Python y Django, se recomienda ampliamente util
 sigue estos pasos:
 
 - Instalar dependencias del proyecto:
-  ```sh
-  pip install -r requirements.txt
-  ```
 
-- Migrar los modelos y generar los permisos:
-    ```sh
+    ```
+    pip install -r requirements.txt
+    ```
+
+- Generar los modelos y generar los permisos:
+
+  ```sh
     python manage.py makemigrations PEMA
     python manage.py migrate
     python manage.py crear_roles
-    ```
-
-- Crear los usuarios de prueba:
-    ```sh
-    python manage.py developer_setup
-    ```
-
-- Ejecutar el servidor:
-  ```sh
-  python manage.py runserver
+    python manage.py runserver
   ```
+  
+## Datos de Prueba
+```sh
+python manage.py developer_setup
+```
