@@ -49,50 +49,50 @@ class Command(BaseCommand):
         
         unidad1 = Unidad.objects.create(
             estado="ACTIVO",
-            articulo=articulo1.codigo,
+            articulo=articulo1,
             num_control="1",
             num_serie="1"
         )
         unidad2 = Unidad.objects.create(
             estado="ACTIVO",
-            articulo=articulo1.codigo,
+            articulo=articulo1,
             num_control="2",
             num_serie="2"
         )
         unidad3 = Unidad.objects.create(
             estado="ACTIVO",
-            articulo=articulo1.codigo,
+            articulo=articulo1,
             num_control="3",
             num_serie="3"
         )
         unidad4 = Unidad.objects.create(
             estado="ACTIVO",
-            articulo=articulo1.codigo,
+            articulo=articulo1,
             num_control="4",
             num_serie="4"
         )
         
         unidad5 = Unidad.objects.create(
             estado="ACTIVO",
-            articulo=articulo2.codigo,
+            articulo=articulo2,
             num_control="5",
             num_serie="5"
         )
         unidad6 = Unidad.objects.create(
             estado="ACTIVO",
-            articulo=articulo2.codigo,
+            articulo=articulo2,
             num_control="6",
             num_serie="6"
         )
         unidad7 = Unidad.objects.create(
             estado="ACTIVO",
-            articulo=articulo2.codigo,
+            articulo=articulo2,
             num_control="7",
             num_serie="7"
         )
         unidad8 = Unidad.objects.create(
             estado="ACTIVO",
-            articulo=articulo2.codigo,
+            articulo=articulo2,
             num_control="8",
             num_serie="8"
         )
