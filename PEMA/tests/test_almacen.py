@@ -3,7 +3,7 @@ import datetime
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Almacen, Orden, Prestatario, Entrega, Materia, Devolucion
+from PEMA.models import Almacen, Orden, Prestatario, Materia
 
 
 class TestCaseAlmacen(TestCase):

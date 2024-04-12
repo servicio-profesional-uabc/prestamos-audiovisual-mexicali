@@ -1,6 +1,6 @@
 from datetime import datetime
-from django.test import TestCase
 
+from django.test import TestCase
 from django.utils.timezone import make_aware
 
 from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia
@@ -22,12 +22,8 @@ class TestOrden(TestCase):
 
         materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
 
-        self.orden = Orden.objects.create(
-            materia=materia,
-            prestatario=self.prestataio,
-            inicio=make_aware(datetime(2024, 3, 16, 12)),
-            final=make_aware(datetime(2024, 3, 16, 18)),
-        )
+        self.orden = Orden.objects.create(materia=materia, prestatario=self.prestataio,
+            inicio=make_aware(datetime(2024, 3, 16, 12)), final=make_aware(datetime(2024, 3, 16, 18)), )
 
     def test_agregar_unidad(self):
         unidad_orden, created = self.orden.agregar_unidad(self.unidad1)
@@ -36,69 +32,33 @@ class TestOrden(TestCase):
     def test_unidades(self):
         self.orden.agregar_unidad(self.unidad1)
 
-        self.assertIn(
-            member=self.unidad1,
-            container=self.orden.unidades(),
-            msg="Unidad No registrada"
-        )
+        self.assertIn(member=self.unidad1, container=self.orden.unidades(), msg="Unidad No registrada")
 
     def test_articulo(self):
         # agregar el objeto de manera repetida
         self.orden.agregar_unidad(self.unidad1)
         self.orden.agregar_unidad(self.unidad1)
 
-        self.assertEqual(
-            len(self.orden.articulos()),
-            1,
-            msg="Hay mas articulos registrados"
-        )
+        self.assertEqual(len(self.orden.articulos()), 1, msg="Hay mas articulos registrados")
 
         # agregar el un objeto nuevo
         self.orden.agregar_unidad(self.unidad2)
-        self.assertEqual(
-            len(self.orden.articulos()),
-            2,
-            msg="Hay menos articulos registrados"
-        )
+        self.assertEqual(len(self.orden.articulos()), 2, msg="Hay menos articulos registrados")
 
-        self.assertIn(
-            member=self.articulo1,
-            container=self.orden.articulos(),
-            msg="Articulo1 No existe en la orden"
-        )
+        self.assertIn(member=self.articulo1, container=self.orden.articulos(), msg="Articulo1 No existe en la orden")
 
-        self.assertIn(
-            member=self.articulo2,
-            container=self.orden.articulos(),
-            msg="Articulo2 No existe en la orden"
-        )
+        self.assertIn(member=self.articulo2, container=self.orden.articulos(), msg="Articulo2 No existe en la orden")
 
     def test_reporte(self):
         almacen = Almacen.get_user(self.almacen)
 
-        self.assertEqual(
-            first=self.orden.reporte(),
-            second=None,
-            msg="Ya existe un reporte"
-        )
+        self.assertEqual(first=self.orden.reporte(), second=None, msg="Ya existe un reporte")
 
-        almacen.reportar(
-            orden=self.orden,
-            descripcion="Nada"
-        )
+        self.orden.reportar(almacen=almacen, descripcion="Nada")
 
-        self.assertIsNotNone(
-            obj=self.orden.reporte(),
-            msg="No existe un reporte"
-        )
+        self.assertIsNotNone(obj=self.orden.reporte(), msg="No existe un reporte")
 
         # verificar que una orden no se puede reportar 2 veces
-        almacen.reportar(
-            orden=self.orden,
-            descripcion="Nada"
-        )
+        self.orden.reportar(almacen=almacen, descripcion="Nada")
 
-        self.assertEqual(
-            len(Reporte.objects.filter(orden=self.orden)),
-            1
-        )
+        self.assertEqual(len(Reporte.objects.filter(orden=self.orden)), 1)
