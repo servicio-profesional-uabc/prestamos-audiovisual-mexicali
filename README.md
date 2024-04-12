@@ -26,7 +26,7 @@ actualizadas para garantizar una mayor calidad en el código:
 - Cobertura de código:
 
     ```sh
-    coverage run --source='./PEMA' manage.py test PEMA
+    coverage run --source='./PEMA' --omit='./PEMA/management/*','./PEMA/migrations/*' manage.py test PEMA
     coverage report
     ```
 
