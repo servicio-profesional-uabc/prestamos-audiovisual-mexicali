@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
     <head>
-        <title>Equipo para prestamo</title>
+        <title>Catálogo de equipo para préstamo</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
     </head>
 
-<body>
     <div class="container text-center mt-5">
 
         <style>
@@ -41,10 +42,11 @@
     </div>
 
 
+    <h1 class="text-center">Catálogo de equipo para préstamo</h1>
+    <h3 class="text-left">Categoría 1</h3>
+    <hr class="hr"/>
     <div class="container text-center mt-5">
-        <!--Palabras de inicio-->
-        <h1>PEMA - Catalogo</h1>
-            <section class="py-5">
+        <section>
         <div class="container px-4 px-lg-5 mt-5">
             <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
                 <!-- Product -->
@@ -63,13 +65,13 @@
                         <!-- Product actions -->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
                             <div class="text-center">
-                                <a class="btn btn-outline-dark mt-auto" href="#!">Agregar</a>
+                                <button class="btn btn-primary mt-auto">Agregar</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <!-- Product -->
-                                <div class="col mb-5">
+                <div class="col mb-5">
                     <div class="card h-100">
                         <!-- Product image -->
                         <img class="card-img-top" src="https://dummyimage.com/200x100/dee2e6/6c757d.jpg" alt="...">
@@ -84,13 +86,13 @@
                         <!-- Product actions -->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
                             <div class="text-center">
-                                <a class="btn btn-outline-dark mt-auto" href="#!">Agregar</a>
+                                <button class="btn btn-primary mt-auto">Agregar</button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <!-- Resto de los productos -->
-                                <div class="col mb-5">
+                <div class="col mb-5">
                     <div class="card h-100">
                         <!-- Product image -->
                         <img class="card-img-top" src="https://dummyimage.com/200x100/dee2e6/6c757d.jpg" alt="...">
@@ -105,33 +107,11 @@
                         <!-- Product actions -->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
                             <div class="text-center">
-                                <a class="btn btn-outline-dark mt-auto" href="#!">Agregar</a>
+                                <button class="btn btn-primary mt-auto">Agregar</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!---->
-                                <div class="col mb-5">
-                    <div class="card h-100">
-                        <!-- Product image -->
-                        <img class="card-img-top" src="https://dummyimage.com/200x100/dee2e6/6c757d.jpg" alt="...">
-                        <div class="card-body p-4">
-                            <div class="text-center">
-                                <!-- Product name -->
-                                <h5 class="fw-bolder">Nombre del producto</h5>
-                                <!-- Product price -->
-                                <span>Descripcion</span>
-                            </div>
-                        </div>
-                        <!-- Product actions -->
-                        <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                            <div class="text-center">
-                                <a class="btn btn-outline-dark mt-auto" href="#!">Agregar</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!---->
                 <div class="col mb-5">
                     <div class="card h-100">
@@ -148,7 +128,29 @@
                         <!-- Product actions -->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
                             <div class="text-center">
-                                <a class="btn btn-outline-dark mt-auto" href="#!">Agregar</a>
+                                <button class="btn btn-primary mt-auto">Agregar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!---->
+                <div class="col mb-5">
+                    <div class="card h-100">
+                        <!-- Product image -->
+                        <img class="card-img-top" src="https://dummyimage.com/200x100/dee2e6/6c757d.jpg" alt="...">
+                        <div class="card-body p-4">
+                            <div class="text-center">
+                                <!-- Product name -->
+                                <h5 class="fw-bolder">Nombre del producto</h5>
+                                <!-- Product price -->
+                                <span>Descripcion</span>
+                            </div>
+                        </div>
+                        <!-- Product actions -->
+                        <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                            <div class="text-center">
+                                <button class="btn btn-primary mt-auto">Agregar</button>
                             </div>
                         </div>
                     </div>
@@ -170,7 +172,7 @@
                         <!-- Product actions -->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
                             <div class="text-center">
-                                <a class="btn btn-outline-dark mt-auto" href="#!">Agregar</a>
+                                <button class="btn btn-primary mt-auto">Agregar</button>
                             </div>
                         </div>
                     </div>
@@ -192,7 +194,7 @@
                         <!-- Product actions -->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
                             <div class="text-center">
-                                <a class="btn btn-outline-dark mt-auto" href="#!">Agregar</a>
+                                <button class="btn btn-primary mt-auto">Agregar</button>
                             </div>
                         </div>
                     </div>
@@ -214,7 +216,7 @@
                         <!-- Product actions -->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
                             <div class="text-center">
-                                <a class="btn btn-outline-dark mt-auto" href="#!">Agregar</a>
+                                <button class="btn btn-primary mt-auto">Agregar</button>
                             </div>
                         </div>
                     </div>
@@ -223,10 +225,10 @@
             </div>
         </div>
 
-    <div class="container mt-5">
+    <div class="container mb-5">
         <div class="row">
             <div class="col text-center">
-                <a href="filtros" class="btn btn-secondary">Regresar</a>
+                <a href="filtros" class="btn btn-secondary me-5">Regresar</a>
                 <a href="carrito" class="btn btn-secondary">Continuar</a>
             </div>
         </div>
@@ -236,50 +238,4 @@
 
 
     </div>
-</body>
-
 {% endblock %}
-    <!-- Modal -->
-{#    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">#}
-{#      <div class="modal-dialog ">#}
-{#        <div class="modal-content">#}
-{##}
-{#          <div class="modal-header">#}
-{#             <!--Reglamento-->#}
-{#            <h5 class="modal-title" id="exampleModalLabel">Reglamento</h5>#}
-{#            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>#}
-{#          </div>#}
-{##}
-{#          <div class="modal-body">#}
-{##}
-{#            <!--Para mostrar el reglamento en cerrarPDF-->#}
-{#            <embed id="pdfViewer" src="{% static 'img/Meta.pdf' %}" type="application/pdf" width="100%" height="600px">#}
-{##}
-{#            <!--Crea un checkbox para cerrar el reglamento-->#}
-{#            <input type="checkbox" id="cerrarPDF">#}
-{##}
-{#            <!--Etiqueta del checkbox y texto del mismo checkbox-->#}
-{#            <label for="cerrarPDF">He leído términos y condiciones</label><br><br>#}
-{##}
-{#            <!--Boton para continuar una hez que haya aceptado los terminos y condiciones-->#}
-{#            <button id="botonContinuar" class="btn btn-primary my-3" data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-family: 'Minion Pro', sans-serif;" disabled>Continuar</button>#}
-{##}
-{#            <script>#}
-{#              <!-- Toma la referencia del checkbox "cerrarPDF"-->#}
-{#              var checkbox = document.getElementById('cerrarPDF');#}
-{##}
-{#              var botonContinuar = document.getElementById('botonContinuar');#}
-{##}
-{#              checkbox.addEventListener('change', function() {#}
-{#                  if (this.checked) {#}
-{#                      botonContinuar.disabled = false;#}
-{#                  } else {#}
-{#                      botonContinuar.disabled = true;#}
-{#                  }#}
-{#              });#}
-{#            </script>#}
-{#              <!-- Redirigir se realiza en views.py -->#}
-{#          </div>#}
-{#        </div>#}
-{#      </div>#}
-{#    </div>#}
