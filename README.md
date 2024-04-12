@@ -1,47 +1,58 @@
-# Sistema PEMA
-PEMA es un programa diseñado para facilitar la gestión de préstamos de material de grabación audiovisual en la Facultad de Artes, campus Mexicali.
+# Sistema de Gestión de Préstamos de Material Audiovisual (PEMA)
 
-## Documentación Completa
-Toda la información detallada sobre el proyecto está disponible en la [sección de wiki](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki). Esta documentación proporciona una guía completa para comprender y utilizar el sistema PEMA.
+PEMA es una herramienta diseñada para simplificar la gestión de préstamos de material de grabación audiovisual en la 
+Facultad de Artes del campus Mexicali.
 
-## Configuración del Entorno de Desarrollo
-Puedes encontrar instrucciones más detalladas [aquí](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki/Entorno-de-desarrollo).
+## Documentación
+La documentación del sistema se ha elaborado utilizando [Sphinx](https://www.sphinx-doc.org/en/master/). Para generarla,
+ejecuta el siguiente comando. Los archivos resultantes se guardarán en `docs/_build`.
 
+- Generar documentación:
 
-### Linux (Ubuntu)
-```sh
-git clone https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali.git
-cd prestamos-audiovisual-mexicali/
+  ```sh
+  sphinx-build ./docs ./docs/_build/html
+  ```
 
-python3.10 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+## Pruebas
+El proyecto utiliza las herramientas de Django para hacer pruebas unitarias, se recomienda mantener las pruebas 
+actualizadas para garantizar una mayor calidad en el código:
 
-python manage.py makemigrations PEMA
-python manage.py migrate
-python manage.py crear_roles
-python manage.py developer_setup
-python manage.py crear_orden *ideal para probar historial y detalles de orden. crea 6 ordenes con caracteristicas diferentes sin articulos, 2 materias y 1 usuario*
+- Pruebas unitarias:
 
-python manage.py runserver
-```
+    ```sh
+    python manage.py test PEMA/tests
+    ```
 
-### Windows
-```sh
-git clone https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali.git
-cd prestamos-audiovisual-mexicali/
+- Cobertura de código:
 
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
+    ```sh
+    coverage run --source='./PEMA' manage.py test PEMA
+    coverage report
+    ```
 
-python manage.py makemigrations PEMA
-python manage.py migrate
-python manage.py crear_roles
-python manage.py developer_setup
-python manage.py crear_orden
+## Entorno de Desarrollo
+El sistema está desarrollado en Python y Django, se recomienda ampliamente utilizar entornos virtuales. Para comenzar, 
+sigue estos pasos:
 
-python manage.py runserver
-```
+- Instalar dependencias del proyecto:
 
+    ```
+    pip install -r requirements.txt
+    ```
 
+- Generar los modelos y generar los permisos:
+
+  ```sh
+    python manage.py makemigrations PEMA
+    python manage.py migrate
+    python manage.py crear_roles
+    python manage.py runserver
+  ```
+  
+## Datos de Prueba
+- Crear usuarios y órdenes de prueba: 
+
+  ```sh
+  python manage.py developer_setup
+  python manage.py crear_orden
+  ```
