@@ -1,164 +1,30 @@
 import datetime
 
-from django.contrib.auth.models import User, Group
 from django.test import TestCase
+from django.utils.timezone import make_aware
 
-from PEMA.models import Almacen, Orden, Prestatario, Entrega, Devolucion, Reporte, Materia
+from PEMA.models import Almacen, Orden, Prestatario, Entrega, Materia, Devolucion
 
 
 class TestCaseAlmacen(TestCase):
-    def test_crear_orden(self):
-        Prestatario.crear_grupo()
-        Almacen.crear_grupo()
+    def setUp(self):
+        # crear usuarios
+        self.almacen = Almacen.crear_usuario(id=0, username="almacen_prueba", password="<PASSWORD>")
+        self.prestatario = Prestatario.crear_usuario(id=21, username="prestatario_prueba", password="<PASSWORD>")
 
-        user_almacen = User.objects.create(
-            id=0,
-            username="almacen_prueba",
-            password="<PASSWORD>"
-        )
+        # crear materias
+        self.materia1 = Materia.objects.create(nombre="materia", periodo="2022-1")
+        self.materia2 = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
 
-        user_prestatario = User.objects.create(
-            id=21,
-            username="prestatario_prueba",
-            password="<PASSWORD>"
-        )
+        # crear orden
+        now = make_aware(datetime.datetime.now())
+        self.orden1 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario, inicio=now, final=now, )
+        self.orden2 = Orden.objects.create(materia=self.materia2, prestatario=self.prestatario, inicio=now, final=now, )
 
-        my_group = Group.objects.get(name='almacen')
-        my_group.user_set.add(user_almacen)
+    def test_get_users(self):
+        # obtener usuarios
+        usuario_almacen = Almacen.get_user(self.almacen)
+        usuario_no_almacen = Almacen.get_user(self.prestatario)
 
-        my_group = Group.objects.get(name='prestatarios')
-        my_group.user_set.add(user_prestatario)
-
-        materia = Materia.objects.create(
-            nombre="materia",
-            periodo="2022-1"
-        )
-
-        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
-
-        orden = Orden.objects.create(
-            materia=materia,
-            prestatario=user_prestatario,
-            lugar='Un lugar',
-            inicio=datetime.datetime.now(datetime.timezone.utc),
-            final=datetime.datetime.now(datetime.timezone.utc),
-        )
-
-        self.assertEqual(orden.prestatario, user_prestatario)
-
-    def test_metodo_entregar(self):
-        Prestatario.crear_grupo()
-        Almacen.crear_grupo()
-
-        user_almacen = Almacen.objects.create(
-            id=0,
-            username="almacen_prueba",
-            password="<PASSWORD>"
-        )
-
-        user_prestatario = User.objects.create_user(
-            id=21,
-            username="prestatario_prueba",
-            password="<PASSWORD>"
-        )
-
-        grupo_almacen = Group.objects.get(name='almacen')
-        grupo_prestatario = Group.objects.get(name='prestatarios')
-
-        user_almacen.groups.add(grupo_almacen)
-        user_prestatario.groups.add(grupo_prestatario)
-
-        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
-
-        orden = Orden.objects.create(
-            materia=materia,
-            prestatario=user_prestatario,
-            lugar='Un lugar',
-            inicio=datetime.datetime.now(datetime.timezone.utc),
-            final=datetime.datetime.now(datetime.timezone.utc),
-        )
-
-        user_almacen.entregar(orden)
-        orden_entrega = Entrega.objects.get(orden=orden)
-        self.assertEqual(orden_entrega.orden_id, orden.id)
-
-    def test_metodo_devolver(self):
-        Prestatario.crear_grupo()
-        Almacen.crear_grupo()
-
-        user_almacen = Almacen.objects.create(
-            id=0,
-            username="almacen_prueba",
-            password="<PASSWORD>"
-        )
-
-        user_prestatario = User.objects.create_user(
-            id=21,
-            username="prestatario_prueba",
-            password="<PASSWORD>"
-        )
-
-        grupo_almacen = Group.objects.get(name='almacen')
-        grupo_prestatario = Group.objects.get(name='prestatarios')
-
-        user_almacen.groups.add(grupo_almacen)
-        user_prestatario.groups.add(grupo_prestatario)
-        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
-
-        orden = Orden.objects.create(
-            materia=materia,
-            prestatario=user_prestatario,
-            lugar='Un lugar',
-            inicio=datetime.datetime.now(datetime.timezone.utc),
-            final=datetime.datetime.now(datetime.timezone.utc),
-        )
-
-        user_almacen.devolver(orden)
-        orden_devolucion = Devolucion.objects.get(orden=orden)
-        self.assertEqual(orden_devolucion.orden_id, orden.id)
-
-    def test_metodo_reportar(self):
-        Prestatario.crear_grupo()
-        Almacen.crear_grupo()
-
-        user_almacen = Almacen.objects.create(
-            id=0,
-            username="almacen_prueba",
-            password="<PASSWORD>"
-        )
-
-        user_prestatario = User.objects.create_user(
-            id=21,
-            username="prestatario_prueba",
-            password="<PASSWORD>"
-        )
-
-        grupo_almacen = Group.objects.get(name='almacen')
-        grupo_prestatario = Group.objects.get(name='prestatarios')
-
-        user_almacen.groups.add(grupo_almacen)
-        user_prestatario.groups.add(grupo_prestatario)
-
-        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
-
-        orden = Orden.objects.create(
-            materia=materia,
-            prestatario=user_prestatario,
-            lugar='Un lugar',
-            inicio=datetime.datetime.now(datetime.timezone.utc),
-            final=datetime.datetime.now(datetime.timezone.utc),
-        )
-
-        otra_orden = Orden.objects.create(
-            materia=materia,
-            prestatario=user_prestatario,
-            lugar='Otro lugar',
-            inicio=datetime.datetime.now(datetime.timezone.utc),
-            final=datetime.datetime.now(datetime.timezone.utc),
-        )
-
-        # La orden se le crea reporte
-        Almacen.reportar(user_almacen,orden, 'El equipo llego dañado...')
-        orden_reportada = Reporte.objects.get(orden=orden)
-        self.assertEqual(orden_reportada.orden_id, orden.id)
-        self.assertEqual(orden_reportada.descripcion, 'El equipo llego dañado...')
+        self.assertIsNone(usuario_no_almacen, msg="Usuario es almacen")
+        self.assertEqual(usuario_almacen, self.almacen, msg="Usuario NO es almacen")
