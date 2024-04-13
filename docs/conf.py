@@ -17,7 +17,7 @@ django.setup()
 
 
 
-project = 'PEMA'
+project = 'Prestamos Mexicali'
 copyright = '2024, Galindo'
 author = 'Galindo'
 release = '0.0.0'
@@ -44,5 +44,12 @@ language = 'es'
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+# html_theme = 'sphinx_rtd_theme'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+html_logo = "_static/3.png"
+html_theme_options = {
+    'logo_only': False,
+    'display_version': True,
+    'collapse_navigation': False,
+}

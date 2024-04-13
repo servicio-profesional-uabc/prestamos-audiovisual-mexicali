@@ -1,4 +1,3 @@
-
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
@@ -7,9 +6,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-
-from .models import Orden, User, Prestatario, Maestro, Coordinador, Almacen,  Perfil, Group, UsuarioMateria, Materia, MaestroMateria
+from .models import Orden, User, Prestatario
 
 
 class IndexView(View):
@@ -54,30 +51,6 @@ class SolicitudView(View):
         )
 
 
-class Permisos(View):
-    def get(self, request):
-        if request.user.is_authenticated:
-            nombre_grupo_perteneciente = request.user.groups.first().name
-            if nombre_grupo_perteneciente:
-                if nombre_grupo_perteneciente == "prestatario":
-                    grupo = Group.objects.get(name='prestatarios')
-                    permisos = grupo.permissions.all()
-                elif nombre_grupo_perteneciente == "maestro":
-                    grupo = Group.objects.get(name='maestro')
-                    permisos = grupo.permissions.all()
-                elif nombre_grupo_perteneciente == "coordinador":
-                    grupo = Group.objects.get(name='coordinador')
-                    permisos = grupo.permissions.all()
-                elif nombre_grupo_perteneciente == "almacen":
-                    grupo = Group.objects.get(name='almacen')
-                    permisos = grupo.permissions.all()
-
-
-        return render(
-            request=request,
-            template_name="menu.html",
-            context={'grupo': nombre_grupo_perteneciente}
-        )
 
 class HistorialSolicitudesView(View):
     def get(self, request):
@@ -181,11 +154,3 @@ def test(request):
     )
 
     return HttpResponse("OK")
-
-class RecuperarContrasenaView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="recuperar_contrasena.html"
-        )
-    
