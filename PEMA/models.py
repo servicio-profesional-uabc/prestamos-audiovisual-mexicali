@@ -291,40 +291,6 @@ class Almacen(User):
 
         return user
 
-    def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
-        """
-        Generar el registro que el Almacén entrego el equipo.
-
-        :param orden: La orden entregada
-        :returns: Registro de entrega y si el registro se creó
-        """
-
-        return Entrega.objects.get_or_create(almacen=self, orden=orden)
-
-    def devolver(self, orden: 'Orden') -> tuple['Devolucion', bool]:
-        """
-        Generar el registro que el Almacén recibió el equipo de vuelta.
-
-        :param orden: La orden que se va a devolver.
-        :returns: El registro de devolución, si el registro se creó
-        """
-
-        return Devolucion.objects.get_or_create(almacen=self, orden=orden)
-
-    def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
-        """
-        Este método genera un Reporte para una orden solicitada. Las órdenes
-        reportadas utilizando este método siempre se consideran activas.
-        Si se desea desactivar el informe, se requiere la intervención de un
-        Coordinador.
-
-        :param orden: La orden que se va a reportar.
-        :param descripcion: Información adicional del Reporte.
-        :returns: Reporte y sí el objeto se creó.
-        """
-
-        return Reporte.objects.get_or_create(almacen=self, orden=orden, descripcion=descripcion)
-
 
 # Modelos
 
@@ -491,6 +457,26 @@ class Orden(models.Model):
 
     class Meta:
         verbose_name_plural = "Ordenes"
+    class Estado(models.TextChoices):
+        """
+        Opciones para el estado de la orden:
+            * PENDIENTE_CR: Esperando confirmación de los corresponsables.
+            * PENDIENTE_AP: Esperando aprobación del maestro o coordinador
+            * RECHAZADA: Orden rechazada por el maestro o coordinador.
+            * APROBADA: Orden aprobada por el maestro o coordinador.
+            * CANCELADA: Orden cancelado por el prestatario.
+            * CONCLUIDA: Orden que se llevo a cabo sin incidentes de principio a fin.
+        """
+        PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
+        PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
+        RECHAZADA = "RE", _("RECHAZADA")
+        APROBADA = "AP", _("APROBADA")
+        CANCELADA = "CN", _("CANCELADO")
+
+    class Tipo(models.TextChoices):
+        """Opciones para el tipo de orden."""
+        ORDINARIA = "OR", _("ORDINARIA")
+        EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
 
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
@@ -576,6 +562,40 @@ class Orden(models.Model):
             return CorresponsableOrden.Estado.ACEPTADA
 
         # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
+
+    def entregar(self, almacen: 'Almacen') -> tuple['Entrega', bool]:
+        """
+        Generar el registro que el Almacén entrego el equipo.
+
+        :param almacen: Almacén que entrega el equipo.
+        :returns: Registro de entrega y si el registro se creó
+        """
+
+        return Entrega.objects.get_or_create(almacen=almacen, orden=self)
+
+    def recibir(self, almacen: 'Almacen') -> tuple['Devolucion', bool]:
+        """
+        Generar el registro que el Almacén recibió el equipo de vuelta.
+
+        :param almacen: Almacén que recibe el equipo.
+        :returns: El registro de devolución, si el registro se creó
+        """
+
+        return Devolucion.objects.get_or_create(almacen=almacen, orden=self)
+
+    def reportar(self, almacen: 'Almacen', descripcion: str) -> tuple['Reporte', bool]:
+        """
+        Este método genera un Reporte para una orden solicitada. Las órdenes
+        reportadas utilizando este método siempre se consideran activas.
+        Si se desea desactivar el informe, se requiere la intervención de un
+        Coordinador.
+
+        :param almacen: Almacén que reporta la orden.
+        :param descripcion: Información adicional del Reporte.
+        :returns: Reporte y sí el objeto se creó.
+        """
+
+        return Reporte.objects.get_or_create(almacen=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
         return f"{self.nombre}"
@@ -716,6 +736,40 @@ class Articulo(models.Model):
         :returns: Unidades disponibles en el rango especificado.
         """
 
+        """_summary_
+        1-Tener lista de ordenes aprobadas de la misma materia que la orden en proceso
+        2-Iterar lista de ordenes aprobadas
+        3-Comparar conflicto de horarios
+        4-Guardar ordenes que tienen conflicto en horario
+        TODO:
+        5-Iterar lista de ordenes conflicto
+        6-Crear lista con la cantidad de unidades de cada articulo en esas ordenes
+        7-Restar unidades ocupadas del total de unidades de cada articulo
+        8-Regresar lista con unidades libres de cada articulo en el horario solicitado
+        
+        
+        Posibles optimizaciones de momento
+        -No utilizar tantas listas
+        -Filtrar la mayor cantidad de ordenes con filters para reducir iteraciones del for
+        -Buscar mejor combinación de comparaciones de horarios
+        
+        """
+        
+        ordenesAprobadas = Orden.objects.filter(estado=Estado.APROBADA, materia__in=materias(self))
+        ordenesConflicto = []
+        unidadesConflicto = []
+        for ord in ordenesAprobadas.iterator:
+            if(ord.inicio == inicio or 
+               ord.final == final or
+            (ord.inicio < inicio and ord.final > inicio) or
+            (ord.inicio < final and ord.final > final) or
+            (ord.inicio > inicio and ord.final < final)):
+                ordenesConflicto.append(ord)
+                unidadesConflicto.append(ord.unidades(ord))
+        
+        #unidadesTotales = self.unidades()
+        
+        return Unidad.objects.difference(unidadesConflicto)      
         # TODO: Me esta volviendo loco este método, lo intentare luego
 
         pass
