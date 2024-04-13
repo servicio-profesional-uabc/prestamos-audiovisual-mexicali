@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from .models import Orden, User, Prestatario
+from .models import Orden, User, Prestatario, Group
 
 
 class IndexView(View):
@@ -51,6 +51,30 @@ class SolicitudView(View):
         )
 
 
+class Permisos(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            nombre_grupo_perteneciente = request.user.groups.first().name
+            if nombre_grupo_perteneciente:
+                if nombre_grupo_perteneciente == "prestatario":
+                    prestatario_group = Group.objects.get(name='prestatarios')
+                    permisos = prestatario_group.permissions.all()
+                elif nombre_grupo_perteneciente == "maestro":
+                    maestro_group = Group.objects.get(name='maestro')
+                    permisos = maestro_group.permissions.all()
+                elif nombre_grupo_perteneciente == "coordinador":
+                    coordinador_group = Group.objects.get(name='coordinador')
+                    permisos = coordinador_group.permissions.all()
+                elif nombre_grupo_perteneciente == "almacen":
+                    almacen_group = Group.objects.get(name='almacen')
+                    permisos = almacen_group.permissions.all()
+
+
+        return render(
+            request=request,
+            template_name="menu.html",
+            context={'grupo': nombre_grupo_perteneciente}
+        )
 
 class HistorialSolicitudesView(View):
     def get(self, request):
@@ -154,3 +178,61 @@ def test(request):
     )
 
     return HttpResponse("OK")
+
+
+class RecuperarContrasenaView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="recuperar_contrasena.html"
+        )
+
+class OrdenesAutorizadasView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="almacen_permisos/ordenes_autorizadas.html"
+        )
+
+class OrdenesPrestadasView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="almacen_permisos/ordenes_prestadas.html"
+        )
+
+class OrdenesDevueltasView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="almacen_permisos/ordenes_devueltas.html"
+        )
+
+class OrdenesReportadasView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="almacen_permisos/ordenes_reportadas.html"
+        )
+
+
+class InventarioView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="administrador_permisos/inventario.html"
+        )
+
+class UsuariosMateriasView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="administrador_permisos/usuarios_y_materias.html"
+        )
+
+class OrdenesReportadasCordinadorView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
+        )

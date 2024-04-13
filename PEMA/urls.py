@@ -79,4 +79,40 @@ urlpatterns = [
         view=views.RecuperarContrasenaView.as_view(),
         name='recuperar_contrasena'
     ),
+
+    path(
+        route='ordenes_autorizadas',
+        view=views.OrdenesAutorizadasView.as_view(),
+        name='ordenes_autorizadas'
+    ),
+    path(
+        route='ordenes_devueltas',
+        view=views.OrdenesDevueltasView.as_view(),
+        name='ordenes_devueltas'
+    ),
+    path(
+        route='ordenes_prestadas',
+        view=views.OrdenesPrestadasView.as_view(),
+        name='ordenes_prestadas'
+    ),
+    path(
+        route='ordenes_reportadas',
+        view=views.OrdenesReportadasView.as_view(),
+        name='ordenes_reportadas'
+    ),
+    path(
+        route='inventario',
+        view=views.InventarioView.as_view(),
+        name='inventario'
+    ),
+    path(
+        route='usuarios_materias',
+        view=views.UsuariosMateriasView.as_view(),
+        name='usuarios_materias'
+    ),
+    path(
+        route='ordenes_reportadas',
+        view=views.OrdenesReportadasCordinadorView.as_view(),
+        name='ordenes_reportadas'
+    )
 ]
