@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
-from .models import Orden, User, Prestatario, Maestro, Coordinador, Almacen,  Perfil, Group
+from .models import Orden, User, Prestatario, Maestro, Coordinador, Almacen,  Perfil, Group, UsuarioMateria, Materia, MaestroMateria
 
 
 class IndexView(View):
@@ -52,6 +52,7 @@ class SolicitudView(View):
             request=request,
             template_name="solicitud.html"
         )
+
 
 class Permisos(View):
     def get(self, request):
