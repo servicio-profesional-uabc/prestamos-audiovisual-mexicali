@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load widget_tweaks %}
 
-<!DOCTYPE html>
-<html lang="es">
 {% block content %}
 
 <head>
@@ -46,7 +45,7 @@
     <h5>Seleccionar materia y tiempo de reserva</h5>
 </div>
 
-<div class="container d-flex justify-content-center mt-3">
+<div class="container d-flex justify-content-center text-center mt-3">
         <div class="row">
             <div class="col me-3">
                 <div class="dropdown">
@@ -64,8 +63,6 @@
                     </ul>
                 </div>
             </div>
-        </div>
-        <div class="row">
             <div class="col">
                 <div class="dropdown">
                     <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -87,59 +84,63 @@
     </div>
 </div>
 
-<div class="container text-center mt-3 justify-content-center">
+<div class="container text-center mt-3 justify-content-center" style="width:200px">
     <div class="row">
         <h5>Selecciona la fecha</h5>
+{#        <div class="col d-flex align-items-center justify-content-center">#}
+{#            <input#}
+{#              type="datetime-local"#}
+{#              id="meeting-time"#}
+{#              style="-webkit-appearance: textfield;#}
+{#              min="{{ min_date }}"#}
+{#              max="{{ max_date }}" />#}
+{#        </div>#}
         <div class="col d-flex align-items-center justify-content-center">
-            <input id="datepicker" width="276" />
+            {% render_field form.inicio class="form-control" %}
         </div>
     </div>
 </div>
 
-<script>
-    $('#datepicker').datepicker({
-        uiLibrary: 'bootstrap5'
-    });
-</script>
+
+{#<div class="container text-center mt-3 justify-content-center">#}
+{#    <div class="row">#}
+{#        <h5>Selecciona a partir de que hora</h5>#}
+{##}
+{#        <div class="dropdown">#}
+{#            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">#}
+{#                Horas disponibles#}
+{#            </button>#}
+{#            <ul class="dropdown-menu">#}
+{#                <li><button class="dropdown-item">8:00 AM</button></li>#}
+{#                <li><button class="dropdown-item">8:30 AM</button></li>#}
+{#                <li><button class="dropdown-item">9:00 AM</button></li>#}
+{#                <li><button class="dropdown-item">9:30 AM</button></li>#}
+{#                <li><button class="dropdown-item">10:00 AM</button></li>#}
+{#                <li><button class="dropdown-item">10:30 AM</button></li>#}
+{#                <li><button class="dropdown-item">11:00 AM</button></li>#}
+{#                <li><button class="dropdown-item">11:30 AM</button></li>#}
+{#                <li><button class="dropdown-item">12:00 PM</button></li>#}
+{#                <li><button class="dropdown-item">12:30 PM</button></li>#}
+{#                <li><button class="dropdown-item">1:00 PM</button></li>#}
+{#                <li><button class="dropdown-item">1:30 PM</button></li>#}
+{#                <li><button class="dropdown-item">2:00 PM</button></li>#}
+{#                <li><button class="dropdown-item">2:30 PM</button></li>#}
+{#                <li><button class="dropdown-item">3:00 PM</button></li>#}
+{#                <li><button class="dropdown-item">3:30 PM</button></li>#}
+{#                <li><button class="dropdown-item">4:00 PM</button></li>#}
+{#                <li><button class="dropdown-item">5:30 PM</button></li>#}
+{#                <li><button class="dropdown-item">6:00 PM</button></li>#}
+{#                <li><button class="dropdown-item">6:30 PM</button></li>#}
+{#                <li><button class="dropdown-item">7:00 PM</button></li>#}
+{#                <li><button class="dropdown-item">7:30 PM</button></li>#}
+{#                <li><button class="dropdown-item">8:00 PM</button></li>#}
+{#            </ul>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
 
 <div class="container text-center mt-3 justify-content-center">
-    <div class="row">
-        <h5>Selecciona a partir de que hora</h5>
-
-        <div class="dropdown">
-            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                Horas disponibles
-            </button>
-            <ul class="dropdown-menu">
-                <li><button class="dropdown-item">8:00 AM</button></li>
-                <li><button class="dropdown-item">8:30 AM</button></li>
-                <li><button class="dropdown-item">9:00 AM</button></li>
-                <li><button class="dropdown-item">9:30 AM</button></li>
-                <li><button class="dropdown-item">10:00 AM</button></li>
-                <li><button class="dropdown-item">10:30 AM</button></li>
-                <li><button class="dropdown-item">11:00 AM</button></li>
-                <li><button class="dropdown-item">11:30 AM</button></li>
-                <li><button class="dropdown-item">12:00 PM</button></li>
-                <li><button class="dropdown-item">12:30 PM</button></li>
-                <li><button class="dropdown-item">1:00 PM</button></li>
-                <li><button class="dropdown-item">1:30 PM</button></li>
-                <li><button class="dropdown-item">2:00 PM</button></li>
-                <li><button class="dropdown-item">2:30 PM</button></li>
-                <li><button class="dropdown-item">3:00 PM</button></li>
-                <li><button class="dropdown-item">3:30 PM</button></li>
-                <li><button class="dropdown-item">4:00 PM</button></li>
-                <li><button class="dropdown-item">5:30 PM</button></li>
-                <li><button class="dropdown-item">6:00 PM</button></li>
-                <li><button class="dropdown-item">6:30 PM</button></li>
-                <li><button class="dropdown-item">7:00 PM</button></li>
-                <li><button class="dropdown-item">7:30 PM</button></li>
-                <li><button class="dropdown-item">8:00 PM</button></li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="container text-center mt-3 justify-content-center">
+    <h5>Selecciona la hora</h5>
     <div class="row gx-2 gx-lg-3 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
         <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2">9:00 AM</button>
         <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2">9:30 AM</button>

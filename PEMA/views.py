@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate, login
+from datetime import timedelta
+from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.core.mail import send_mail
@@ -6,8 +8,9 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
+
+from .forms import FiltrosForm
 from .models import Orden, User, Prestatario, EstadoOrden, UsuarioMateria, Materia
-from .forms import ActualizarEstadoOrdenForm
 
 
 class IndexView(View):
@@ -39,10 +42,20 @@ class CarritoView(View):
 
 class FiltrosView(View):
     def get(self, request):
+        fecha_actual = timezone.now().date()
+        print(fecha_actual)
+
+        # Fecha minima para realizar un prestamo
+        fecha_minima = fecha_actual + timedelta(days=3)
+        print(fecha_minima)
         prestatario = Prestatario.get_user(request.user)
+
+        form = FiltrosForm()
         context = {
             'prestatario':prestatario,
+            'form':form,
         }
+
         return render(
             request=request,
             template_name="filtros.html",
@@ -56,8 +69,6 @@ class SolicitudView(View):
             request=request,
             template_name="solicitud.html"
         )
-
-
 
 class HistorialSolicitudesView(View):
     def get(self, request):
@@ -118,7 +129,7 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
     def test_func(self):
         prestatario = Prestatario.get_user(self.request.user)
-        orden = Orden.objects.get(id=self.kwargs['id'])
+        orden = get_object_or_404(Orden, id=self.kwargs['id'])
         return prestatario == orden.prestatario
 
     def get(self, request, id):
@@ -131,15 +142,11 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
     def post(self, request, id):
-        try:
-            orden = Orden.objects.get(id=id)
-            orden.estado = EstadoOrden.CANCELADA
-            orden.save()
-            messages.success(request, "Haz cancelado tu orden exitosamente.")
-            return redirect("historial_solicitudes")
-        except Orden.DoesNotExist:
-            messages.error(request, "La orden no fue encontrada...")
-            return redirect("historial_solicitudes")
+        orden = get_object_or_404(Orden, id=id)
+        orden.estado = EstadoOrden.CANCELADA
+        orden.save()
+        messages.success(request, "Haz cancelado tu orden exitosamente.")
+        return redirect("historial_solicitudes")
 
 class CatalogoView(View):
     def get(self, request):
