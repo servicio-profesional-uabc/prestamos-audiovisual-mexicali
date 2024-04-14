@@ -6,7 +6,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from .models import Orden, User, Prestatario
+from .models import Orden, User, Prestatario, EstadoOrden
+from .forms import ActualizarEstadoOrdenForm
 
 
 class IndexView(View):
@@ -44,6 +45,7 @@ class FiltrosView(View):
         )
 
 class SolicitudView(View):
+    # https://docs.djangoproject.com/en/5.0/topics/forms/modelforms/
     def get(self, request):
         return render(
             request=request,
@@ -57,32 +59,32 @@ class HistorialSolicitudesView(View):
         prestatario = Prestatario.get_user(request.user)
 
         try:
-            solicitudes_pendientes_ap = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_AP)
+            solicitudes_pendientes_ap = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.PENDIENTE_AP)
             solicitudes_pendientes_ap.order_by('emision')
         except:
             solicitudes_pendientes_ap = None
 
         try:
-            solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_CR)
+            solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.PENDIENTE_CR)
             solicitudes_pendientes_cr.order_by('emision')
             #print(solicitudes_pendientes_cr.get(lugar=Orden.Ubicacion.EXTERNO))
         except:
             solicitudes_pendientes_cr = None
 
         try:
-            solicitudes_aprobadas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.APROBADA)
+            solicitudes_aprobadas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.APROBADA)
             solicitudes_aprobadas.order_by('emision')
         except:
             solicitudes_aprobadas = None
 
         try:
-            solicitudes_rechazadas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.RECHAZADA)
+            solicitudes_rechazadas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.RECHAZADA)
             solicitudes_rechazadas.order_by('emision')
         except:
             solicitudes_rechazadas = None
 
         try:
-            solicitudes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.CANCELADA)
+            solicitudes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.CANCELADA)
             solicitudes_canceladas.order_by('emision')
         except:
             solicitudes_canceladas = None
@@ -103,6 +105,12 @@ class HistorialSolicitudesView(View):
 
 
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """
+    Vista para ver los detalles de una Orden específica mediante su ID.
+    LoginRequiredMixin obliga al usuario a estar autenticado para acceder a esta vista.
+    UserPassesTestMixin nos da test_func() para comprobar si ID de la orden es
+    del usuario autenticado. Si pasa la prueba si ejecuta get() caso contrario muestra un error 403.
+    """
     def test_func(self):
         prestatario = Prestatario.get_user(self.request.user)
         orden = Orden.objects.get(id=self.kwargs['id'])
@@ -110,12 +118,23 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def get(self, request, id):
         orden = Orden.objects.get(id=id)
+
         return render(
             request=request,
             template_name="detalles_orden.html",
-            context={"orden": orden}
+            context={"orden": orden, "EstadoOrden": EstadoOrden},
         )
 
+    def post(self, request, id):
+        try:
+            orden = Orden.objects.get(id=id)
+            orden.estado = EstadoOrden.CANCELADA
+            orden.save()
+            messages.success(request, "Haz cancelado tu orden exitosamente.")
+            return redirect("historial_solicitudes")
+        except Orden.DoesNotExist:
+            messages.error(request, "La orden no fue encontrada...")
+            return redirect("historial_solicitudes")
 
 class CatalogoView(View):
     def get(self, request):
@@ -123,7 +142,6 @@ class CatalogoView(View):
             request=request,
             template_name="catalogo.html"
         )
-
 
 class DetallesArticuloView(View):
     def get(self, request):

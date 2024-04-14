@@ -58,11 +58,11 @@ class TestPrestatario(TestCase):
         self.assertFalse(prestatario.suspendido(), msg="El usuario ya esta suspendido")
 
         # un reporte
-        almacen.reportar(orden=self.orden1, descripcion="Descripcion 1")
+        self.orden1.reportar(almacen=almacen, descripcion="Descripcion 1")
         self.assertEqual(len(prestatario.reportes()), 1, msg="El prestatario No se ha reportado")
 
         # multiples reportes
-        almacen.reportar(orden=self.orden2, descripcion="Descripcion 2")
+        self.orden2.reportar(almacen=almacen, descripcion="Descripcion 2")
         self.assertEqual(len(prestatario.reportes()), 2, msg="El prestatario No se ha reportado varias veces")
 
         # está suspendido
