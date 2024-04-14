@@ -173,10 +173,7 @@ def test(request):
 
     return HttpResponse("OK")
 
-class RecuperarContrasenaView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="recuperar_contrasena.html"
-        )
+
+
+
     

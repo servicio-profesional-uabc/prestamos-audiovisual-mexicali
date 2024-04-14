@@ -74,9 +74,6 @@ urlpatterns = [
         view=views.CancelarOrdenView.as_view(),
         name='cancelar_orden'
     ),
-    path(
-        route='recuperar_contrasena',
-        view=views.RecuperarContrasenaView.as_view(),
-        name='recuperar_contrasena'
-    ),
+
+
 ]
