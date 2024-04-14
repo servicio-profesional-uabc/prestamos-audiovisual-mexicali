@@ -1,13 +1,19 @@
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponseNotAllowed
+from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponseRedirect
 from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from .models import Orden, User, Prestatario, Group
-
+from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden
+from django.urls import reverse
+from django.shortcuts import redirect
 
 class IndexView(View):
     def get(self, request):
@@ -189,30 +195,80 @@ class RecuperarContrasenaView(View):
 
 class OrdenesAutorizadasView(View):
     def get(self, request):
+        ordenes_autorizadas = Orden.objects.filter(estado=Orden.Estado.APROBADA)
+
         return render(
             request=request,
-            template_name="almacen_permisos/ordenes_autorizadas.html"
+            template_name="almacen_permisos/ordenes_autorizadas.html",
+            context={'ordenes_autorizadas': ordenes_autorizadas}
         )
+
+class DetallesOrdenAutorizadaView(View):
+    def get(self, request, id):
+        orden = get_object_or_404(Orden, id=id, estado=Orden.Estado.APROBADA)
+
+        return render(
+            request=request,
+            template_name="almacen_permisos/detalles_orden_autorizada.html",
+            context={"orden": orden}
+        )
+
 
 class OrdenesPrestadasView(View):
-    def get(self, request):
+    def get(self, request, id=None):
+        if id is None:
+            ordenes_prestadas = Orden.objects.filter(estado=Orden.Estado.APROBADA)
+            nueva_orden = None
+        else:
+            nueva_orden = Orden.objects.get(id=id)
+            ordenes_prestadas = Orden.objects.filter(estado=Orden.Estado.APROBADA).exclude(id=id)
+
         return render(
             request=request,
-            template_name="almacen_permisos/ordenes_prestadas.html"
+            template_name="almacen_permisos/ordenes_prestadas.html",
+            context={'ordenes_prestadas': ordenes_prestadas, 'nueva_orden': nueva_orden}
         )
 
-class OrdenesDevueltasView(View):
-    def get(self, request):
+    def post(self, request, id):
+        orden = Orden.objects.get(id=id)
+
+        if orden.estado != EstadoOrden.APROBADA:
+            return HttpResponseBadRequest("La orden no puede ser prestada en este estado.")
+
+        orden.estado = EstadoOrden.APROBADA.value
+        orden.save()
+
+        return HttpResponseRedirect(reverse('ordenes_prestadas'))
+
+
+class DetallesOrdenPrestadaView(View):
+    def get(self, request, id):
+        orden = Orden.objects.get(id=id)
+
+
         return render(
             request=request,
-            template_name="almacen_permisos/ordenes_devueltas.html"
+            template_name="almacen_permisos/detalles_orden_prestada.html",
+            context={"orden": orden}
         )
+
+    def post(self, request, id):
+        orden = Orden.objects.get(id=id)
+
+        return redirect('detalles_orden_prestada', id=id)
+
+
 
 class OrdenesReportadasView(View):
     def get(self, request):
+        # Obtener todas las órdenes que tienen reportes asociados
+        ordenes_reportadas = Orden.objects.filter(reporte__isnull=False)
+
+        # Renderizar la plantilla con las órdenes reportadas
         return render(
             request=request,
-            template_name="almacen_permisos/ordenes_reportadas.html"
+            template_name="almacen_permisos/ordenes_reportadas.html",
+            context={'ordenes_reportadas': ordenes_reportadas}
         )
 
 
@@ -235,4 +291,69 @@ class OrdenesReportadasCordinadorView(View):
         return render(
             request=request,
             template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
+        )
+
+class ReportarOrdenView(View):
+    def get(self, request, id):
+        return render(
+            request=request,
+            template_name="reportar_orden.html"
+        )
+
+class DetallesOrdenReportadaView(View):
+    def get(self, request, id=None):
+        if id is not None:
+            orden = get_object_or_404(Orden, id=id, reporte__isnull=False)
+            return render(
+                request=request,
+                template_name="almacen_permisos/detalles_orden_reportada.html",
+                context={"orden": orden}
+            )
+        else:
+            ordenes = Orden.objects.filter(reporte__isnull=False)
+            return render(
+                request=request,
+                template_name="almacen_permisos/detalles_orden_reportada.html",
+                context={"orden": ordenes}
+            )
+
+    def post(self, request, id):
+        orden = get_object_or_404(Orden, id=id, reporte__isnull=False)
+
+        return redirect('detalles_orden_reportada', id=id)
+
+#devolucion = recibir
+#prestar = entregar
+
+class DetallesOrdenDevueltaView(View):
+    def get(self, request, id=None):
+        if id is not None:
+            orden = get_object_or_404(Orden, id=id, devolucion__isnull=False)
+            return render(
+                request=request,
+                template_name="almacen_permisos/detalles_orden_devuelta.html",
+                context={"orden": orden}
+            )
+        else:
+            ordenes = Orden.objects.filter(devolucion__isnull=False)
+            return render(
+                request=request,
+                template_name="almacen_permisos/detalles_orden_devuelta.html",
+                context={"ordenes": ordenes}
+            )
+
+    def post(self, request, id):
+        orden = get_object_or_404(Orden, id=id, devolucion__isnull=False)
+
+        return redirect('detalles_orden_devuelta', id=id)
+
+
+class OrdenesDevueltasView(View):
+    def get(self, request):
+        ordenes_devueltas = Orden.objects.filter(devolucion__isnull=False)
+
+        return render(
+            request=request,
+            template_name="almacen_permisos/ordenes_devueltas.html",
+            context={'ordenes_devueltas': ordenes_devueltas}
         )
