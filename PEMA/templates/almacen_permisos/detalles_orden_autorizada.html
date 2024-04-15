@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+    <head>
+        <title>Detalles de orden</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    </head>
+
+    <main>
+        <div class="container order-details-container">
+            <h2>Detalles de la orden</h2>
+            <hr class="hr"/>
+            <div class="order-items">
+                <h4>Artículos</h4>
+                <ul>
+                    {% for articulo in orden.articulos.all %}
+                        <li>{{ articulo }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="order-info">
+                <h4>Nombre de la práctica o producción</h4>
+                <p>{{ orden.nombre }}</p>
+
+                <h4>Materia</h4>
+                <p>{{ orden.materia.nombre }}</p>
+
+                <h4>Lugar</h4>
+                <p> {{ orden.get_lugar_display }}</p>
+
+                <h4>Fecha y hora de recepción</h4>
+                <p>{{ orden.inicio }}</p>
+
+                <h4>Fecha y hora de devolución</h4>
+                <p>{{ orden.final }}</p>
+
+                <h4> Descripción </h4>
+                {% if orden.descripcion %}
+                    <p>{{ orden.descripcion }}</p>
+                {% else %}
+                    <p>No existe una descripción.</p>
+                {% endif %}
+
+                <h4>Tipo</h4>
+                <p>{{ orden.get_tipo_display }}</p>
+            </div>
+        </div>
+
+               <div class="mt-3">
+                <button id="boton_prestar" type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPrestar">Prestar</button>
+            </div>
+
+            <div class="modal fade" id="modalPrestar" tabindex="-1" aria-labelledby="PrestarModalLabel" aria-hidden="true">
+                <div class="modal-dialog ">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="PrestarModalLabel">Confirmar prestamo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            ¿Desea marcar el prestamo como prestado?
+                        </div>
+
+                        <div class="modal-footer">
+                            <form action="{% url 'ordenes_prestadas' id=orden.id %}" method="POST" name="prestarOrden">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Prestar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <div class="justify-content-center text-center">
+            <a href="{% url 'ordenes_autorizadas' %}" class="btn btn-secondary justify-content-center">Regresar</a>
+        </div>
+
+    </main>
+</html>
+{% endblock %}
+```
