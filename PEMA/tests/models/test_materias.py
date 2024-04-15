@@ -6,16 +6,12 @@ from PEMA.models import Materia, Prestatario, Coordinador, Almacen, Maestro, Art
 class MateriaTestCase(TestCase):
 
     def setUp(self):
-        self.materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+        self.materia = Materia.objects.create(nombre="Fotografia", year=2022, semestre=1)
 
         self.user_prestatario = Prestatario.crear_usuario(id=0, username="prestatario_prueba", password="<PASSWORD>")
         self.user_coordinador = Coordinador.crear_usuario(id=1, username="coordinador_prueba", password="<PASSWORD>")
         self.user_almacen = Almacen.crear_usuario(id=2, username="almacen_prueba", password="<PASSWORD>")
         self.user_maestro = Maestro.crear_usuario(id=3, username="maestro_prueba", password="<PASSWORD>")
-
-    def test_crear_materia(self):
-        self.assertEqual(self.materia.nombre, "Fotografia")
-        self.assertEqual(self.materia.periodo, "2024-1")
 
     def test_metodo_alumnos(self):
         # alumno unico
