@@ -13,8 +13,8 @@ class TestCaseAlmacen(TestCase):
         self.prestatario = Prestatario.crear_usuario(id=21, username="prestatario_prueba", password="<PASSWORD>")
 
         # crear materias
-        self.materia1 = Materia.objects.create(nombre="materia", periodo="2022-1")
-        self.materia2 = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+        self.materia1 = Materia.objects.create(nombre="materia", year=2022, semestre=1)
+        self.materia2 = Materia.objects.create(nombre="fotografia", year=2022, semestre=1)
 
         # crear orden
         now = make_aware(datetime.datetime.now())

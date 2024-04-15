@@ -33,10 +33,10 @@ class TestArticulo(TestCase):
             num_serie="num_series 2"
         )
 
-        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
+        self.materia = Materia.objects.create(nombre="fotografia", year=2022, semestre=1)
 
         self.orden_antes = Orden.objects.create(
-            materia=materia,
+            materia=self.materia,
             prestatario=self.user,
             lugar="Prueba antes",
             inicio=self.generar_fechas(-1),
@@ -44,7 +44,7 @@ class TestArticulo(TestCase):
         )
 
         self.orden_despues = Orden.objects.create(
-            materia=materia,
+            materia=self.materia,
             prestatario=self.user,
             lugar="prueba despues",
             inicio=self.generar_fechas(0),
@@ -76,7 +76,6 @@ class TestArticulo(TestCase):
         self.assertEqual(len(categorias_articulo), 2, msg="Numero incorrecto de categorías")
 
     def test_materia(self):
-        materia = Materia.objects.create(nombre="Materia de prueba")
-        materia.agregar_articulo(self.articulo)
+        self.materia.agregar_articulo(self.articulo)
 
-        self.assertIn(materia, self.articulo.materias())
+        self.assertIn(self.materia, self.articulo.materias())

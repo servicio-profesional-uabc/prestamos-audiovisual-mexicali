@@ -20,7 +20,7 @@ class TestCarrito(TestCase):
 
         # crear materia
         # -----
-        self.materia = Materia.objects.create(nombre="<MATERIA>", periodo="2024-1", )
+        self.materia = Materia.objects.create(nombre="fotografia", year=2022, semestre=1)
 
         # crear articulo
         # -----
