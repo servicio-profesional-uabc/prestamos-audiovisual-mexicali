@@ -11,6 +11,7 @@ django-widget-tweaks==1.4.12
 
 # archivos
 pandas==2.2.1
+openpyxl==3.1.2
 
 # Documentacion automatica
 Sphinx==7.2.6
