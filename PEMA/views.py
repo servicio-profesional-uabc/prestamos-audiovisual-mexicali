@@ -11,9 +11,11 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden
+from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion
 from django.urls import reverse
 from django.shortcuts import redirect
+from django.utils import timezone
+from django.db import IntegrityError
 
 class IndexView(View):
     def get(self, request):
@@ -214,14 +216,27 @@ class DetallesOrdenAutorizadaView(View):
         )
 
 
+
+
 class OrdenesPrestadasView(View):
     def get(self, request, id=None):
         if id is None:
-            ordenes_prestadas = Orden.objects.filter(estado=Orden.Estado.APROBADA)
+            ordenes_prestadas = Orden.objects.filter(entrega__isnull=False)
             nueva_orden = None
         else:
             nueva_orden = Orden.objects.get(id=id)
-            ordenes_prestadas = Orden.objects.filter(estado=Orden.Estado.APROBADA).exclude(id=id)
+
+            if not hasattr(nueva_orden, 'entrega'):
+                try:
+                    autorizacion = AutorizacionOrden.objects.get(orden=nueva_orden)
+                    almacen_orden = autorizacion.autorizador.almacen
+                except AutorizacionOrden.DoesNotExist:
+                    almacen_orden = None
+
+                if almacen_orden:
+                    if not Entrega.objects.filter(orden=nueva_orden, almacen=almacen_orden).exists():
+                        entrega = Entrega.objects.create(orden=nueva_orden, almacen=almacen_orden)
+            ordenes_prestadas = Orden.objects.filter(entrega__isnull=False).exclude(id=id)
 
         return render(
             request=request,
@@ -230,15 +245,22 @@ class OrdenesPrestadasView(View):
         )
 
     def post(self, request, id):
-        orden = Orden.objects.get(id=id)
+        if Entrega.objects.filter(orden_id=id).exists():
+            return HttpResponseBadRequest("Ya hay una entrega asociada a esta orden.")
 
-        if orden.estado != EstadoOrden.APROBADA:
-            return HttpResponseBadRequest("La orden no puede ser prestada en este estado.")
+        try:
+            orden = Orden.objects.get(id=id)
 
-        orden.estado = EstadoOrden.APROBADA.value
-        orden.save()
+            almacen_usuario = request.user
 
-        return HttpResponseRedirect(reverse('ordenes_prestadas'))
+            entrega = Entrega.objects.create(orden=orden, almacen=almacen_usuario)
+            entrega.save()
+
+            return HttpResponseRedirect(reverse('ordenes_prestadas'))
+        except Orden.DoesNotExist:
+            return HttpResponseBadRequest("La orden no existe.")
+        except IntegrityError:
+            return HttpResponseBadRequest("Error al crear la entrega.")
 
 
 class DetallesOrdenPrestadaView(View):
