@@ -16,7 +16,7 @@
             <h4>Artículos en el carrito</h4>
             <ul>
                 <!--Si el carrito tiene articulos-->
-                {% if articulos-- %}
+                {% if articulos %}
                     <!--Por cada articulo en el carrito-->
                     {% for articulo in articulos %}
                         <li>
@@ -34,7 +34,7 @@
             </ul>
         </div>
         <div class="buttons">
-            <a href="{% url 'historial_solicitudes' %}" class="btn btn-secondary">Regresar</a>
+            <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar</a>
         </div>
     </div>
 
