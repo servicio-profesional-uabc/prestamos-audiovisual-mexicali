@@ -848,7 +848,7 @@ class Unidad(models.Model):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    articulo = models.OneToOneField(to=Articulo, on_delete=models.CASCADE)
+    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
     estado = models.CharField(max_length=2, choices=Estado.choices, null=False, default=Estado.ACTIVO)
     num_control = models.CharField(max_length=250, null=False, blank=False)
     num_serie = models.CharField(blank=False, null=False, max_length=250)
