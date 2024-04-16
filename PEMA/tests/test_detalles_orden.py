@@ -17,10 +17,10 @@ class DetallesOrdenViewTestCase(TestCase):
 
         self.materia = Materia.objects.create(nombre='Cinematografia', year=2022, semestre=1)
 
-        self.orden = Orden.objects.create(prestatario=self.user,
-            nombre="Lorem ipsum dolor sit amet",
-            lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
-            final=make_aware(datetime(2024, 10, 5)), estado=EstadoOrden.PENDIENTE_AP, materia=self.materia, )
+        self.orden = Orden.objects.create(prestatario=self.user, nombre="Lorem ipsum dolor sit amet",
+                                          lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
+                                          final=make_aware(datetime(2024, 10, 5)), estado=EstadoOrden.PENDIENTE_AP,
+                                          materia=self.materia, )
 
     def test_get_detalles_orden(self):
         self.client.login(username=self.USERNAME, password=self.PASSWORD)

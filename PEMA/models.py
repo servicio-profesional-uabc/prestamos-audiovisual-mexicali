@@ -812,7 +812,7 @@ class Entrega(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 
