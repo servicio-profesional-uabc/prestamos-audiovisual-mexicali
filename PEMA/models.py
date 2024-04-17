@@ -715,7 +715,7 @@ class Articulo(models.Model):
 
     imagen = models.ImageField(default='default.png')
     nombre = models.CharField(blank=False, null=False, max_length=250)
-    codigo = models.CharField(blank=False, null=False, max_length=250)
+    codigo = models.CharField(blank=True, null=False, max_length=250)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
 
     def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
