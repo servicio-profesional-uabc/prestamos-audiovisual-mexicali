@@ -738,37 +738,31 @@ class Articulo(models.Model):
         :returns: Unidades disponibles en el rango especificado.
         """
 
-        """_summary_
-        1-Tener lista de ordenes aprobadas de la misma materia que la orden en proceso
-        2-Iterar lista de ordenes aprobadas
-        3-Comparar conflicto de horarios
-        4-Guardar ordenes que tienen conflicto en horario
-        TODO:
-        5-Iterar lista de ordenes conflicto
-        6-Crear lista con la cantidad de unidades de cada articulo en esas ordenes
-        7-Restar unidades ocupadas del total de unidades de cada articulo
-        8-Regresar lista con unidades libres de cada articulo en el horario solicitado
-        
-        
-        Posibles optimizaciones de momento
-        -No utilizar tantas listas
-        -Filtrar la mayor cantidad de ordenes con filters para reducir iteraciones del for
-        -Buscar mejor combinación de comparaciones de horarios
-        
-        """
-
-        ordenesAprobadas = Orden.objects.filter(estado=Estado.APROBADA, materia__in=materias(self))
-        ordenesConflicto = []
+        ordenesAprobadas = Orden.objects.filter(estado="AP")
+        #ordenesConflicto = []
         unidadesConflicto = []
-        for ord in ordenesAprobadas.iterator:
+        idConflicto = []
+        for ord in ordenesAprobadas:
             if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (
                     ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
-                ordenesConflicto.append(ord)
-                unidadesConflicto.append(ord.unidades(ord))
-
-        # unidadesTotales = self.unidades()
-
-        return Unidad.objects.difference(unidadesConflicto)
+                #ordenesConflicto.append(ord)
+                unidadesConflicto.append(ord.unidades())
+        for unid in unidadesConflicto:
+            for unidad in unid:
+                idConflicto.append(unidad.num_control)
+        
+        """        
+        unidadesArticulo = self.unidades()
+        unidadesTotales = Unidad.objects.all()
+        print(unidadesTotales)
+        print("\n\n")
+        print(unidadesConflicto)
+        print("\n\n")
+        print(idConflicto)
+        print("\n\n")
+        return Unidad.objects.all()
+        """
+        return Unidad.objects.difference(Unidad.objects.filter(num_control__in=idConflicto))
         # TODO: Me esta volviendo loco este método, lo intentare luego
 
         pass
