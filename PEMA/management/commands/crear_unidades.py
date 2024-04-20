@@ -124,7 +124,7 @@ class Command(BaseCommand):
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.APROBADA,
+            estado="AP",
             materia=materia1,
         )
 
@@ -133,7 +133,7 @@ class Command(BaseCommand):
             lugar=Orden.Ubicacion.EXTERNO,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.APROBADA,
+            estado="AP",
             materia=materia1,
             descripcion="Esta solicitud es para mi practica de Cinematografia en la laguna salada."
         )
@@ -143,7 +143,7 @@ class Command(BaseCommand):
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.APROBADA,
+            estado="AP",
             materia=materia1,
         )
 
@@ -152,7 +152,7 @@ class Command(BaseCommand):
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.APROBADA,
+            estado="AP",
             materia=materia1,
         )
 
@@ -161,7 +161,7 @@ class Command(BaseCommand):
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.APROBADA,
+            estado="AP",
             materia=materia1,
         )
 
@@ -170,7 +170,7 @@ class Command(BaseCommand):
             lugar=Orden.Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=Orden.Estado.APROBADA,
+            estado="AP",
             materia=materia1,
         )
 
@@ -181,6 +181,7 @@ class Command(BaseCommand):
         orden4.agregar_unidad(unidad5)
         orden5.agregar_unidad(unidad6)
         orden6.agregar_unidad(unidad7)
+        
         
         
         user.is_superuser = False
@@ -211,3 +212,4 @@ class Command(BaseCommand):
         orden6.save()
         print('Se guardaron las ordenes...')
 
+        print(articulo1.disponible(make_aware(datetime(2024, 9, 5)), make_aware(datetime(2024, 11, 5))))
