@@ -22,7 +22,17 @@ class MateriaAdmin(admin.ModelAdmin):
 
 admin.site.register(Materia, MateriaAdmin)
 
-admin.site.register(Orden)
+
+class OrdenAdmin(admin.ModelAdmin):
+    """
+    Admin panel management for Alumni
+    """
+    list_display = ('nombre', 'tipo', 'inicio', 'emision')
+    filter_horizontal = ('_unidades',)
+
+admin.site.register(Orden, OrdenAdmin)
+
+
 admin.site.register(Reporte)
 
 
@@ -43,5 +53,4 @@ admin.site.register(AutorizacionOrden)
 
 admin.site.register(ArticuloCarrito)
 admin.site.register(ArticuloMateria)
-admin.site.register(UnidadOrden)
 admin.site.register(CorresponsableOrden)

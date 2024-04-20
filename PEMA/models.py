@@ -10,8 +10,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
-import PEMA.models
-
 
 # Roles de Usuario
 
@@ -441,6 +439,126 @@ class EstadoOrden(models.TextChoices):
     CANCELADA = "CN", _("CANCELADO")
 
 
+class Articulo(models.Model):
+    """
+    Clase que representa un artículo.
+
+    :param nombre: Nombre.
+    :param codigo: Identificador.
+    :param descripcion: Descripción breve.
+    :param imagen: Imagen.
+    """
+
+    class Meta:
+        unique_together = ('nombre', 'codigo')
+
+    imagen = models.ImageField(default='default.png')
+    nombre = models.CharField(blank=False, null=False, max_length=250)
+    codigo = models.CharField(blank=True, null=False, max_length=250)
+    descripcion = models.TextField(null=True, blank=True, max_length=250)
+    _categorias = models.ManyToManyField(to='Categoria', blank=True)
+
+    def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
+        """
+        Registrar una unidad de un Artículo.
+
+        :param num_control: Número de control de la unidad.
+        :param num_serie: Número de seríe de la unidad.
+        """
+
+        return Unidad.objects.get_or_create(articulo=self, num_control=num_control, num_serie=num_serie)
+
+    def disponible(self, inicio, final) -> 'QuerySet[Unidad]':
+        """
+        Lista con las unidades disponibles en el rango [inicio, final].
+
+        :param inicio: Fecha y hora de inicio del rango.
+        :param final: Fecha y hora de finalización del rango.
+
+        :returns: Unidades disponibles en el rango especificado.
+        """
+
+        ordenesAprobadas = Orden.objects.filter(estado="AP")
+        # ordenesConflicto = []
+        unidadesConflicto = []
+        idConflicto = []
+        for ord in ordenesAprobadas:
+            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (
+                    ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
+                # ordenesConflicto.append(ord)
+                unidadesConflicto.append(ord.unidades())
+        for unid in unidadesConflicto:
+            for unidad in unid:
+                idConflicto.append(unidad.num_control)
+
+        """        
+        unidadesArticulo = self.unidades()
+        unidadesTotales = Unidad.objects.all()
+        print(unidadesTotales)
+        print("\n\n")
+        print(unidadesConflicto)
+        print("\n\n")
+        print(idConflicto)
+        print("\n\n")
+        return Unidad.objects.all()
+        """
+        return Unidad.objects.difference(Unidad.objects.filter(num_control__in=idConflicto))
+        # TODO: Me esta volviendo loco este método, lo intentare luego
+
+        pass
+
+    def categorias(self) -> QuerySet['Categoria']:
+        """Devuelve la lista de categorías en las que pertenece el artículo."""
+        return self._categorias.all()
+
+    def materias(self) -> QuerySet['Materia']:
+        """
+        Lista de materias en las que se encuentra el artículo.
+
+        :returns: Materias asociadas al artículo.
+        """
+
+        return Materia.objects.filter(articulomateria__articulo=self)
+
+    def unidades(self) -> 'QuerySet[Unidad]':
+        """
+        Devuelve la lista de unidades de un artículo.
+
+        :returns: Unidades asociadas al artículo.
+        """
+
+        return Unidad.objects.filter(articulo=self)
+
+    def __str__(self):
+        return self.nombre
+
+
+class Unidad(models.Model):
+    """
+    Clase que representa una unidad de un artículo.
+
+    :ivar articulo: Al que pertenece la unidad
+    :ivar estado: De la unidad
+    :ivar num_control: Para identificar la unidad
+    :ivar num_serie: De la unidad
+    """
+
+    class Meta:
+        unique_together = ('articulo', 'num_control')
+
+    class Estado(models.TextChoices):
+        ACTIVO = "AC", _("ACTIVO")
+        INACTIVO = "IN", _("INACTIVO")
+
+    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
+    estado = models.CharField(max_length=2, choices=Estado.choices, null=False, default=Estado.ACTIVO)
+    num_control = models.CharField(max_length=250, null=False, blank=False)
+    num_serie = models.CharField(blank=False, null=False, max_length=250)
+
+    def ordenes(self) -> QuerySet['Orden']:
+        return Orden.objects.filter(unidadorden__unidad=self)
+
+
 class Orden(models.Model):
     """
     Una orden es un conjunto de Unidades de cada Artículo definido
@@ -511,6 +629,7 @@ class Orden(models.Model):
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125)
 
     # opcional
+    _unidades = models.ManyToManyField(to=Unidad, blank=True)
     descripcion = models.TextField(blank=True, max_length=512)
 
     def es_ordinaria(self) -> bool:
@@ -532,7 +651,7 @@ class Orden(models.Model):
         """
         Devuelve las unidades con las que se suplió la orden.
         """
-        return Unidad.objects.filter(unidadorden__orden=self)
+        return self._unidades.all()
 
     def articulos(self) -> 'QuerySet[Articulo]':
         """
@@ -548,13 +667,13 @@ class Orden(models.Model):
         """
         return Reporte.objects.filter(orden=self).first()
 
-    def agregar_unidad(self, unidad: 'Unidad') -> tuple['UnidadOrden', bool]:
+    def agregar_unidad(self, unidad: 'Unidad'):
         """
         Agrega una unidad a la orden.
 
         :param unidad: Unidad que se agregará
         """
-        return UnidadOrden.objects.get_or_create(orden=self, unidad=unidad)
+        return self._unidades.add(unidad)
 
     def estado_corresponsables(self) -> str:
         corresponsables_orden = CorresponsableOrden.objects.filter(orden=self)
@@ -737,100 +856,6 @@ class Categoria(models.Model):
         return self.nombre
 
 
-class Articulo(models.Model):
-    """
-    Clase que representa un artículo.
-
-    :param nombre: Nombre.
-    :param codigo: Identificador.
-    :param descripcion: Descripción breve.
-    :param imagen: Imagen.
-    """
-
-    class Meta:
-        unique_together = ('nombre', 'codigo')
-
-    imagen = models.ImageField(default='default.png')
-    nombre = models.CharField(blank=False, null=False, max_length=250)
-    codigo = models.CharField(blank=True, null=False, max_length=250)
-    descripcion = models.TextField(null=True, blank=True, max_length=250)
-    _categorias = models.ManyToManyField(to='Categoria', blank=True)
-
-    def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
-        """
-        Registrar una unidad de un Artículo.
-
-        :param num_control: Número de control de la unidad.
-        :param num_serie: Número de seríe de la unidad.
-        """
-
-        return Unidad.objects.get_or_create(articulo=self, num_control=num_control, num_serie=num_serie)
-
-    def disponible(self, inicio, final) -> 'QuerySet[Unidad]':
-        """
-        Lista con las unidades disponibles en el rango [inicio, final].
-
-        :param inicio: Fecha y hora de inicio del rango.
-        :param final: Fecha y hora de finalización del rango.
-
-        :returns: Unidades disponibles en el rango especificado.
-        """
-
-        ordenesAprobadas = Orden.objects.filter(estado="AP")
-        #ordenesConflicto = []
-        unidadesConflicto = []
-        idConflicto = []
-        for ord in ordenesAprobadas:
-            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (
-                    ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
-                #ordenesConflicto.append(ord)
-                unidadesConflicto.append(ord.unidades())
-        for unid in unidadesConflicto:
-            for unidad in unid:
-                idConflicto.append(unidad.num_control)
-        
-        """        
-        unidadesArticulo = self.unidades()
-        unidadesTotales = Unidad.objects.all()
-        print(unidadesTotales)
-        print("\n\n")
-        print(unidadesConflicto)
-        print("\n\n")
-        print(idConflicto)
-        print("\n\n")
-        return Unidad.objects.all()
-        """
-        return Unidad.objects.difference(Unidad.objects.filter(num_control__in=idConflicto))
-        # TODO: Me esta volviendo loco este método, lo intentare luego
-
-        pass
-
-    def categorias(self) -> QuerySet['Categoria']:
-        """Devuelve la lista de categorías en las que pertenece el artículo."""
-        return self._categorias.all()
-
-    def materias(self) -> QuerySet['Materia']:
-        """
-        Lista de materias en las que se encuentra el artículo.
-
-        :returns: Materias asociadas al artículo.
-        """
-
-        return Materia.objects.filter(articulomateria__articulo=self)
-
-    def unidades(self) -> 'QuerySet[Unidad]':
-        """
-        Devuelve la lista de unidades de un artículo.
-
-        :returns: Unidades asociadas al artículo.
-        """
-
-        return Unidad.objects.filter(articulo=self)
-
-    def __str__(self):
-        return self.nombre
-
-
 class Entrega(models.Model):
     """
     Entrega al almacen. Se genera cada vez que Almacen entrega el
@@ -859,32 +884,6 @@ class Devolucion(models.Model):
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
     almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
-
-
-class Unidad(models.Model):
-    """
-    Clase que representa una unidad de un artículo.
-
-    :ivar articulo: Al que pertenece la unidad
-    :ivar estado: De la unidad
-    :ivar num_control: Para identificar la unidad
-    :ivar num_serie: De la unidad
-    """
-
-    class Meta:
-        unique_together = ('articulo', 'num_control')
-
-    class Estado(models.TextChoices):
-        ACTIVO = "AC", _("ACTIVO")
-        INACTIVO = "IN", _("INACTIVO")
-
-    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
-    estado = models.CharField(max_length=2, choices=Estado.choices, null=False, default=Estado.ACTIVO)
-    num_control = models.CharField(max_length=250, null=False, blank=False)
-    num_serie = models.CharField(blank=False, null=False, max_length=250)
-
-    def ordenes(self) -> QuerySet[Orden]:
-        return Orden.objects.filter(unidadorden__unidad=self)
 
 
 # Autorizaciones
@@ -982,17 +981,3 @@ class ArticuloCarrito(models.Model):
     articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
     carrito = models.ForeignKey(to=Carrito, on_delete=models.CASCADE)
     unidades = models.IntegerField(default=1, )
-
-class UnidadOrden(models.Model):
-    """
-    Relación entre una unidad y una orden.
-
-    :ivar unidad: Unidad asignada a la orden.
-    :ivar orden: Orden a la que se asignan las unidades.
-    """
-
-    class Meta:
-        unique_together = ('unidad', 'orden')
-
-    unidad = models.ForeignKey(to=Unidad, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)

@@ -26,8 +26,9 @@ class TestOrden(TestCase):
             inicio=make_aware(datetime(2024, 3, 16, 12)), final=make_aware(datetime(2024, 3, 16, 18)), )
 
     def test_agregar_unidad(self):
-        unidad_orden, created = self.orden.agregar_unidad(self.unidad1)
-        self.assertTrue(created)
+        self.orden.agregar_unidad(self.unidad1)
+
+        self.assertIn(self.unidad1, self.orden.unidades())
 
     def test_unidades(self):
         self.orden.agregar_unidad(self.unidad1)
@@ -41,12 +42,11 @@ class TestOrden(TestCase):
 
         self.assertEqual(len(self.orden.articulos()), 1, msg="Hay mas articulos registrados")
 
-        # agregar el un objeto nuevo
+        # agregar un objeto nuevo
         self.orden.agregar_unidad(self.unidad2)
         self.assertEqual(len(self.orden.articulos()), 2, msg="Hay menos articulos registrados")
 
         self.assertIn(member=self.articulo1, container=self.orden.articulos(), msg="Articulo1 No existe en la orden")
-
         self.assertIn(member=self.articulo2, container=self.orden.articulos(), msg="Articulo2 No existe en la orden")
 
     def test_reporte(self):
