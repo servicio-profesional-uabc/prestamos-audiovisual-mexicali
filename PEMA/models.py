@@ -369,12 +369,13 @@ class Materia(models.Model):
     year = models.IntegerField(null=False)
     semestre = models.IntegerField(null=False)
     activa = models.BooleanField(default=True)
+    _alumnos = models.ManyToManyField(to=Prestatario, blank=True)
 
     def alumnos(self) -> QuerySet['User']:
         """
         :returns: Lista de alumnos de la materia.
         """
-        return User.objects.filter(usuariomateria__materia=self)
+        return self._alumnos.all()
 
     def maestros(self) -> QuerySet['Maestro']:
         """
@@ -402,12 +403,12 @@ class Materia(models.Model):
         """
         return MaestroMateria.objects.get_or_create(maestro=maestro, materia=self)
 
-    def agregar_alumno(self, usuario: 'User') -> tuple['UsuarioMateria', bool]:
+    def agregar_alumno(self, usuario: 'User'):
         """
         :param usuario: Participante que se agregara como alumno a la Materia.
         :return:
         """
-        return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
+        return self._alumnos.add(usuario)
 
     def __str__(self):
         return f"{self.nombre} ({self.year}-{self.semestre})"
@@ -720,16 +721,11 @@ class Categoria(models.Model):
 
         return self.articulo_set.all()
 
-    def agregar(self, articulo: 'Articulo') -> tuple['CategoriaArticulo', bool]:
+    def agregar(self, articulo: 'Articulo'):
         """
         Agrega un Articulo a la Categoría
-
-        :param articulo: Articulo que se agregará
-
-        :returns: CategoriaArticulo y si ha sido creado
         """
-
-        return self.articulo_set.add(articulo)
+        self.articulo_set.add(articulo)
 
     def __str__(self):
         return self.nombre
@@ -1009,18 +1005,3 @@ class MaestroMateria(models.Model):
 
     materia = models.ForeignKey(to=Materia, on_delete=models.CASCADE)
     maestro = models.ForeignKey(to=Maestro, on_delete=models.CASCADE)
-
-
-class UsuarioMateria(models.Model):
-    """
-    Relación entre el Usuario y la materia.
-
-    :ivar materia: Materia asignada.
-    :ivar usuario: Usuario participante.
-    """
-
-    class Meta:
-        unique_together = ('materia', 'usuario')
-
-    materia = models.ForeignKey(to=Materia, on_delete=models.CASCADE)
-    usuario = models.ForeignKey(to=User, on_delete=models.CASCADE)

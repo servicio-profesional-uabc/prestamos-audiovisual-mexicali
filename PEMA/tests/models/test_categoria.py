@@ -22,24 +22,16 @@ class TestCategoria(TestCase):
 
     def test_agregar(self):
         # agregar por primera vez
-        _, creado = self.categoria.agregar(
-            articulo=self.articulo
-        )
-
-        self.assertTrue(expr=creado, msg="El articulo ya existe en la categoría")
+        self.categoria.agregar(articulo=self.articulo)
+        self.assertIn(self.articulo, self.categoria.articulos(), msg="El articulo ya existe en la categoría")
 
         # agregar repetido
-        _, creado = self.categoria.agregar(
-            articulo=self.articulo
-        )
-
-        self.assertFalse(expr=creado, msg="El articulo NO existe en la categoría")
+        self.categoria.agregar(articulo=self.articulo)
+        self.assertEqual(len(self.categoria.articulos()), 1)
 
     def test_lista_articulos(self):
 
-        _, creado = self.categoria.agregar(
-            articulo=self.articulo
-        )
+        self.categoria.agregar(articulo=self.articulo)
 
         self.assertEquals(
             self.categoria.articulos()[0].nombre,
