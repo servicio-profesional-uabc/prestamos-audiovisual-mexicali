@@ -97,11 +97,9 @@ class Prestatario(User):
     def materias(self) -> QuerySet['Materia']:
         """
         Devuelve las materias del prestatario.
-
-        :returns: Materias a las que está integrado el prestatario.
         """
 
-        return Materia.objects.filter(usuariomateria__usuario=self)
+        return self.materia_set.all()
 
     def carrito(self) -> Any | None:
         """
@@ -369,7 +367,7 @@ class Materia(models.Model):
     year = models.IntegerField(null=False)
     semestre = models.IntegerField(null=False)
     activa = models.BooleanField(default=True)
-    _alumnos = models.ManyToManyField(to=Prestatario, blank=True)
+    _alumnos = models.ManyToManyField(to=User, blank=True)
 
     def alumnos(self) -> QuerySet['User']:
         """
