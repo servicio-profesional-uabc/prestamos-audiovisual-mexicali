@@ -195,6 +195,13 @@ class Maestro(User):
         proxy = True
 
     @staticmethod
+    def get_user(user: User) -> Any | None:
+        try:
+            return Maestro.objects.get(pk=user.pk)
+        except Maestro.DoesNotExist:
+            return None
+
+    @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
         # TODO: que hacer si no hay maestro asignado a la clase
         # TODO: evnviar los correos
@@ -368,6 +375,7 @@ class Materia(models.Model):
     semestre = models.IntegerField(null=False)
     activa = models.BooleanField(default=True)
     _alumnos = models.ManyToManyField(to=User, blank=True)
+    _maestros = models.ManyToManyField(to=Maestro, blank=True, related_name='materias_profesor')
 
     def alumnos(self) -> QuerySet['User']:
         """
@@ -379,7 +387,7 @@ class Materia(models.Model):
         """
         :returns: Lista de profesores asociados a la materia.
         """
-        return Maestro.objects.filter(maestromateria__materia=self)
+        return self._maestros.all()
 
     def articulos(self) -> QuerySet['Articulo']:
         """
@@ -399,7 +407,7 @@ class Materia(models.Model):
         :param maestro:
         :return:
         """
-        return MaestroMateria.objects.get_or_create(maestro=maestro, materia=self)
+        return self._maestros.add(maestro)
 
     def agregar_alumno(self, usuario: 'User'):
         """
@@ -988,18 +996,3 @@ class UnidadOrden(models.Model):
 
     unidad = models.ForeignKey(to=Unidad, on_delete=models.CASCADE)
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
-
-
-class MaestroMateria(models.Model):
-    """
-    Relacion entre el maestro y una materia.
-
-    :ivar materia: Materia asignada.
-    :ivar maestro: Usuario Maestro.
-    """
-
-    class Meta:
-        unique_together = ('materia', 'maestro')
-
-    materia = models.ForeignKey(to=Materia, on_delete=models.CASCADE)
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.CASCADE)
