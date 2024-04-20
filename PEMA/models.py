@@ -372,6 +372,8 @@ class Materia(models.Model):
     year = models.IntegerField(null=False)
     semestre = models.IntegerField(null=False)
     activa = models.BooleanField(default=True)
+
+    _articulos = models.ManyToManyField(to='Articulo', blank=True)
     _alumnos = models.ManyToManyField(to=User, blank=True)
     _maestros = models.ManyToManyField(to=Maestro, blank=True, related_name='materias_profesor')
 
@@ -387,18 +389,18 @@ class Materia(models.Model):
         """
         return self._maestros.all()
 
-    def articulos(self) -> QuerySet['Articulo']:
+    def articulos(self):
         """
         :returns: Lista de artículos disponibles para la materia.
         """
-        return Articulo.objects.filter(articulomateria__materia=self)
+        return self._articulos.all()
 
-    def agregar_articulo(self, articulo: 'Articulo') -> tuple['ArticuloMateria', bool]:
+    def agregar_articulo(self, articulo: 'Articulo'):
         """
         :param articulo: Artículo que se quiere agregar.
         :returns: ArticuloMateria agregado y sí se creó el objeto.
         """
-        return ArticuloMateria.objects.get_or_create(materia=self, articulo=articulo)
+        return self._articulos.add(articulo)
 
     def agregar_maestro(self, maestro: 'Maestro') -> tuple['MaestroMateria', bool]:
         """
@@ -518,7 +520,7 @@ class Articulo(models.Model):
         :returns: Materias asociadas al artículo.
         """
 
-        return Materia.objects.filter(articulomateria__articulo=self)
+        return self.materia_set.all()
 
     def unidades(self) -> 'QuerySet[Unidad]':
         """
@@ -950,21 +952,6 @@ class CorresponsableOrden(Autorizacion):
 
 
 # Clases de relación
-
-class ArticuloMateria(models.Model):
-    """
-    Relación entre un artículo y una materia.
-
-    :ivar articulo: Artículo disponible para la materia.
-    :ivar materia: Materia a la que se agrega el artículo.
-    """
-
-    class Meta:
-        unique_together = ('materia', 'articulo')
-
-    materia = models.ForeignKey(to=Materia, on_delete=models.CASCADE)
-    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
-
 
 class ArticuloCarrito(models.Model):
     """
