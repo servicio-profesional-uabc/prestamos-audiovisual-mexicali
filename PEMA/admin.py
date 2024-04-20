@@ -7,7 +7,7 @@ class MateriaAdmin(admin.ModelAdmin):
     Admin panel management for Alumni
     """
     list_display = ('nombre', 'year', 'semestre')
-    filter_horizontal = ('_alumnos',)
+    filter_horizontal = ('_alumnos', '_maestros', '_articulos')
 
 
 admin.site.register(Materia, MateriaAdmin)
