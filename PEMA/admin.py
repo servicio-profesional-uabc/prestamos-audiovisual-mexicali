@@ -14,7 +14,20 @@ admin.site.register(Carrito)
 admin.site.register(Materia)
 admin.site.register(Orden)
 admin.site.register(Reporte)
-admin.site.register(Articulo)
+
+
+class ArticuloAdmin(admin.ModelAdmin):
+    """
+    Admin panel management for Alumni
+    """
+    list_display = ('nombre', 'codigo', 'descripcion')
+    filter_horizontal = ('_categorias',)
+
+
+admin.site.register(Articulo, ArticuloAdmin)
+
+
+
 admin.site.register(Unidad)
 admin.site.register(Categoria)
 
@@ -22,6 +35,7 @@ admin.site.register(AutorizacionOrden)
 
 admin.site.register(ArticuloCarrito)
 admin.site.register(ArticuloMateria)
-admin.site.register(CategoriaArticulo)
 admin.site.register(UnidadOrden)
 admin.site.register(CorresponsableOrden)
+
+

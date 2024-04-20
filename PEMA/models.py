@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
+import PEMA.models
+
 
 # Roles de Usuario
 
@@ -456,7 +458,7 @@ class Orden(models.Model):
     """
 
     class Meta:
-        ordering = ("emision", )
+        ordering = ("emision",)
         verbose_name_plural = "Ordenes"
 
     class Estado(models.TextChoices):
@@ -700,6 +702,39 @@ class Reporte(models.Model):
     emision = models.DateTimeField(auto_now_add=True)
 
 
+class Categoria(models.Model):
+    """
+    Clase que representa una categoría.
+
+    :ivar nombre (str): Nombre de la categoría
+    """
+
+    nombre = models.CharField(primary_key=True, max_length=250)
+
+    def articulos(self) -> QuerySet['Articulo']:
+        """
+        Devuelve los artículos que pertenecen a esta categoría.
+
+        :return: Artículos que pertenecen a la Categoría
+        """
+
+        return self.articulo_set.all()
+
+    def agregar(self, articulo: 'Articulo') -> tuple['CategoriaArticulo', bool]:
+        """
+        Agrega un Articulo a la Categoría
+
+        :param articulo: Articulo que se agregará
+
+        :returns: CategoriaArticulo y si ha sido creado
+        """
+
+        return self.articulo_set.add(articulo)
+
+    def __str__(self):
+        return self.nombre
+
+
 class Articulo(models.Model):
     """
     Clase que representa un artículo.
@@ -717,6 +752,7 @@ class Articulo(models.Model):
     nombre = models.CharField(blank=False, null=False, max_length=250)
     codigo = models.CharField(blank=True, null=False, max_length=250)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
+    _categorias = models.ManyToManyField(to='Categoria', blank=True)
 
     def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
         """
@@ -773,16 +809,11 @@ class Articulo(models.Model):
 
         pass
 
-    def categorias(self) -> 'QuerySet[Categoria]':
-        """
-        Devuelve la lista de categorías en las que pertenece el artículo.
+    def categorias(self) -> QuerySet['Categoria']:
+        """Devuelve la lista de categorías en las que pertenece el artículo."""
+        return self._categorias.all()
 
-        :returns: Categorías a las que pertenece.
-        """
-
-        return Categoria.objects.filter(categoriaarticulo__articulo=self)
-
-    def materias(self) -> 'QuerySet[Materia]':
+    def materias(self) -> QuerySet['Materia']:
         """
         Lista de materias en las que se encuentra el artículo.
 
@@ -799,6 +830,9 @@ class Articulo(models.Model):
         """
 
         return Unidad.objects.filter(articulo=self)
+
+    def __str__(self):
+        return self.nombre
 
 
 class Entrega(models.Model):
@@ -855,36 +889,6 @@ class Unidad(models.Model):
 
     def ordenes(self) -> QuerySet[Orden]:
         return Orden.objects.filter(unidadorden__unidad=self)
-
-
-class Categoria(models.Model):
-    """
-    Clase que representa una categoría.
-
-    :ivar nombre (str): Nombre de la categoría
-    """
-
-    nombre = models.CharField(primary_key=True, max_length=250)
-
-    def articulos(self) -> QuerySet[Articulo]:
-        """
-        Devuelve los artículos que pertenecen a esta categoría.
-
-        :return: Artículos que pertenecen a la Categoría
-        """
-
-        return Articulo.objects.filter(categoriaarticulo__categoria=self)
-
-    def agregar(self, articulo: 'Articulo') -> tuple['CategoriaArticulo', bool]:
-        """
-        Agrega un Articulo a la Categoría
-
-        :param articulo: Articulo que se agregará
-
-        :returns: CategoriaArticulo y si ha sido creado
-        """
-
-        return CategoriaArticulo.objects.get_or_create(categoria=self, articulo=articulo)
 
 
 # Autorizaciones
@@ -982,22 +986,6 @@ class ArticuloCarrito(models.Model):
     articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
     carrito = models.ForeignKey(to=Carrito, on_delete=models.CASCADE)
     unidades = models.IntegerField(default=1, )
-
-
-class CategoriaArticulo(models.Model):
-    """
-    Relación entre una Categoría y un Artículo.
-
-    :ivar categoria: Categoría a la que pertenece Artículo.
-    :ivar articulo: Artículo que se encuentra en la Categoría.
-    """
-
-    class Meta:
-        unique_together = ('articulo', 'categoria')
-
-    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
-    categoria = models.ForeignKey(to=Categoria, on_delete=models.CASCADE)
-
 
 class UnidadOrden(models.Model):
     """
