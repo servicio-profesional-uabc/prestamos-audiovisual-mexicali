@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+<head>
+    <!-- Importar estilos personalizados -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <title>Detalles de orden</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <h2 class="text-center mb-4">Recuperar Contraseña</h2>
+                <form method="post">
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico:</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Ingrese su correo electrónico" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">Nueva Contraseña:</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Ingrese su nueva contraseña" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirmar Contraseña:</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirme su nueva contraseña" required>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block">Recuperar Contraseña</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+    
+{% endblock %}

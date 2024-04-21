@@ -81,7 +81,6 @@ class Prestatario(User):
 
         :return: Lista de órdenes del usuario.
         """
-
         return Orden.objects.filter(prestatario=self)
 
     def reportes(self) -> QuerySet['Reporte']:
@@ -291,40 +290,6 @@ class Almacen(User):
 
         return user
 
-    def entregar(self, orden: 'Orden') -> tuple['Entrega', bool]:
-        """
-        Generar el registro que el Almacén entrego el equipo.
-
-        :param orden: La orden entregada
-        :returns: Registro de entrega y si el registro se creó
-        """
-
-        return Entrega.objects.get_or_create(almacen=self, orden=orden)
-
-    def devolver(self, orden: 'Orden') -> tuple['Devolucion', bool]:
-        """
-        Generar el registro que el Almacén recibió el equipo de vuelta.
-
-        :param orden: La orden que se va a devolver.
-        :returns: El registro de devolución, si el registro se creó
-        """
-
-        return Devolucion.objects.get_or_create(almacen=self, orden=orden)
-
-    def reportar(self, orden: 'Orden', descripcion: str) -> tuple['Reporte', bool]:
-        """
-        Este método genera un Reporte para una orden solicitada. Las órdenes
-        reportadas utilizando este método siempre se consideran activas.
-        Si se desea desactivar el informe, se requiere la intervención de un
-        Coordinador.
-
-        :param orden: La orden que se va a reportar.
-        :param descripcion: Información adicional del Reporte.
-        :returns: Reporte y sí el objeto se creó.
-        """
-
-        return Reporte.objects.get_or_create(almacen=self, orden=orden, descripcion=descripcion)
-
 
 # Modelos
 
@@ -389,18 +354,19 @@ class Materia(models.Model):
     Las materias se encargan de limitar el material al que pueden acceder
     los Prestatarios.
 
-    :param nombre: Nombre de la clase
-    :param periodo: Periodo de la clase ej. 2022-1
+    :ivar nombre: Nombre de la clase
+    :ivar year: Año que se imparte la clase.
+    :ivar semestre: Semestre que se imparte la clase.
+    :ivar activa: Si la clase se está impartiendo actualmente.
     """
 
     class Meta:
-        unique_together = ('nombre', 'periodo')
+        unique_together = ('nombre', 'year', 'semestre')
 
     nombre = models.CharField(primary_key=True, max_length=250, null=False, blank=False)
-
-    # TODO: falta grupo
-    # TODO: separar año y periodo
-    periodo = models.CharField(max_length=6, null=False, blank=False)
+    year = models.IntegerField(null=False)
+    semestre = models.IntegerField(null=False)
+    activa = models.BooleanField(default=True)
 
     def alumnos(self) -> QuerySet['User']:
         """
@@ -442,7 +408,7 @@ class Materia(models.Model):
         return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
 
     def __str__(self):
-        return f"{self.nombre} ({self.periodo} )"
+        return f"{self.nombre} ({self.year}-{self.semestre})"
 
 
 class TipoOrden(models.TextChoices):
@@ -490,7 +456,29 @@ class Orden(models.Model):
     """
 
     class Meta:
+        ordering = ("emision", )
         verbose_name_plural = "Ordenes"
+
+    class Estado(models.TextChoices):
+        """
+        Opciones para el estado de la orden:
+            * PENDIENTE_CR: Esperando confirmación de los corresponsables.
+            * PENDIENTE_AP: Esperando aprobación del maestro o coordinador
+            * RECHAZADA: Orden rechazada por el maestro o coordinador.
+            * APROBADA: Orden aprobada por el maestro o coordinador.
+            * CANCELADA: Orden cancelado por el prestatario.
+            * CONCLUIDA: Orden que se llevo a cabo sin incidentes de principio a fin.
+        """
+        PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
+        PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
+        RECHAZADA = "RE", _("RECHAZADA")
+        APROBADA = "AP", _("APROBADA")
+        CANCELADA = "CN", _("CANCELADO")
+
+    class Tipo(models.TextChoices):
+        """Opciones para el tipo de orden."""
+        ORDINARIA = "OR", _("ORDINARIA")
+        EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
 
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
@@ -576,6 +564,40 @@ class Orden(models.Model):
             return CorresponsableOrden.Estado.ACEPTADA
 
         # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
+
+    def entregar(self, almacen: 'Almacen') -> tuple['Entrega', bool]:
+        """
+        Generar el registro que el Almacén entrego el equipo.
+
+        :param almacen: Almacén que entrega el equipo.
+        :returns: Registro de entrega y si el registro se creó
+        """
+
+        return Entrega.objects.get_or_create(almacen=almacen, orden=self)
+
+    def recibir(self, almacen: 'Almacen') -> tuple['Devolucion', bool]:
+        """
+        Generar el registro que el Almacén recibió el equipo de vuelta.
+
+        :param almacen: Almacén que recibe el equipo.
+        :returns: El registro de devolución, si el registro se creó
+        """
+
+        return Devolucion.objects.get_or_create(almacen=almacen, orden=self)
+
+    def reportar(self, almacen: 'Almacen', descripcion: str) -> tuple['Reporte', bool]:
+        """
+        Este método genera un Reporte para una orden solicitada. Las órdenes
+        reportadas utilizando este método siempre se consideran activas.
+        Si se desea desactivar el informe, se requiere la intervención de un
+        Coordinador.
+
+        :param almacen: Almacén que reporta la orden.
+        :param descripcion: Información adicional del Reporte.
+        :returns: Reporte y sí el objeto se creó.
+        """
+
+        return Reporte.objects.get_or_create(almacen=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
         return f"{self.nombre}"
@@ -693,7 +715,7 @@ class Articulo(models.Model):
 
     imagen = models.ImageField(default='default.png')
     nombre = models.CharField(blank=False, null=False, max_length=250)
-    codigo = models.CharField(blank=False, null=False, max_length=250)
+    codigo = models.CharField(blank=True, null=False, max_length=250)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
 
     def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
@@ -716,6 +738,31 @@ class Articulo(models.Model):
         :returns: Unidades disponibles en el rango especificado.
         """
 
+        ordenesAprobadas = Orden.objects.filter(estado="AP")
+        #ordenesConflicto = []
+        unidadesConflicto = []
+        idConflicto = []
+        for ord in ordenesAprobadas:
+            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (
+                    ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
+                #ordenesConflicto.append(ord)
+                unidadesConflicto.append(ord.unidades())
+        for unid in unidadesConflicto:
+            for unidad in unid:
+                idConflicto.append(unidad.num_control)
+        
+        """        
+        unidadesArticulo = self.unidades()
+        unidadesTotales = Unidad.objects.all()
+        print(unidadesTotales)
+        print("\n\n")
+        print(unidadesConflicto)
+        print("\n\n")
+        print(idConflicto)
+        print("\n\n")
+        return Unidad.objects.all()
+        """
+        return Unidad.objects.difference(Unidad.objects.filter(num_control__in=idConflicto))
         # TODO: Me esta volviendo loco este método, lo intentare luego
 
         pass
@@ -759,7 +806,7 @@ class Entrega(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 
@@ -795,7 +842,7 @@ class Unidad(models.Model):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    articulo = models.OneToOneField(to=Articulo, on_delete=models.CASCADE)
+    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
     estado = models.CharField(max_length=2, choices=Estado.choices, null=False, default=Estado.ACTIVO)
     num_control = models.CharField(max_length=250, null=False, blank=False)
     num_serie = models.CharField(blank=False, null=False, max_length=250)

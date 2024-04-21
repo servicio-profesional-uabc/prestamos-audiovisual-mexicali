@@ -1,11 +1,11 @@
-from django.test import TestCase
+from datetime import datetime
 
-from PEMA.models import Prestatario, Almacen, Orden
+from django.test import TestCase
+from django.utils.timezone import make_aware
+
 from PEMA.models import Carrito
 from PEMA.models import Materia
-
-from django.utils.timezone import make_aware
-from datetime import datetime
+from PEMA.models import Prestatario, Almacen, Orden
 
 
 class TestPrestatario(TestCase):
@@ -15,24 +15,16 @@ class TestPrestatario(TestCase):
         self.user_prestatario = Prestatario.crear_usuario(id=1, username="prestatario", password="<PASSWORD>")
         self.user_almacen = Almacen.crear_usuario(id=2, username="almacen", password="<PASSWORD>")
 
-        materia = Materia.objects.create(nombre="Fotografia2", periodo="2024-1")
+        self.materia = Materia.objects.create(nombre="Fotografia2", year=2022, semestre=1)
 
         # ordenes
-        self.orden1 = Orden.objects.create(
-            materia=materia,
-            prestatario=self.user_prestatario,
-            lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 10, 5)),
-            final=make_aware(datetime(2024, 10, 5))
-        )
+        self.orden1 = Orden.objects.create(materia=self.materia, prestatario=self.user_prestatario,
+                                           lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
+                                           final=make_aware(datetime(2024, 10, 5)))
 
-        self.orden2 = Orden.objects.create(
-            materia=materia,
-            prestatario=self.user_prestatario,
-            lugar=Orden.Ubicacion.EXTERNO,
-            inicio=make_aware(datetime(2024, 10, 5)),
-            final=make_aware(datetime(2024, 10, 5))
-        )
+        self.orden2 = Orden.objects.create(materia=self.materia, prestatario=self.user_prestatario,
+                                           lugar=Orden.Ubicacion.EXTERNO, inicio=make_aware(datetime(2024, 10, 5)),
+                                           final=make_aware(datetime(2024, 10, 5)))
 
     def test_lista_ordenes(self):
         # probar si no tiene ordenes
@@ -58,11 +50,11 @@ class TestPrestatario(TestCase):
         self.assertFalse(prestatario.suspendido(), msg="El usuario ya esta suspendido")
 
         # un reporte
-        almacen.reportar(orden=self.orden1, descripcion="Descripcion 1")
+        self.orden1.reportar(almacen=almacen, descripcion="Descripcion 1")
         self.assertEqual(len(prestatario.reportes()), 1, msg="El prestatario No se ha reportado")
 
         # multiples reportes
-        almacen.reportar(orden=self.orden2, descripcion="Descripcion 2")
+        self.orden2.reportar(almacen=almacen, descripcion="Descripcion 2")
         self.assertEqual(len(prestatario.reportes()), 2, msg="El prestatario No se ha reportado varias veces")
 
         # está suspendido
@@ -75,8 +67,8 @@ class TestPrestatario(TestCase):
         self.assertEqual(len(prestatario.materias()), 0, msg="El prestatario no tiene materias")
 
         # agregar el usario a las materias
-        materia1 = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
-        materia2 = Materia.objects.create(nombre="Edicion y diseño", periodo="2024-1")
+        materia1 = Materia.objects.create(nombre="Fotografia", year=2022, semestre=1)
+        materia2 = Materia.objects.create(nombre="Edicion y diseño", year=2022, semestre=1)
 
         materia1.agregar_alumno(prestatario)
         materia2.agregar_alumno(prestatario)
@@ -91,14 +83,7 @@ class TestPrestatario(TestCase):
         # carrito vacío
         self.assertIsNone(prestatario.carrito(), msg="El usuario ya tiene un carrito")
 
-        # carrito no vacío
-        materia = Materia.objects.create(nombre="Fotografia", periodo="2024-1")
-
-        carrito = Carrito.objects.create(
-            prestatario=self.user_prestatario,
-            materia=materia,
-            inicio=datetime.now(),
-            final=datetime.now()
-        )
+        carrito = Carrito.objects.create(prestatario=self.user_prestatario, materia=self.materia, inicio=datetime.now(),
+                                         final=datetime.now())
 
         self.assertEqual(prestatario.carrito(), carrito, msg="El carrito no coincide")
