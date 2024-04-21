@@ -1,1 +1,160 @@
 
+
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Vista de prueba</title>
+</head>
+
+<div class="container text-center mt-5">
+    <a href="menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16" style="position: absolute; top: 44px; right: 150px; width: 32px; height: 32px;">>
+            <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+        </svg>
+    </a>
+
+    <a href="carrito">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16" style="position: absolute; top: 44px; right: 100px; width: 32px; height: 32px;">
+            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+        </svg>
+    </a>
+
+    <a href="login">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16" style="position: absolute; top: 44px; right: 45px; width: 32px; height: 32px;">
+            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+        </svg>
+    </a>
+</div>
+
+<div class="text-center mt-5">
+    <h4>Filtro para el catálogo de equipo</h4><br/>
+    <p>Para continuar al catálogo es necesario que captures los siguientes datos.</p>
+</div>
+<hr class="hr"/>
+
+
+<div class="container text-center mt-3 justify-content-center">
+    <form method="POST" action="{% url 'filtros' %}" onsubmit="setMateria()">
+        {% csrf_token %}
+        <h5 class="mt-2">Seleccionar materia y tiempo de reserva</h5>
+        <div class="row mb-4 mt-2">
+            <div class="col me-3">
+                <div class="dropdown">
+                    <select id="materias" name="materias" class="form-select" required>
+                        {% if prestatario %}
+                            {% for materia in prestatario.materias %}
+                                <option value="{{ materia.nombre }}">{{ materia.nombre }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="None">No existen materias</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <div class="col">
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" required>
+                        Selecciona tiempo de préstamo
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><button class="dropdown-item">1 hora</button></li>
+                        <li><button class="dropdown-item">2 hora</button></li>
+                        <li><button class="dropdown-item">3 hora</button></li>
+                        <li><button class="dropdown-item">4 hora</button></li>
+                        <li><button class="dropdown-item">8 hora</button></li>
+                        <li><button class="dropdown-item">1 dia (24h)</button></li>
+                        <li><button class="dropdown-item">2 dia (48h)</button></li>
+                        <li><button class="dropdown-item">4 dias (96h)</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <h5>Selecciona la fecha</h5>
+            <div class="col d-flex align-items-center justify-content-center">
+                <input
+                        type="date"
+                        id="inicio"
+                        name="inicio"
+                        required
+                />
+            </div>
+        </div>
+        <div class="row mt-5">
+            <h5>Selecciona la hora</h5>
+            <div class="row gx-2 gx-lg-3 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('09:00')">9:00 AM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('09:30')">9:30 AM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('10:00')">10:00 AM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('10:30')">10:30 AM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('11:00')">11:00 AM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('11:30')">11:30 AM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('12:00')">12:00 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('12:30')">12:30 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('13:00')">1:00 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('13:30')">1:30 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('14:00')">2:00 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('14:30')">2:30 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('15:00')">3:00 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('15:30')">3:30 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('16:00')">4:00 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('16:30')">4:30 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('17:00')">5:00 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('17:30')">5:30 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('18:00')">6:00 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('18:30')">6:30 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('19:00')">7:00 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('19:30')">7:30 PM</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('20:00')">8:00 PM</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col text-center">
+                <a href="menu" class="btn btn-secondary me-5">Regresar</a>
+                <button id="boton_aceptar" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalContinuar">Aceptar filtro</button>
+
+                <div class="modal fade" id="modalContinuar" tabindex="-1" aria-labelledby="continuarModalLabel" aria-hidden="true">
+                    <div class="modal-dialog ">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="continuarModalLabel">Confirmar filtro</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                ¿Desea continuar al catálogo?
+                            </div>
+
+                            <div class="modal-footer">
+                                <input type="hidden" id="time-input" name="time">
+                                <input type="hidden" id="materia-input" name="materia">
+                                <button type="submit" class="btn btn-danger">Continuar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        function setTime(time) {
+            document.getElementById("time-input").value = time;
+        }
+
+        function setMateria() {
+            var selectedMateria = document.getElementById("materias").value;
+            document.getElementById("materia-input").value = selectedMateria;
+        }
+    </script>
+</div>
+{% endblock %}
