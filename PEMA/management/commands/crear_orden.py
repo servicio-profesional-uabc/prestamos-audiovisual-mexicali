@@ -32,12 +32,16 @@ class Command(BaseCommand):
         # materias
         materia1, created = Materia.objects.get_or_create(
             nombre='Cinematografia',
-            periodo='2024-1',
+            year=2024,
+            semestre=1,
+            activa=True,
         )
 
         materia2, created = Materia.objects.get_or_create(
             nombre='Iluminacion',
-            periodo='2024-1',
+            year=2024,
+            semestre=1,
+            activa=True,
         )
 
         # ordenes
