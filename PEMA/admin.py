@@ -1,4 +1,5 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+
 from .models import *
 
 
@@ -20,6 +21,7 @@ class OrdenAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'tipo', 'inicio', 'emision')
     filter_horizontal = ('_unidades',)
 
+
 admin.site.register(Orden, OrdenAdmin)
 
 
@@ -34,10 +36,21 @@ class ArticuloAdmin(admin.ModelAdmin):
 admin.site.register(Articulo, ArticuloAdmin)
 
 
+@admin.register(Carrito)
+class CarritoAdmin(admin.ModelAdmin):
+    list_display = ('prestatario', 'materia')
+    actions = ['uppercase']
+
+    @admin.action(description='Make selected persons uppercase')
+    def uppercase(self, request, queryset):
+        for obj in queryset:
+            obj.ordenar()
+            messages.success(request, "Successfully made uppercase!")
+
+
 admin.site.register(Perfil)
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
-admin.site.register(Carrito)
 admin.site.register(Unidad)
 admin.site.register(Categoria)
 admin.site.register(AutorizacionOrden)

@@ -749,38 +749,32 @@ class Carrito(models.Model):
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
+    _articulos = models.ManyToManyField(to='ArticuloCarrito', blank=True)
 
-    def agregar(self, articulo: 'Articulo', unidades: int = 1) -> tuple['ArticuloCarrito', bool]:
+    def agregar(self, articulo: 'Articulo', unidades: int):
         """
         Agrega un artículo al carrito.
 
         :param articulo: El artículo que se va a agregar.
         :param unidades: Unidades que se va a agregar del Artículo.
-
-        :returns: Relación al artículo al carrito y si se agregó
         """
+        if not self._articulos.filter(articulo=articulo).exists():
+            # si no esta registrado este articulo
+            foo = ArticuloCarrito.objects.create(propietario=self, articulo=articulo, unidades=unidades)
+            self._articulos.add(foo)
+            return
 
-        # TODO: falta verificar casos
-        # - agregar el mismo articulo otra vez (se suma?)
-        # - cambiar el numero de articulos cuando unidades es diferente a 1
-
-        objeto, creado = ArticuloCarrito.objects.get_or_create(articulo=articulo, carrito=self)
-
-        if not creado and objeto.unidades != unidades:
-            # Actualizar unidades
-            objeto.unidades = unidades
-            objeto.save()
-
-        return objeto, creado
+        data = self._articulos.get(articulo=articulo)
+        data.unidades = unidades
+        data.save()
 
     def articulos(self) -> QuerySet['Articulo']:
         """
         Devuelve los artículos en el carrito.
-
         :returns: Artículos en el carrito.
         """
 
-        return Articulo.objects.filter(articulocarrito__carrito=self)
+        return self._articulos.all()
 
     def ordenar(self) -> None:
         """
@@ -958,13 +952,11 @@ class ArticuloCarrito(models.Model):
     Relación entre un Artículo y un Carrito.
 
     :ivar articulo: Artículo que se encuentra en el carrito.
-    :ivar carrito: Carrito de un usuario.
     :ivar unidades: Número de unidades que se van a solicitar del artículo.
     """
-
-    class Meta:
-        unique_together = ('articulo', 'carrito')
-
+    propietario = models.ForeignKey(to=Carrito, on_delete=models.CASCADE, null=True)
     articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
-    carrito = models.ForeignKey(to=Carrito, on_delete=models.CASCADE)
-    unidades = models.IntegerField(default=1, )
+    unidades = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"({self.unidades}) {self.articulo}"
