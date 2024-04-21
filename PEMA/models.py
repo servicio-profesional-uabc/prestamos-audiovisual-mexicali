@@ -402,7 +402,7 @@ class Materia(models.Model):
         """
         return self._articulos.add(articulo)
 
-    def agregar_maestro(self, maestro: 'Maestro') -> tuple['MaestroMateria', bool]:
+    def agregar_maestro(self, maestro: 'Maestro'):
         """
         :param maestro:
         :return:
