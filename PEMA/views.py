@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate, login
+from datetime import timedelta
+from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseNotAllowed
@@ -11,11 +13,16 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
+
+from .forms import FiltrosForm
+from .models import Orden, User, Prestatario, EstadoOrden, UsuarioMateria, Materia, Carrito
+
 from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.db import IntegrityError
+
 
 class IndexView(View):
     def get(self, request):
@@ -46,10 +53,38 @@ class CarritoView(View):
 
 class FiltrosView(View):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+
+        form = FiltrosForm()
+        context = {
+            'prestatario':prestatario,
+            'form':form,
+        }
+
         return render(
             request=request,
             template_name="filtros.html"
         )
+
+    def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        data = request.POST
+        fecha_inicio = request.POST.get('inicio')
+        tiempo = request.POST.get('time')
+        materias = request.POST.get('materias')
+
+        # if fecha_inicio != "":
+        #     pass
+        #
+        # if request.POST.get('time') == "":
+        #     messages.error(request, "FALLO")
+
+        return redirect('filtros')
+            # carrito = form.save(commit=False)
+            # carrito.prestatario = prestatario
+            # carrito.materia = Materia.objects.get(nombre="Iluminacion")
+            # carrito.final = carrito.inicio + timedelta(days=3)
+            # print(f"xdddddd {carrito.inicio}")
 
 class SolicitudView(View):
     def get(self, request):
@@ -83,6 +118,7 @@ class Permisos(View):
             template_name="menu.html",
             context={'grupo': nombre_grupo_perteneciente}
         )
+
 
 class HistorialSolicitudesView(View):
     def get(self, request):
@@ -137,7 +173,7 @@ class HistorialSolicitudesView(View):
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         prestatario = Prestatario.get_user(self.request.user)
-        orden = Orden.objects.get(id=self.kwargs['id'])
+        orden = get_object_or_404(Orden, id=self.kwargs['id'])
         return prestatario == orden.prestatario
 
     def get(self, request, id):
@@ -147,6 +183,13 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
             template_name="detalles_orden.html",
             context={"orden": orden}
         )
+
+    def post(self, request, id):
+        orden = get_object_or_404(Orden, id=id)
+        orden.estado = EstadoOrden.CANCELADA
+        orden.save()
+        messages.success(request, "Haz cancelado tu orden exitosamente.")
+        return redirect("historial_solicitudes")
 
 
 class CatalogoView(View):
