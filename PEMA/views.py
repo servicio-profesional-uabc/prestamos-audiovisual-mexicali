@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
 
 from .forms import FiltrosForm
-from .models import Orden, User, Prestatario, EstadoOrden, UsuarioMateria, Materia
+from .models import Orden, User, Prestatario, EstadoOrden, UsuarioMateria, Materia, Carrito
 
 
 class IndexView(View):
@@ -42,12 +42,6 @@ class CarritoView(View):
 
 class FiltrosView(View):
     def get(self, request):
-        fecha_actual = timezone.now().date()
-        print(fecha_actual)
-
-        # Fecha minima para realizar un prestamo
-        fecha_minima = fecha_actual + timedelta(days=3)
-        print(fecha_minima)
         prestatario = Prestatario.get_user(request.user)
 
         form = FiltrosForm()
@@ -61,6 +55,26 @@ class FiltrosView(View):
             template_name="filtros.html",
             context=context,
         )
+
+    def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        data = request.POST
+        fecha_inicio = request.POST.get('inicio')
+        tiempo = request.POST.get('time')
+        materias = request.POST.get('materias')
+
+        # if fecha_inicio != "":
+        #     pass
+        #
+        # if request.POST.get('time') == "":
+        #     messages.error(request, "FALLO")
+
+        return redirect('filtros')
+            # carrito = form.save(commit=False)
+            # carrito.prestatario = prestatario
+            # carrito.materia = Materia.objects.get(nombre="Iluminacion")
+            # carrito.final = carrito.inicio + timedelta(days=3)
+            # print(f"xdddddd {carrito.inicio}")
 
 class SolicitudView(View):
     # https://docs.djangoproject.com/en/5.0/topics/forms/modelforms/

@@ -32,18 +32,12 @@ class FiltrosForm(forms.ModelForm):
     """
     Form para filtrar catalogo/carrito
     """
-    # def __init__(self, *args, **kwargs):
-    #     super(FiltrosForm, self).__init__(*args, **kwargs)
-    #     current_date = date.today()
-    #     if current_date.month <= 6:  # Si es periodo 1
-    #         self.fields['inicio'].widget.attrs['min'] = f"{current_date.year}-01-28"
-    #         self.fields['inicio'].widget.attrs['max'] = f"{current_date.year}-06-28"
-    #     else:  # Second half of the year
-    #         self.fields['inicio'].widget.attrs['min'] = f"{current_date.year}-07-01"
-    #         self.fields['inicio'].widget.attrs['max'] = f"{current_date.year}-12-31"
+
+    # TODO: Cambiar plantilla Filtros a widgets
+
     class Meta:
         model = Carrito
-        fields = ['inicio']
+        fields = ['inicio', 'materia', 'final']
         widgets = {
-            'inicio': DateInput
+            'inicio': DateInput,
         }
