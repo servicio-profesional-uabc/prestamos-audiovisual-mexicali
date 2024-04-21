@@ -493,21 +493,7 @@ class Articulo(models.Model):
             for unidad in unid:
                 idConflicto.append(unidad.num_control)
 
-        """        
-        unidadesArticulo = self.unidades()
-        unidadesTotales = Unidad.objects.all()
-        print(unidadesTotales)
-        print("\n\n")
-        print(unidadesConflicto)
-        print("\n\n")
-        print(idConflicto)
-        print("\n\n")
-        return Unidad.objects.all()
-        """
         return Unidad.objects.difference(Unidad.objects.filter(num_control__in=idConflicto))
-        # TODO: Me esta volviendo loco este método, lo intentare luego
-
-        pass
 
     def categorias(self) -> QuerySet['Categoria']:
         """Devuelve la lista de categorías en las que pertenece el artículo."""
