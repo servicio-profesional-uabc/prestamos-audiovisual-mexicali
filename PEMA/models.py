@@ -794,6 +794,9 @@ class Articulo(models.Model):
 
         return Unidad.objects.filter(articulo=self)
 
+    def __str__(self):
+        return f"{self.nombre}"
+
 
 class Entrega(models.Model):
     """
