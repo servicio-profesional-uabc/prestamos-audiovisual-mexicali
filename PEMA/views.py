@@ -70,19 +70,23 @@ class FiltrosView(View):
         prestatario = Prestatario.get_user(request.user)
         data = request.POST
         fecha_inicio = request.POST.get('inicio')
-        tiempo = request.POST.get('time')
-        materias = request.POST.get('materias')
-        print(tiempo)
+        duracion = request.POST.get('duracion')
+        materia = request.POST.get('materia')
+        print(duracion)
         print(fecha_inicio)
-        print(materias)
+        print(materia)
 
-        # if fecha_inicio != "":
-        #     pass
-        #
-        # if request.POST.get('time') == "":
-        #     messages.error(request, "FALLO")
+        if (fecha_inicio == "" or fecha_inicio == None) or \
+            (duracion == "" or duracion == None) or \
+            (materia == "" or materia == None):
+            if fecha_inicio == "" or fecha_inicio == None:
+                messages.error(request, "No puedes dejar vacío el campo de fecha.")
+            if duracion == "" or duracion == None:
+                messages.error(request, "No puedes dejar vacío el campo de duración.")
+            if materia == "" or materia == None:
+                messages.error(request, "No puedes dejar vacío el campo de materia. Si no aparecen tus materias contacta al administrador.")
+            return redirect('filtros')
 
-        return redirect('filtros')
             # carrito = form.save(commit=False)
             # carrito.prestatario = prestatario
             # carrito.materia = Materia.objects.get(nombre="Iluminacion")

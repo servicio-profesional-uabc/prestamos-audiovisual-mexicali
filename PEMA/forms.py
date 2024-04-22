@@ -34,6 +34,16 @@ class FiltrosForm(forms.ModelForm):
     """
 
     materia = forms.ChoiceField(label="Materia", required=True)
+    final = forms.ChoiceField(label="Tiempo", required=True, choices=[
+        (1, "1 hora"),
+        (2, "2 hora"),
+        (3, "3 hora"),
+        (4, "4 hora"),
+        (8, "8 hora"),
+        (24, "1 dia (24h)"),
+        (48, "2 dias (48h)"),
+        (96, "4 dias (96h)"),
+    ])
 
     # TODO: Cambiar plantilla Filtros a widgets
 
@@ -42,6 +52,5 @@ class FiltrosForm(forms.ModelForm):
         fields = ['inicio', 'materia', 'final']
         widgets = {
             'inicio': forms.DateInput(attrs={'type': 'date'}),
-            'materia': forms.Select(attrs={'class': 'form-select'}),
-            'final': forms.DateInput(attrs={'type': 'date'}),
+            'final': forms.Select(attrs={'class': 'form-select'}), # fecha_inicio + duracion = fecha_final
         }

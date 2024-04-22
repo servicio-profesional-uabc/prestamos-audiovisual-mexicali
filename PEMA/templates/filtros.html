@@ -47,7 +47,7 @@
         <div class="row mb-4 mt-2">
             <div class="col me-3">
                 <div class="dropdown">
-                    <select id="tiempo" name="tiempo" class="form-select" required>
+                    <select id="materia" name="materia" class="form-select" required>
                         {% if prestatario %}
                             {% for materia in prestatario.materias %}
                                 <option value="{{ materia.nombre }}">{{ materia.nombre }}</option>
@@ -55,14 +55,16 @@
                         {% else %}
                             <option value="None">No existen materias</option>
                         {% endif %}
+{#                        {% render_field form.materia class="form-control" placeholder="Usuario"%}#}
                     </select>
+
                 </div>
             </div>
             <div class="col">
                 <div class="dropdown">
-                    <select id="tiempo" name="tiempo" class="form-select" required>
+                    <select id="duracion" name="duracion" class="form-select" required>
                         <ul class="dropdown-menu">
-                            <option value="1 ">1 hora</option>
+                            <option value="1">1 hora</option>
                             <option value="2">2 horas</option>
                             <option value="3">3 horas</option>
                             <option value="4">4 horas</option>
