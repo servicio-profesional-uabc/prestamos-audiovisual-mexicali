@@ -72,6 +72,9 @@ class FiltrosView(View):
         fecha_inicio = request.POST.get('inicio')
         tiempo = request.POST.get('time')
         materias = request.POST.get('materias')
+        print(tiempo)
+        print(fecha_inicio)
+        print(materias)
 
         # if fecha_inicio != "":
         #     pass

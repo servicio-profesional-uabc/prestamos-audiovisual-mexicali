@@ -47,7 +47,7 @@
         <div class="row mb-4 mt-2">
             <div class="col me-3">
                 <div class="dropdown">
-                    <select id="materias" name="materias" class="form-select" required>
+                    <select id="tiempo" name="tiempo" class="form-select" required>
                         {% if prestatario %}
                             {% for materia in prestatario.materias %}
                                 <option value="{{ materia.nombre }}">{{ materia.nombre }}</option>
@@ -60,19 +60,18 @@
             </div>
             <div class="col">
                 <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" required>
-                        Selecciona tiempo de préstamo
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><button class="dropdown-item">1 hora</button></li>
-                        <li><button class="dropdown-item">2 hora</button></li>
-                        <li><button class="dropdown-item">3 hora</button></li>
-                        <li><button class="dropdown-item">4 hora</button></li>
-                        <li><button class="dropdown-item">8 hora</button></li>
-                        <li><button class="dropdown-item">1 dia (24h)</button></li>
-                        <li><button class="dropdown-item">2 dia (48h)</button></li>
-                        <li><button class="dropdown-item">4 dias (96h)</button></li>
-                    </ul>
+                    <select id="tiempo" name="tiempo" class="form-select" required>
+                        <ul class="dropdown-menu">
+                            <option value="1 ">1 hora</option>
+                            <option value="2">2 horas</option>
+                            <option value="3">3 horas</option>
+                            <option value="4">4 horas</option>
+                            <option value="8">8 horas</option>
+                            <option value="24">1 dia (24h)</option>
+                            <option value="48">2 dia (48h)</option>
+                            <option value="96">4 dias (96h)</option>
+                        </ul>
+                    </select>
                 </div>
             </div>
         </div>

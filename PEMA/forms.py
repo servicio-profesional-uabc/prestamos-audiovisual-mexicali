@@ -33,11 +33,15 @@ class FiltrosForm(forms.ModelForm):
     Form para filtrar catalogo/carrito
     """
 
+    materia = forms.ChoiceField(label="Materia", required=True)
+
     # TODO: Cambiar plantilla Filtros a widgets
 
     class Meta:
         model = Carrito
         fields = ['inicio', 'materia', 'final']
         widgets = {
-            'inicio': DateInput,
+            'inicio': forms.DateInput(attrs={'type': 'date'}),
+            'materia': forms.Select(attrs={'class': 'form-select'}),
+            'final': forms.DateInput(attrs={'type': 'date'}),
         }
