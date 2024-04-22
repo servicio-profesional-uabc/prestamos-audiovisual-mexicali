@@ -51,19 +51,16 @@ class CarritoView(View):
             template_name="carrito.html"
         )
 
-class FiltrosView(View):
+class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
+        print(prestatario.materias())
 
         form = FiltrosForm()
-        context = {
-            'prestatario':prestatario,
-            'form':form,
-        }
-
         return render(
             request=request,
-            template_name="filtros.html"
+            context={'prestatario': prestatario, 'form': form},
+            template_name="filtros.html",
         )
 
     def post(self, request):
