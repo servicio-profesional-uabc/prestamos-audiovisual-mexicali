@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path
+from django.template.defaulttags import url
+from django.urls import path, include
 from . import views
 from .forms import UserLoginForm
 from django.contrib.auth.views import LoginView, LogoutView

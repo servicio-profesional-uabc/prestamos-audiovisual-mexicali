@@ -24,14 +24,16 @@ SECRET_KEY = 'django-insecure-6b00ecn+-56drvcpf_u(1ts&=s$l1v@5k72e9c3sowawe%27xj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 # Application definition
 
 INSTALLED_APPS = [
+    # para el admin
     'admin_interface',
     'colorfield',
     'django.contrib.admin',
+
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -48,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
 ROOT_URLCONF = 'prestamos.urls'
@@ -134,3 +136,7 @@ EMAIL_USE_SSL = False
 # Archivos subidos desde django
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / MEDIA_URL
+
+# admin personalizado
+X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
