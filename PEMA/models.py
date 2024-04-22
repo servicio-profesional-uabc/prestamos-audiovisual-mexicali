@@ -81,7 +81,6 @@ class Prestatario(User):
 
         :return: Lista de órdenes del usuario.
         """
-
         return Orden.objects.filter(prestatario=self)
 
     def reportes(self) -> QuerySet['Reporte']:
@@ -355,18 +354,19 @@ class Materia(models.Model):
     Las materias se encargan de limitar el material al que pueden acceder
     los Prestatarios.
 
-    :param nombre: Nombre de la clase
-    :param periodo: Periodo de la clase ej. 2022-1
+    :ivar nombre: Nombre de la clase
+    :ivar year: Año que se imparte la clase.
+    :ivar semestre: Semestre que se imparte la clase.
+    :ivar activa: Si la clase se está impartiendo actualmente.
     """
 
     class Meta:
-        unique_together = ('nombre', 'periodo')
+        unique_together = ('nombre', 'year', 'semestre')
 
     nombre = models.CharField(primary_key=True, max_length=250, null=False, blank=False)
-
-    # TODO: falta grupo
-    # TODO: separar año y periodo
-    periodo = models.CharField(max_length=6, null=False, blank=False)
+    year = models.IntegerField(null=False)
+    semestre = models.IntegerField(null=False)
+    activa = models.BooleanField(default=True)
 
     def alumnos(self) -> QuerySet['User']:
         """
@@ -408,7 +408,7 @@ class Materia(models.Model):
         return UsuarioMateria.objects.get_or_create(usuario=usuario, materia=self)
 
     def __str__(self):
-        return f"{self.nombre} ({self.periodo} )"
+        return f"{self.nombre} ({self.year}-{self.semestre})"
 
 
 class TipoOrden(models.TextChoices):
@@ -456,7 +456,9 @@ class Orden(models.Model):
     """
 
     class Meta:
+        ordering = ("emision", )
         verbose_name_plural = "Ordenes"
+
     class Estado(models.TextChoices):
         """
         Opciones para el estado de la orden:
@@ -713,7 +715,7 @@ class Articulo(models.Model):
 
     imagen = models.ImageField(default='default.png')
     nombre = models.CharField(blank=False, null=False, max_length=250)
-    codigo = models.CharField(blank=False, null=False, max_length=250)
+    codigo = models.CharField(blank=True, null=False, max_length=250)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
 
     def crear_unidad(self, num_control: str, num_serie: str) -> tuple['Unidad', bool]:
@@ -736,40 +738,31 @@ class Articulo(models.Model):
         :returns: Unidades disponibles en el rango especificado.
         """
 
-        """_summary_
-        1-Tener lista de ordenes aprobadas de la misma materia que la orden en proceso
-        2-Iterar lista de ordenes aprobadas
-        3-Comparar conflicto de horarios
-        4-Guardar ordenes que tienen conflicto en horario
-        TODO:
-        5-Iterar lista de ordenes conflicto
-        6-Crear lista con la cantidad de unidades de cada articulo en esas ordenes
-        7-Restar unidades ocupadas del total de unidades de cada articulo
-        8-Regresar lista con unidades libres de cada articulo en el horario solicitado
-        
-        
-        Posibles optimizaciones de momento
-        -No utilizar tantas listas
-        -Filtrar la mayor cantidad de ordenes con filters para reducir iteraciones del for
-        -Buscar mejor combinación de comparaciones de horarios
-        
-        """
-        
-        ordenesAprobadas = Orden.objects.filter(estado=Estado.APROBADA, materia__in=materias(self))
-        ordenesConflicto = []
+        ordenesAprobadas = Orden.objects.filter(estado="AP")
+        #ordenesConflicto = []
         unidadesConflicto = []
-        for ord in ordenesAprobadas.iterator:
-            if(ord.inicio == inicio or 
-               ord.final == final or
-            (ord.inicio < inicio and ord.final > inicio) or
-            (ord.inicio < final and ord.final > final) or
-            (ord.inicio > inicio and ord.final < final)):
-                ordenesConflicto.append(ord)
-                unidadesConflicto.append(ord.unidades(ord))
+        idConflicto = []
+        for ord in ordenesAprobadas:
+            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (
+                    ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
+                #ordenesConflicto.append(ord)
+                unidadesConflicto.append(ord.unidades())
+        for unid in unidadesConflicto:
+            for unidad in unid:
+                idConflicto.append(unidad.num_control)
         
-        #unidadesTotales = self.unidades()
-        
-        return Unidad.objects.difference(unidadesConflicto)      
+        """        
+        unidadesArticulo = self.unidades()
+        unidadesTotales = Unidad.objects.all()
+        print(unidadesTotales)
+        print("\n\n")
+        print(unidadesConflicto)
+        print("\n\n")
+        print(idConflicto)
+        print("\n\n")
+        return Unidad.objects.all()
+        """
+        return Unidad.objects.difference(Unidad.objects.filter(num_control__in=idConflicto))
         # TODO: Me esta volviendo loco este método, lo intentare luego
 
         pass
@@ -813,7 +806,7 @@ class Entrega(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 
@@ -849,7 +842,7 @@ class Unidad(models.Model):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    articulo = models.OneToOneField(to=Articulo, on_delete=models.CASCADE)
+    articulo = models.ForeignKey(to=Articulo, on_delete=models.CASCADE)
     estado = models.CharField(max_length=2, choices=Estado.choices, null=False, default=Estado.ACTIVO)
     num_control = models.CharField(max_length=250, null=False, blank=False)
     num_serie = models.CharField(blank=False, null=False, max_length=250)

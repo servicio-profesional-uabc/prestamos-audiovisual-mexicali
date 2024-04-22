@@ -12,9 +12,9 @@ class TestMaestro(TestCase):
         self.user_maestro = User.objects.create(id=8, username="maestro_prueba", password="<PASSWORD>")
 
     def test_materias(self):
-        materia1 = Materia.objects.create(nombre="Fotografía", periodo="2024-2")
-        materia2 = Materia.objects.create(nombre="Cinefotografía I", periodo="2024-2")
-        materia3 = Materia.objects.create(nombre="Cinefotografía II", periodo="2024-2")
+        materia1 = Materia.objects.create(nombre="Fotografía", year=2022, semestre=1)
+        materia2 = Materia.objects.create(nombre="Cinefotografía I",  year=2022, semestre=1)
+        materia3 = Materia.objects.create(nombre="Cinefotografía II",  year=2022, semestre=1)
 
         materias = Materia.objects.all()
 

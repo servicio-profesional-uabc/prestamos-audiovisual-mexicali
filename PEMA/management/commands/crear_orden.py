@@ -14,6 +14,7 @@ class Command(BaseCommand):
 
     USERNAME = '117'
     PASSWORD = '123'
+    ID = 117
 
     class ErrorMessages:
         ENVIRONMENT = 'No se puede ejecutar este comando en entornos de producción'
@@ -23,21 +24,28 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(Command.ErrorMessages.ENVIRONMENT))
             return
 
-        user = Prestatario.crear_usuario(id=117, username=self.USERNAME, password=self.PASSWORD)
+        try:
+            user = Prestatario.crear_usuario(id=self.ID, username=self.USERNAME, password=self.PASSWORD)
+        except:
+            user = User.objects.get(id=self.ID)
 
         # materias
-        materia1 = Materia.objects.create(
+        materia1, created = Materia.objects.get_or_create(
             nombre='Cinematografia',
-            periodo='2024-1',
+            year=2024,
+            semestre=1,
+            activa=True,
         )
 
-        materia2 = Materia.objects.create(
+        materia2, created = Materia.objects.get_or_create(
             nombre='Iluminacion',
-            periodo='2024-1',
+            year=2024,
+            semestre=1,
+            activa=True,
         )
 
         # ordenes
-        orden1 = Orden.objects.create(
+        orden1, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
@@ -47,7 +55,7 @@ class Command(BaseCommand):
             materia=materia1,
         )
 
-        orden2 = Orden.objects.create(
+        orden2, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.EXTERNO,
@@ -59,7 +67,7 @@ class Command(BaseCommand):
             descripcion="Esta solicitud es para mi practica de Cinematografia en la laguna salada."
         )
 
-        orden3 = Orden.objects.create(
+        orden3, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
@@ -69,7 +77,7 @@ class Command(BaseCommand):
             materia=materia2,
         )
 
-        orden4 = Orden.objects.create(
+        orden4, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
@@ -79,7 +87,7 @@ class Command(BaseCommand):
             materia=materia2,
         )
 
-        orden5 = Orden.objects.create(
+        orden5, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
@@ -89,7 +97,7 @@ class Command(BaseCommand):
             materia=materia1,
         )
 
-        orden6 = Orden.objects.create(
+        orden6, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             lugar=Orden.Ubicacion.CAMPUS,
