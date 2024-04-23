@@ -531,6 +531,7 @@ class Unidad(models.Model):
     """
 
     class Meta:
+        verbose_name_plural = "Unidades"
         unique_together = ('articulo', 'num_control')
 
     class Estado(models.TextChoices):
@@ -544,6 +545,9 @@ class Unidad(models.Model):
 
     def ordenes(self) -> QuerySet['Orden']:
         return Orden.objects.filter(unidadorden__unidad=self)
+
+    def __str__(self):
+        return f"{self.articulo}"
 
 
 class Orden(models.Model):
