@@ -31,19 +31,25 @@ class ArticuloAdmin(admin.ModelAdmin):
 @admin.register(Carrito)
 class CarritoAdmin(admin.ModelAdmin):
     list_display = ('prestatario', 'materia')
-    actions = ['uppercase']
+    actions = ['ordenar']
 
     @admin.action(description='Ordenar artículos del carrito')
-    def uppercase(self, request, queryset):
+    def ordenar(self, request, queryset):
         for obj in queryset:
             obj.ordenar()
             # messages.success(request, "Successfully made uppercase!")
 
 
+@admin.register(Unidad)
+class UnidadAdmin(admin.ModelAdmin):
+    list_display = ('num_control', 'num_serie', 'articulo', 'estado')
+    list_filter = ('estado', )
+    search_fields = ['num_control', 'num_serie', 'articulo']
+
+
 admin.site.register(Perfil)
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
-admin.site.register(Unidad)
 admin.site.register(Categoria)
 admin.site.register(AutorizacionOrden)
 # admin.site.register(ArticuloCarrito)

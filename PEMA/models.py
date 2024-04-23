@@ -314,7 +314,6 @@ class Perfil(models.Model):
     """
 
     usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
-    imagen = models.ImageField(default='default.png')
     telefono = PhoneNumberField(null=True)
 
     @classmethod
@@ -535,6 +534,7 @@ class Unidad(models.Model):
     """
 
     class Meta:
+        verbose_name_plural = "Unidades"
         unique_together = ('articulo', 'num_control')
 
     class Estado(models.TextChoices):
@@ -548,6 +548,9 @@ class Unidad(models.Model):
 
     def ordenes(self) -> QuerySet['Orden']:
         return Orden.objects.filter(unidadorden__unidad=self)
+
+    def __str__(self):
+        return f"{self.articulo}"
 
 
 class Orden(models.Model):
@@ -775,8 +778,13 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
 
         with transaction.atomic():
-            orden = Orden.objects.create(materia=self.materia, prestatario=self.prestatario, inicio=self.inicio,
-                                         final=self.final)
+            orden = Orden.objects.create(
+                nombre=f"{self.prestatario.username}{self.inicio}",
+                materia=self.materia,
+                prestatario=self.prestatario,
+                inicio=self.inicio,
+                final=self.final
+            )
 
             # TODO: convertir los ArticuloCarrito a UnidadOrden
 

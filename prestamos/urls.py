@@ -15,9 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from django.urls import include
 from django.contrib.auth import views as auth_views
+from django.template.defaulttags import url
+from django.urls import include
+from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,5 +32,8 @@ urlpatterns = [
         template_name='password_reset_confirm.html'), name='password_reset_confirm'),
     path('reset_password_complete/', auth_views.PasswordResetCompleteView.as_view(
         template_name='password_reset_complete.html'), name='password_reset_complete'),
-]
 
+    # Internacionalización del admin
+    path('i18n/', include('django.conf.urls.i18n')),
+
+]
