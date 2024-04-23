@@ -837,6 +837,9 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nombre
 
+    def __str__(self):
+        return f"{self.nombre}"
+
 
 class Entrega(models.Model):
     """
