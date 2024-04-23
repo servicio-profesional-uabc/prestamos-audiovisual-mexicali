@@ -314,7 +314,6 @@ class Perfil(models.Model):
     están incluidos mediante métodos específicos.
 
     :ivar usuario: Usuario del perfil.
-    :ivar imagen: Imagen del perfil.
     :ivar telefono: Número de teléfono.
     """
 
@@ -849,9 +848,6 @@ class Categoria(models.Model):
         Agrega un Articulo a la Categoría
         """
         self.articulo_set.add(articulo)
-
-    def __str__(self):
-        return self.nombre
 
     def __str__(self):
         return f"{self.nombre}"
