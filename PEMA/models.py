@@ -771,8 +771,13 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
 
         with transaction.atomic():
-            orden = Orden.objects.create(materia=self.materia, prestatario=self.prestatario, inicio=self.inicio,
-                                         final=self.final)
+            orden = Orden.objects.create(
+                nombre=f"{self.prestatario.username}{self.inicio}",
+                materia=self.materia,
+                prestatario=self.prestatario,
+                inicio=self.inicio,
+                final=self.final
+            )
 
             # TODO: convertir los ArticuloCarrito a UnidadOrden
 
