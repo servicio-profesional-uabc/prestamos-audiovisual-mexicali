@@ -7,8 +7,15 @@ from PEMA.models import Almacen, Coordinador, Maestro, Prestatario
 
 class Command(BaseCommand):
     """
+    Este comando crea varios usuarios para diferentes roles en el sistema.
     *NO usar en producción*
-    Crea un superusuario de prueba con nombre y contraseña 'admin' y '123'
+
+    Este comando crea los siguientes usuarios:
+    - Un superusuario administrativo con nombre de usuario 'admin' y contraseña '123'.
+    - Un usuario de almacén con nombre de usuario 'almacen' y contraseña '123'.
+    - Un usuario coordinador con nombre de usuario 'coordinador' y contraseña '123'.
+    - Un usuario maestro con nombre de usuario 'maestro' y contraseña '123'.
+    - Un usuario prestatario con nombre de usuario 'prestatario' y contraseña '123'.
     """
 
     class ErrorMessages:
