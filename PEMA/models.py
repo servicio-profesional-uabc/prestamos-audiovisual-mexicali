@@ -311,7 +311,6 @@ class Perfil(models.Model):
     """
 
     usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
-    imagen = models.ImageField(default='default.png')
     telefono = PhoneNumberField(null=True)
 
     @classmethod
