@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
 
 from .models import *
 
@@ -22,7 +24,7 @@ class OrdenAdmin(admin.ModelAdmin):
 
 
 @admin.register(Articulo)
-class ArticuloAdmin(admin.ModelAdmin):
+class ArticuloAdmin(ImportExportModelAdmin):
     list_display = ('nombre', 'codigo', 'descripcion')
     search_fields = ['nombre', 'codigo']
     filter_horizontal = ('_categorias',)
