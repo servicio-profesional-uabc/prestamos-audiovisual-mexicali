@@ -1,3 +1,4 @@
+import unittest
 from datetime import datetime
 
 from django.contrib.auth.models import User, Group
@@ -35,25 +36,21 @@ class TestCarrito(TestCase):
     def test_agregar(self):
         self.assertEquals(len(self.carrito.articulos()), 0, msg="El Carrito No está vació")
 
-        self.carrito.agregar(articulo=self.articulo)
-
+        self.carrito.agregar(articulo=self.articulo, unidades=1)
         self.assertEquals(len(self.carrito.articulos()), 1, msg="No se agrego ningún articulo")
 
         # volver a agregar
-        self.carrito.agregar(articulo=self.articulo)
-
+        self.carrito.agregar(articulo=self.articulo, unidades=1)
         self.assertEquals(len(self.carrito.articulos()), 1, msg="Se duplicaron artículos")
 
     def test_actualizar_unidades(self):
-        foo, _ = self.carrito.agregar(articulo=self.articulo)
+        self.carrito.agregar(articulo=self.articulo, unidades=1)
+        self.carrito.agregar(articulo=self.articulo, unidades=3)
 
-        prev = foo.unidades
+        a = self.carrito._articulos.filter(articulo=self.articulo)
 
-        bar, _ = self.carrito.agregar(articulo=self.articulo, unidades=3)
-
-        post = bar.unidades
-
-        self.assertNotEquals(prev, post, msg="No se actualizó la cantidad de unidades")
+        self.assertEquals(len(a), 1, msg="Cantidad incorrecta de elementos")
+        self.assertEquals(a.first().unidades, 3, msg="No se actualizó la cantidad de unidades")
 
     def test_ordenar(self):
         self.carrito.ordenar()

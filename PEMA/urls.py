@@ -1,9 +1,10 @@
-from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
+from django.template.defaulttags import url
+from django.urls import path, include
 from . import views
-from django.views.generic.base import TemplateView
-from . forms import UserLoginForm
+from .forms import UserLoginForm
 from django.contrib.auth.views import LoginView, LogoutView
-
 
 urlpatterns = [
     # login
@@ -61,14 +62,13 @@ urlpatterns = [
         view=views.DetallesOrdenView.as_view(),
         name='detalles_orden'
     ),
-    
-    
+
     path(
         route='detalles_articulo',
         view=views.DetallesArticuloView.as_view(),
         name='detalles_articulo'
     ),
-    
+
     path(
         route='cancelar_orden',
         view=views.CancelarOrdenView.as_view(),
@@ -77,3 +77,7 @@ urlpatterns = [
 
 
 ]
+
+# https://github.com/fabiocaccamo/django-admin-interface/issues/4
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

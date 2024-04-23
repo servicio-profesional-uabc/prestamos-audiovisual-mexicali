@@ -29,17 +29,21 @@ class MateriaTestCase(TestCase):
 
     def test_metodo_profesores(self):
         # maestro unico
-        self.materia.agregar_maestro(self.user_maestro)
+        maestro = Maestro.get_user(self.user_maestro)
+
+        self.materia.agregar_maestro(maestro)
         self.assertIn(self.user_maestro, self.materia.maestros(), msg="No se agrego al profesor")
 
         # agregar otro maestro
         maestro_dos = Maestro.crear_usuario(id=99, username="maestro2", password="<PASSWORD>")
-        self.materia.agregar_maestro(maestro_dos)
+        maestro_dosu = Maestro.get_user(self.user_maestro)
+
+        self.materia.agregar_maestro(maestro_dosu)
 
         # verificar si ambos estan en el query set
         lista_maestros_actualizada = self.materia.maestros()
-        self.assertIn(self.user_maestro, lista_maestros_actualizada, msg="El profesor 1 ha sido eliminado")
-        self.assertIn(maestro_dos, lista_maestros_actualizada, msg="El profesor 2 ha sido eliminado")
+        self.assertIn(maestro, lista_maestros_actualizada, msg="El profesor 1 ha sido eliminado")
+        self.assertIn(maestro_dosu, lista_maestros_actualizada, msg="El profesor 2 ha sido eliminado")
 
     def test_metodo_articulos(self):
         # articulos para la lista

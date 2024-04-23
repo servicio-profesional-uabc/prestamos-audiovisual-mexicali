@@ -15,7 +15,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
 
 from .forms import FiltrosForm
-from .models import Orden, User, Prestatario, EstadoOrden, UsuarioMateria, Materia, Carrito
+from .models import Orden, User, Prestatario, EstadoOrden, Materia, Carrito
 
 from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion
 from django.urls import reverse
