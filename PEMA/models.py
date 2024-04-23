@@ -275,11 +275,19 @@ class Almacen(User):
         group, created = Group.objects.get_or_create(name='almacen')
 
         # permisos
+        group.permissions.add(Permission.objects.get(codename='view_articulo'))
         group.permissions.add(Permission.objects.get(codename='add_devolucion'))
+        group.permissions.add(Permission.objects.get(codename='view_devolucion'))
         group.permissions.add(Permission.objects.get(codename='add_entrega'))
+        group.permissions.add(Permission.objects.get(codename='view_entrega'))
         group.permissions.add(Permission.objects.get(codename='add_orden'))
+        group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='view_orden'))
+        group.permissions.add(Permission.objects.get(codename='add_reporte'))
+        group.permissions.add(Permission.objects.get(codename='change_reporte'))
+        group.permissions.add(Permission.objects.get(codename='delete_reporte'))
         group.permissions.add(Permission.objects.get(codename='view_reporte'))
+        group.permissions.add(Permission.objects.get(codename='view_unidad'))
 
         return group, created
 
