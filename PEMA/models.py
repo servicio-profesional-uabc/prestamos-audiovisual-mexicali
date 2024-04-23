@@ -233,6 +233,9 @@ class Maestro(User):
 
         return user
 
+    def __str__(self):
+        return f"{self.first_name}"
+
 
 class Almacen(User):
     """
