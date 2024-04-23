@@ -43,6 +43,7 @@ class CarritoAdmin(admin.ModelAdmin):
 @admin.register(Unidad)
 class UnidadAdmin(admin.ModelAdmin):
     list_display = ('num_control', 'num_serie', 'articulo', 'estado')
+    list_filter = ('estado', )
     search_fields = ['num_control', 'num_serie', 'articulo']
 
 
