@@ -278,11 +278,19 @@ class Almacen(User):
         group, created = Group.objects.get_or_create(name='almacen')
 
         # permisos
+        group.permissions.add(Permission.objects.get(codename='view_articulo'))
         group.permissions.add(Permission.objects.get(codename='add_devolucion'))
+        group.permissions.add(Permission.objects.get(codename='view_devolucion'))
         group.permissions.add(Permission.objects.get(codename='add_entrega'))
+        group.permissions.add(Permission.objects.get(codename='view_entrega'))
         group.permissions.add(Permission.objects.get(codename='add_orden'))
+        group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='view_orden'))
+        group.permissions.add(Permission.objects.get(codename='add_reporte'))
+        group.permissions.add(Permission.objects.get(codename='change_reporte'))
+        group.permissions.add(Permission.objects.get(codename='delete_reporte'))
         group.permissions.add(Permission.objects.get(codename='view_reporte'))
+        group.permissions.add(Permission.objects.get(codename='view_unidad'))
 
         return group, created
 
@@ -309,7 +317,6 @@ class Perfil(models.Model):
     están incluidos mediante métodos específicos.
 
     :ivar usuario: Usuario del perfil.
-    :ivar imagen: Imagen del perfil.
     :ivar telefono: Número de teléfono.
     """
 
@@ -844,9 +851,6 @@ class Categoria(models.Model):
         Agrega un Articulo a la Categoría
         """
         self.articulo_set.add(articulo)
-
-    def __str__(self):
-        return self.nombre
 
     def __str__(self):
         return f"{self.nombre}"
