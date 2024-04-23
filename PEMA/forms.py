@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django import forms
-from .models import User, Carrito
+from .models import User, Carrito, Materia, UsuarioMateria, Prestatario
 from django import forms
 from django.contrib.auth.hashers import check_password
 from datetime import date
@@ -33,7 +33,7 @@ class FiltrosForm(forms.ModelForm):
     Form para filtrar catalogo/carrito
     """
 
-    materia = forms.ChoiceField(label="Materia", required=True)
+    materia = forms.ModelChoiceField(queryset=None)
     final = forms.ChoiceField(label="Tiempo", required=True, choices=[
         (1, "1 hora"),
         (2, "2 hora"),
@@ -46,6 +46,10 @@ class FiltrosForm(forms.ModelForm):
     ])
 
     # TODO: Cambiar plantilla Filtros a widgets
+
+    def __init__(self, user: Prestatario, *args, **kwargs):
+        super(FiltrosForm, self).__init__(*args, **kwargs)
+        self.fields['materia'].queryset = user.materias()
 
     class Meta:
         model = Carrito
