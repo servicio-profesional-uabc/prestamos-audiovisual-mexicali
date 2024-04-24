@@ -26,36 +26,8 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(Command.ErrorMessages.ENVIRONMENT))
             return
 
-        admin = User.objects.create_user(
-            username='admin',
-            password='123',
-            is_superuser=True,
-            is_staff=True
-        )
-
-        almacen = Almacen.crear_usuario(
-            username='almacen',
-            password='123',
-            is_staff=True,
-        )
-
-        coordinador = Coordinador.crear_usuario(
-            username='coordinador',
-            password='123',
-            is_staff=True,
-        )
-
-        maestro = Maestro.crear_usuario(
-            username='maestro',
-            password='123',
-        )
-
-        prestatario = Prestatario.crear_usuario(
-            username='prestatario',
-            password='123',
-        )
-
-
-
-
-
+        admin = User.objects.create_user(username='admin', password='123', is_superuser=True, is_staff=True)
+        almacen = Almacen.crear_usuario(username='almacen', password='123', is_staff=True, )
+        coordinador = Coordinador.crear_usuario(username='coordinador', password='123', is_staff=True, )
+        maestro = Maestro.crear_usuario(username='maestro', password='123', )
+        prestatario = Prestatario.crear_usuario(username='prestatario', password='123', )
