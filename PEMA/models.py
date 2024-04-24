@@ -616,22 +616,22 @@ class Orden(models.Model):
     # obligatorio
     nombre = models.CharField(blank=False, max_length=125)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
-    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
-    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125)
-    estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
-
+    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
 
-    descripcion = models.TextField(blank=True, max_length=512)
+    # automático
+    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
+    estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
+    emision = models.DateTimeField(auto_now_add=True)
+
+    # en caso de que lugar sea Ubicacion.EXTERNO
+    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125)
 
     # opcional
-    _prestatarios = models.ManyToManyField(to=Prestatario)
     _unidades = models.ManyToManyField(to=Unidad, blank=True)
-
-    # automático
-    emision = models.DateTimeField(auto_now_add=True)
+    descripcion = models.TextField(blank=True, max_length=512)
 
     def es_ordinaria(self) -> bool:
         return self.tipo == TipoOrden.ORDINARIA
