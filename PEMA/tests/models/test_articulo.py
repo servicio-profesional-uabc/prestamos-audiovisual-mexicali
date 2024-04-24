@@ -3,11 +3,10 @@ from datetime import datetime
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Articulo
+from PEMA.models import Articulo, Prestatario
 from PEMA.models import Materia
 from PEMA.models import Categoria
 from PEMA.models import Orden
-from PEMA.models import Prestatario
 
 
 class TestArticulo(TestCase):
@@ -17,11 +16,7 @@ class TestArticulo(TestCase):
         return make_aware(datetime(2024, 3, 16, 12 + hora))
 
     def setUp(self):
-        self.user = Prestatario.crear_usuario(
-            id=0,
-            username="sin_rol",
-            password="<PASSWORD>"
-        )
+        self.prestatario = Prestatario.crear_usuario(id="123",username="test", password="<PASSWORD>")
 
         self.articulo = Articulo.objects.create(
             nombre="articulo 1",
@@ -36,16 +31,16 @@ class TestArticulo(TestCase):
         self.materia = Materia.objects.create(nombre="fotografia", year=2022, semestre=1)
 
         self.orden_antes = Orden.objects.create(
+            prestatario=self.prestatario,
             materia=self.materia,
-            prestatario=self.user,
             lugar="Prueba antes",
             inicio=self.generar_fechas(-1),
             final=self.generar_fechas(1)
         )
 
         self.orden_despues = Orden.objects.create(
+            prestatario=self.prestatario,
             materia=self.materia,
-            prestatario=self.user,
             lugar="prueba despues",
             inicio=self.generar_fechas(0),
             final=self.generar_fechas(1)

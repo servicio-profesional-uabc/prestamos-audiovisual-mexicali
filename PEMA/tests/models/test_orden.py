@@ -20,10 +20,10 @@ class TestOrden(TestCase):
         self.unidad1, _ = self.articulo1.crear_unidad(num_control="000", num_serie="000")
         self.unidad2, _ = self.articulo2.crear_unidad(num_control="100", num_serie="200")
 
-        materia = Materia.objects.create(nombre="Fotografia",  year=2022, semestre=1)
+        materia = Materia.objects.create(nombre="Fotografia", year=2022, semestre=1)
 
-        self.orden = Orden.objects.create(materia=materia, prestatario=self.prestataio,
-            inicio=make_aware(datetime(2024, 3, 16, 12)), final=make_aware(datetime(2024, 3, 16, 18)), )
+        self.orden = Orden.objects.create(prestatario=self.prestataio, materia=materia, inicio=make_aware(datetime(2024, 3, 16, 12)),
+                                          final=make_aware(datetime(2024, 3, 16, 18)), )
 
     def test_agregar_unidad(self):
         self.orden.agregar_unidad(self.unidad1)

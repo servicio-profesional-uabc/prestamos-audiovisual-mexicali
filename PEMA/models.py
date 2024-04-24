@@ -44,7 +44,7 @@ class Prestatario(User):
             return None
 
     @staticmethod
-    def crear_usuario(*args, **kwargs) -> User:
+    def crear_usuario(*args, **kwargs) -> 'Prestatario':
         """
         Crea un usuario de tipo prestatario, util para hacer pruebas unitarias
 
@@ -55,7 +55,7 @@ class Prestatario(User):
         user = User.objects.create_user(*args, **kwargs)
         grupo.user_set.add(user)
 
-        return user
+        return Prestatario.get_user(user)
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -81,7 +81,7 @@ class Prestatario(User):
 
         :return: Lista de órdenes del usuario.
         """
-        return Orden.objects.filter(prestatario=self)
+        return Orden.objects.filter(_corresponsables__in=[self])
 
     def reportes(self) -> QuerySet['Reporte']:
         """
@@ -610,43 +610,41 @@ class Orden(models.Model):
 
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
-        CAMPUS = "CA", _("CAMPUS")
-        EXTERNO = "EX", _("EXTERNO")
+        CAMPUS = "CA", _("En el Campus")
+        EXTERNO = "EX", _("Fuera del Campus")
 
     # obligatorio
-    nombre = models.CharField(blank=False, max_length=125)
+    nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
+    prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Emisor')
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
+    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2,
+                            verbose_name="Tipo de la Solicitud")
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
+                             verbose_name='Lugar de la Producción')
+    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Especifico')
+    estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
+
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
 
-    # automático
-    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
-    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
-    estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
-    emision = models.DateTimeField(auto_now_add=True)
-
-    # en caso de que lugar sea Ubicacion.EXTERNO
-    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125)
+    descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
 
     # opcional
-    _unidades = models.ManyToManyField(to=Unidad, blank=True)
-    descripcion = models.TextField(blank=True, max_length=512)
+    _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables',
+                                              verbose_name='Participantes')
+    _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
+
+    # automático
+    emision = models.DateTimeField(auto_now_add=True)
+
+    def agregar_corresponsable(self, prestatario: 'Prestatario'):
+        self._corresponsables.add(prestatario)
 
     def es_ordinaria(self) -> bool:
         return self.tipo == TipoOrden.ORDINARIA
 
     def es_extraordinaria(self):
         return self.tipo == TipoOrden.EXTRAORDINARIA
-
-    def estado_actual(self) -> tuple[bool, str]:
-        """
-        La función retorna una tupla `(bool, str)`, donde `bool` es
-        `True` si la orden puede aprobarse, y en caso contrario, la
-        cadena `str` proporciona una explicación del motivo de la no
-        aprobación.
-        """
-        pass
 
     def unidades(self) -> 'QuerySet[Unidad]':
         """
@@ -663,16 +661,12 @@ class Orden(models.Model):
     def reporte(self) -> 'Reporte':
         """
         Retorna el Reporte de la Orden o nada sí no tiene reporte.
-
-        :returns: Reporte: Reporte asociado a la orden o None si no tiene reporte.
         """
         return Reporte.objects.filter(orden=self).first()
 
     def agregar_unidad(self, unidad: 'Unidad'):
         """
         Agrega una unidad a la orden.
-
-        :param unidad: Unidad que se agregará
         """
         return self._unidades.add(unidad)
 
@@ -729,7 +723,7 @@ class Orden(models.Model):
         return Reporte.objects.get_or_create(almacen=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
-        return f"{self.nombre}"
+        return f"{self.prestatario}"
 
 
 class Carrito(models.Model):
@@ -744,11 +738,12 @@ class Carrito(models.Model):
     :ivar final: Fecha de devolución del préstamo.
     """
 
-    prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    prestatario = models.OneToOneField(to=Prestatario, on_delete=models.CASCADE)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='ArticuloCarrito', blank=True)
+    _corresponsables = models.ManyToManyField(to='Prestatario', blank=True, related_name='corresponsables_carrito')
 
     def agregar(self, articulo: 'Articulo', unidades: int):
         """
@@ -785,21 +780,24 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
 
         with transaction.atomic():
-            orden = Orden.objects.create(
-                nombre=f"{self.prestatario.username}{self.inicio}",
-                materia=self.materia,
-                prestatario=self.prestatario,
-                inicio=self.inicio,
-                final=self.final
-            )
+            orden = Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
+                                         final=self.final)
 
-            # TODO: convertir los ArticuloCarrito a UnidadOrden
+            self.agregar_corresponsable(self.prestatario)
 
-            CorresponsableOrden.objects.create(prestatario=self.prestatario, orden=orden)
+            for corresponsable in self.corresponsables():
+                orden.agregar_corresponsable(corresponsable)
+                CorresponsableOrden.objects.create(prestatario=corresponsable, orden=orden)
 
             self.delete()
 
             # TODO: enviar correo a los Cooresponsables
+
+    def corresponsables(self) -> QuerySet['Prestatario']:
+        return self._corresponsables.all()
+
+    def agregar_corresponsable(self, prestatario):
+        self._corresponsables.add(prestatario)
 
 
 class Reporte(models.Model):
