@@ -54,33 +54,33 @@ class Command(BaseCommand):
         orden1, _ = Orden.objects.get_or_create(prestatario=user,lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)), estado="AP", materia=materia1, )
 
-        orden1.agregar_prestatario(user)
+        orden1.agregar_corresponsable(user)
 
         orden2, _ = Orden.objects.get_or_create(prestatario=user,lugar=Orden.Ubicacion.EXTERNO, inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)), estado="AP", materia=materia1,
             descripcion="Esta solicitud es para mi practica de Cinematografia en la laguna salada.")
 
-        orden2.agregar_prestatario(user)
+        orden2.agregar_corresponsable(user)
 
         orden3, _ = Orden.objects.get_or_create(prestatario=user, lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)), estado="AP", materia=materia1, )
 
-        orden3.agregar_prestatario(user)
+        orden3.agregar_corresponsable(user)
 
         orden4, _ = Orden.objects.get_or_create(prestatario=user, lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)), estado="AP", materia=materia1, )
 
-        orden4.agregar_prestatario(user)
+        orden4.agregar_corresponsable(user)
 
         orden5, _ = Orden.objects.get_or_create(prestatario=user, lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)), estado="AP", materia=materia1, )
 
-        orden5.agregar_prestatario(user)
+        orden5.agregar_corresponsable(user)
 
         orden6, _ = Orden.objects.get_or_create(prestatario=user, lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)), estado="AP", materia=materia1, )
 
-        orden6.agregar_prestatario(user)
+        orden6.agregar_corresponsable(user)
 
         # Agregar unidades a las ordenes
         orden1.agregar_unidad(unidad1)

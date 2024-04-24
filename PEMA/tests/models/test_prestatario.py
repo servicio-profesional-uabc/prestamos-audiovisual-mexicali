@@ -22,14 +22,14 @@ class TestPrestatario(TestCase):
                                            lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5, 0)),
                                            final=make_aware(datetime(2024, 10, 5, 0)))
 
-        self.orden1.agregar_prestatario(self.user_prestatario)
+        self.orden1.agregar_corresponsable(self.user_prestatario)
 
         self.orden2 = Orden.objects.create(materia=self.materia, lugar=Orden.Ubicacion.EXTERNO,
                                            prestatario=self.user_prestatario,
                                            inicio=make_aware(datetime(2024, 10, 5, 0)),
                                            final=make_aware(datetime(2024, 10, 5, 0)))
 
-        self.orden2.agregar_prestatario(self.user_prestatario)
+        self.orden2.agregar_corresponsable(self.user_prestatario)
 
     def test_lista_ordenes(self):
         # probar si no tiene ordenes

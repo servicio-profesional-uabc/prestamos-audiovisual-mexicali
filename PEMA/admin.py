@@ -23,9 +23,7 @@ class OrdenAdmin(admin.ModelAdmin):
     exclude = ('estado',)
     # raw_id_fields = ('materia', )
     autocomplete_fields = ('prestatario', 'materia')
-
     filter_horizontal = ('_unidades', '_corresponsables')
-
     list_display = ('__str__', 'tipo', 'estado')
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo')
@@ -42,6 +40,8 @@ class ArticuloAdmin(ImportExportModelAdmin):
 class CarritoAdmin(admin.ModelAdmin):
     list_display = ('prestatario', 'materia')
     actions = ['ordenar']
+
+    filter_horizontal = ('_articulos',)
 
     @admin.action(description='Ordenar artículos del carrito')
     def ordenar(self, request, queryset):
@@ -62,6 +62,6 @@ admin.site.register(Entrega)
 admin.site.register(Devolucion)
 admin.site.register(Categoria)
 admin.site.register(AutorizacionOrden)
-# admin.site.register(ArticuloCarrito)
+admin.site.register(ArticuloCarrito)
 admin.site.register(CorresponsableOrden)
 admin.site.register(Reporte)

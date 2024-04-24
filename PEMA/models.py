@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -430,27 +429,6 @@ class Materia(models.Model):
         return f"{self.nombre} ({self.year}-{self.semestre})"
 
 
-class TipoOrden(models.TextChoices):
-    """Opciones para el tipo de orden."""
-    ORDINARIA = "OR", _("Ordinaria")
-    EXTRAORDINARIA = "EX", _("Extraordinaria")
-
-
-class EstadoOrden(models.TextChoices):
-    """
-     * `PENDIENTE_CR`: Esperando confirmación de los corresponsables.
-     * `PENDIENTE_AP`: Esperando aprobación del maestro o coordinador
-     * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
-     * `APROBADA`: Orden aprobada por el maestro o coordinador.
-     * `CANCELADA`: Orden cancelado por el prestatario.
-    """
-    PENDIENTE_CR = "PC", _("Esperando corresponsables")
-    PENDIENTE_AP = "PA", _("Esperando autorización")
-    RECHAZADA = "RE", _("Rechazada")
-    APROBADA = "AP", _("Aprobada")
-    CANCELADA = "CN", _("Cancelada")
-
-
 class Articulo(models.Model):
     """
     Clase que representa un artículo.
@@ -561,6 +539,27 @@ class Unidad(models.Model):
         return f"{self.num_control}-{self.num_control}-{self.articulo.nombre}"
 
 
+class TipoOrden(models.TextChoices):
+    """Opciones para el tipo de orden."""
+    ORDINARIA = "OR", _("Ordinaria")
+    EXTRAORDINARIA = "EX", _("Extraordinaria")
+
+
+class EstadoOrden(models.TextChoices):
+    """
+     * `PENDIENTE_CR`: Esperando confirmación de los corresponsables.
+     * `PENDIENTE_AP`: Esperando aprobación del maestro o coordinador
+     * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
+     * `APROBADA`: Orden aprobada por el maestro o coordinador.
+     * `CANCELADA`: Orden cancelado por el prestatario.
+    """
+    PENDIENTE_CR = "PC", _("Esperando corresponsables")
+    PENDIENTE_AP = "PA", _("Esperando autorización")
+    RECHAZADA = "RE", _("Rechazada")
+    APROBADA = "AP", _("Aprobada")
+    CANCELADA = "CN", _("Cancelada")
+
+
 class Orden(models.Model):
     """
     Una orden es un conjunto de Unidades de cada Artículo definido
@@ -618,7 +617,7 @@ class Orden(models.Model):
     # automático
     emision = models.DateTimeField(auto_now_add=True)
 
-    def agregar_prestatario(self, prestatario: 'Prestatario'):
+    def agregar_corresponsable(self, prestatario: 'Prestatario'):
         self._corresponsables.add(prestatario)
 
     def es_ordinaria(self) -> bool:
@@ -724,6 +723,7 @@ class Carrito(models.Model):
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='ArticuloCarrito', blank=True)
+    _corresponsables = models.ManyToManyField(to='Prestatario', blank=True, related_name='corresponsables_carrito')
 
     def agregar(self, articulo: 'Articulo', unidades: int):
         """
@@ -760,23 +760,24 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
 
         with transaction.atomic():
-            orden = Orden.objects.create(
-                prestatario=self.prestatario,
-                nombre=f"{self.prestatario.username}{self.inicio}",
-                materia=self.materia,
-                inicio=self.inicio,
-                final=self.final
-            )
+            orden = Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
+                                         final=self.final)
 
-            orden.agregar_prestatario(self.prestatario)
+            self.agregar_corresponsable(self.prestatario)
 
-            # TODO: convertir los ArticuloCarrito a UnidadOrden
-
-            CorresponsableOrden.objects.create(prestatario=self.prestatario, orden=orden)
+            for corresponsable in self.corresponsables():
+                orden.agregar_corresponsable(corresponsable)
+                CorresponsableOrden.objects.create(prestatario=corresponsable, orden=orden)
 
             self.delete()
 
             # TODO: enviar correo a los Cooresponsables
+
+    def corresponsables(self) -> QuerySet['Prestatario']:
+        return self._corresponsables.all()
+
+    def agregar_corresponsable(self, prestatario):
+        self._corresponsables.add(prestatario)
 
 
 class Reporte(models.Model):
