@@ -553,10 +553,10 @@ class EstadoOrden(models.TextChoices):
      * `APROBADA`: Orden aprobada por el maestro o coordinador.
      * `CANCELADA`: Orden cancelado por el prestatario.
     """
+    APROBADA = "AP", _("Listo para iniciar")
     PENDIENTE_CR = "PC", _("Esperando corresponsables")
     PENDIENTE_AP = "PA", _("Esperando autorización")
     RECHAZADA = "RE", _("Rechazada")
-    APROBADA = "AP", _("Aprobada")
     CANCELADA = "CN", _("Cancelada")
 
 
@@ -593,7 +593,7 @@ class Orden(models.Model):
 
     # obligatorio
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
-    prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Usuario Solicitante')
+    prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Emisor')
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2,
                             verbose_name="Tipo de la Solicitud")
@@ -605,7 +605,7 @@ class Orden(models.Model):
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
 
-    descripcion = models.TextField(blank=True, max_length=512, verbose_name='Descripción de la Producción')
+    descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
 
     # opcional
     _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables',
