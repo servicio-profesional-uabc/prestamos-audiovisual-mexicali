@@ -586,33 +586,31 @@ class Orden(models.Model):
         ordering = ("emision",)
         verbose_name_plural = "Ordenes"
 
-    class Tipo(models.TextChoices):
-        """Opciones para el tipo de orden."""
-        ORDINARIA = "OR", _("Ordinaria")
-        EXTRAORDINARIA = "EX", _("Extraordinaria")
-
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
-        CAMPUS = "CA", _("Campus")
-        EXTERNO = "EX", _("Externo")
+        CAMPUS = "CA", _("En el Campus")
+        EXTERNO = "EX", _("Fuera del Campus")
 
     # obligatorio
-    nombre = models.CharField(blank=False, null=False, max_length=250)
-    prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
+    prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Usuario Solicitante')
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
-    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
-    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125)
+    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2,
+                            verbose_name="Tipo de la Solicitud")
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
+                             verbose_name='Lugar de la Producción')
+    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Especifico')
     estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
 
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
 
-    descripcion = models.TextField(blank=True, max_length=512)
+    descripcion = models.TextField(blank=True, max_length=512, verbose_name='Descripción de la Producción')
 
     # opcional
-    _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables')
-    _unidades = models.ManyToManyField(to=Unidad, blank=True)
+    _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables',
+                                              verbose_name='Participantes')
+    _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
 
     # automático
     emision = models.DateTimeField(auto_now_add=True)
