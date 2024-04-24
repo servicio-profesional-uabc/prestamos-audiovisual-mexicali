@@ -41,13 +41,14 @@
 
 
 <div class="container text-center mt-3 justify-content-center">
-    <form method="POST" action="{% url 'filtros' %}" onsubmit="setMateria()">
+    <form method="POST" action="{% url 'filtros' %}" >
         {% csrf_token %}
         <h5 class="mt-2">Seleccionar materia y tiempo de reserva</h5>
         <div class="row mb-4 mt-2">
             <div class="col me-3">
                 <div class="dropdown">
-                    {% render_field form.materia class="form-select" %}
+                    {{ forms.materia.errors }}
+                    {% render_field form.materia class="form-control" %}
                 </div>
 {#                <div class="dropdown">#}
 {#                    <select id="materia" name="materia" class="form-select" required>#}
@@ -139,7 +140,7 @@
 
                             <div class="modal-footer">
                                 <input type="hidden" id="time-input" name="time">
-                                <input type="hidden" id="materia-input" name="materia">
+{#                                <input type="hidden" id="materia-input" name="materia">#}
                                 <button type="submit" class="btn btn-danger">Continuar</button>
                             </div>
                         </div>
@@ -155,7 +156,7 @@
         }
 
         function setMateria() {
-            var selectedMateria = document.getElementById("materias").value;
+            var selectedMateria = document.getElementById("materia").value;
             document.getElementById("materia-input").value = selectedMateria;
         }
     </script>

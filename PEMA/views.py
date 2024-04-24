@@ -63,6 +63,7 @@ class FiltrosView(View, LoginRequiredMixin):
         )
 
     def post(self, request):
+        print(request.POST)
         prestatario = Prestatario.get_user(request.user)
         # fecha_inicio = request.POST.get('inicio')
         # duracion = request.POST.get('duracion')
@@ -72,7 +73,18 @@ class FiltrosView(View, LoginRequiredMixin):
         # print(materia)
 
         form = FiltrosForm(prestatario, request.POST)
-        print(form.materia)
+        # print(form.materia)
+        # print(form.cleaned_data['materia'])
+        if form.is_valid():
+            print(form.cleaned_data['materia'])
+
+        else:
+            for field, errors in form.errors.items():
+                print(f"Field: {field}, Errors: {errors}")
+
+
+        return redirect('filtros')
+
         # if (fecha_inicio == "" or fecha_inicio == None) or \
         #     (duracion == "" or duracion == None) or \
         #     (materia == "" or materia == None):

@@ -33,17 +33,17 @@ class FiltrosForm(forms.ModelForm):
     Form para filtrar catalogo/carrito
     """
 
-    materia = forms.ModelChoiceField(queryset=None)
-    final = forms.ChoiceField(label="Tiempo", required=True, choices=[
-        (1, "1 hora"),
-        (2, "2 hora"),
-        (3, "3 hora"),
-        (4, "4 hora"),
-        (8, "8 hora"),
-        (24, "1 dia (24h)"),
-        (48, "2 dias (48h)"),
-        (96, "4 dias (96h)"),
-    ])
+    materia = forms.ModelChoiceField(queryset=None, required=True, empty_label='--- Selecciona una materia ---')
+    # final = forms.ChoiceField(label="Tiempo", required=True, choices=[
+    #     (1, "1 hora"),
+    #     (2, "2 hora"),
+    #     (3, "3 hora"),
+    #     (4, "4 hora"),
+    #     (8, "8 hora"),
+    #     (24, "1 dia (24h)"),
+    #     (48, "2 dias (48h)"),
+    #     (96, "4 dias (96h)"),
+    # ])
 
     # TODO: Cambiar plantilla Filtros a widgets
 
@@ -53,8 +53,8 @@ class FiltrosForm(forms.ModelForm):
 
     class Meta:
         model = Carrito
-        fields = ['inicio', 'materia', 'final']
+        fields = ['inicio', 'materia']
         widgets = {
-            'inicio': forms.DateInput(attrs={'type': 'date'}),
-            'final': forms.Select(attrs={'class': 'form-select'}), # fecha_inicio + duracion = fecha_final
+            # 'inicio': forms.DateInput(attrs={'type': 'date'}),
+            # 'final': forms.Select(attrs={'class': 'form-select'}), # fecha_inicio + duracion = fecha_final
         }
