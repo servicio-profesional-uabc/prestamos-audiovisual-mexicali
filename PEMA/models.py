@@ -429,6 +429,27 @@ class Materia(models.Model):
         return f"{self.nombre} ({self.year}-{self.semestre})"
 
 
+class TipoOrden(models.TextChoices):
+    """Opciones para el tipo de orden."""
+    ORDINARIA = "OR", _("Ordinaria")
+    EXTRAORDINARIA = "EX", _("Extraordinaria")
+
+
+class EstadoOrden(models.TextChoices):
+    """
+     * `PENDIENTE_CR`: Esperando confirmación de los corresponsables.
+     * `PENDIENTE_AP`: Esperando aprobación del maestro o coordinador
+     * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
+     * `APROBADA`: Orden aprobada por el maestro o coordinador.
+     * `CANCELADA`: Orden cancelado por el prestatario.
+    """
+    PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
+    PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
+    RECHAZADA = "RE", _("RECHAZADA")
+    APROBADA = "AP", _("APROBADA")
+    CANCELADA = "CN", _("CANCELADO")
+
+
 class Articulo(models.Model):
     """
     Clase que representa un artículo.
@@ -506,7 +527,7 @@ class Articulo(models.Model):
         return Unidad.objects.filter(articulo=self)
 
     def __str__(self):
-        return f"{self.codigo}-{self.nombre}"
+        return self.nombre
 
 
 class Unidad(models.Model):
@@ -536,28 +557,7 @@ class Unidad(models.Model):
         return Orden.objects.filter(unidadorden__unidad=self)
 
     def __str__(self):
-        return f"{self.num_control}-{self.num_control}-{self.articulo.nombre}"
-
-
-class TipoOrden(models.TextChoices):
-    """Opciones para el tipo de orden."""
-    ORDINARIA = "OR", _("Ordinaria")
-    EXTRAORDINARIA = "EX", _("Extraordinaria")
-
-
-class EstadoOrden(models.TextChoices):
-    """
-     * `PENDIENTE_CR`: Esperando confirmación de los corresponsables.
-     * `PENDIENTE_AP`: Esperando aprobación del maestro o coordinador
-     * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
-     * `APROBADA`: Orden aprobada por el maestro o coordinador.
-     * `CANCELADA`: Orden cancelado por el prestatario.
-    """
-    APROBADA = "AP", _("Listo para iniciar")
-    PENDIENTE_CR = "PC", _("Esperando corresponsables")
-    PENDIENTE_AP = "PA", _("Esperando autorización")
-    RECHAZADA = "RE", _("Rechazada")
-    CANCELADA = "CN", _("Cancelada")
+        return f"{self.articulo}"
 
 
 class Orden(models.Model):
@@ -570,6 +570,7 @@ class Orden(models.Model):
         Utilizar ``estado`` unicamente en filtros
 
     :ivar materia: Materia de la orden.
+    :ivar prestatario: Usuario que hace la solicitud.
     :ivar inicio: Fecha de inicio de la orden.
     :ivar final: Fecha de devolución de la orden.
 
@@ -585,6 +586,27 @@ class Orden(models.Model):
     class Meta:
         ordering = ("emision",)
         verbose_name_plural = "Ordenes"
+
+    class Estado(models.TextChoices):
+        """
+        Opciones para el estado de la orden:
+            * PENDIENTE_CR: Esperando confirmación de los corresponsables.
+            * PENDIENTE_AP: Esperando aprobación del maestro o coordinador
+            * RECHAZADA: Orden rechazada por el maestro o coordinador.
+            * APROBADA: Orden aprobada por el maestro o coordinador.
+            * CANCELADA: Orden cancelado por el prestatario.
+            * CONCLUIDA: Orden que se llevo a cabo sin incidentes de principio a fin.
+        """
+        PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
+        PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
+        RECHAZADA = "RE", _("RECHAZADA")
+        APROBADA = "AP", _("APROBADA")
+        CANCELADA = "CN", _("CANCELADO")
+
+    class Tipo(models.TextChoices):
+        """Opciones para el tipo de orden."""
+        ORDINARIA = "OR", _("ORDINARIA")
+        EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
 
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""

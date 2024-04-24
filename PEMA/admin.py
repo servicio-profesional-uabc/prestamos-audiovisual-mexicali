@@ -59,6 +59,7 @@ class CarritoAdmin(admin.ModelAdmin):
     def ordenar(self, request, queryset):
         for obj in queryset:
             obj.ordenar()
+            # messages.success(request, "Successfully made uppercase!")
 
 
 @admin.register(Unidad)
