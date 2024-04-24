@@ -18,13 +18,18 @@ class TestPrestatario(TestCase):
         self.materia = Materia.objects.create(nombre="Fotografia2", year=2022, semestre=1)
 
         # ordenes
-        self.orden1 = Orden.objects.create(materia=self.materia, prestatario=self.user_prestatario,
-                                           lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
-                                           final=make_aware(datetime(2024, 10, 5)))
+        self.orden1 = Orden.objects.create(materia=self.materia,
+                                           lugar=Orden.Ubicacion.CAMPUS,
+                                           inicio=make_aware(datetime(2024, 10, 5,0)),
+                                           final=make_aware(datetime(2024, 10, 5,0)))
 
-        self.orden2 = Orden.objects.create(materia=self.materia, prestatario=self.user_prestatario,
-                                           lugar=Orden.Ubicacion.EXTERNO, inicio=make_aware(datetime(2024, 10, 5)),
-                                           final=make_aware(datetime(2024, 10, 5)))
+        self.orden1.agregar_prestatario(self.user_prestatario)
+
+        self.orden2 = Orden.objects.create(materia=self.materia, lugar=Orden.Ubicacion.EXTERNO,
+                                           inicio=make_aware(datetime(2024, 10, 5,0)),
+                                           final=make_aware(datetime(2024, 10, 5,0)))
+
+        self.orden2.agregar_prestatario(self.user_prestatario)
 
     def test_lista_ordenes(self):
         # probar si no tiene ordenes
@@ -83,7 +88,8 @@ class TestPrestatario(TestCase):
         # carrito vacío
         self.assertIsNone(prestatario.carrito(), msg="El usuario ya tiene un carrito")
 
-        carrito = Carrito.objects.create(prestatario=self.user_prestatario, materia=self.materia, inicio=datetime.now(),
-                                         final=datetime.now())
+        carrito = Carrito.objects.create(prestatario=self.user_prestatario, materia=self.materia,
+                                         inicio=make_aware(datetime.now()),
+                                         final=make_aware(datetime.now()))
 
         self.assertEqual(prestatario.carrito(), carrito, msg="El carrito no coincide")

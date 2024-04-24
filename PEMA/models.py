@@ -44,7 +44,7 @@ class Prestatario(User):
             return None
 
     @staticmethod
-    def crear_usuario(*args, **kwargs) -> User:
+    def crear_usuario(*args, **kwargs) -> 'Prestatario':
         """
         Crea un usuario de tipo prestatario, util para hacer pruebas unitarias
 
@@ -55,7 +55,7 @@ class Prestatario(User):
         user = User.objects.create_user(*args, **kwargs)
         grupo.user_set.add(user)
 
-        return user
+        return Prestatario.get_user(user)
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -81,7 +81,7 @@ class Prestatario(User):
 
         :return: Lista de órdenes del usuario.
         """
-        return Orden.objects.filter(prestatario=self)
+        return Orden.objects.filter(_prestatarios__in=[self])
 
     def reportes(self) -> QuerySet['Reporte']:
         """
@@ -633,20 +633,14 @@ class Orden(models.Model):
     # automático
     emision = models.DateTimeField(auto_now_add=True)
 
+    def agregar_prestatario(self, prestatario: 'Prestatario'):
+        self._prestatarios.add(prestatario)
+
     def es_ordinaria(self) -> bool:
         return self.tipo == TipoOrden.ORDINARIA
 
     def es_extraordinaria(self):
         return self.tipo == TipoOrden.EXTRAORDINARIA
-
-    def estado_actual(self) -> tuple[bool, str]:
-        """
-        La función retorna una tupla `(bool, str)`, donde `bool` es
-        `True` si la orden puede aprobarse, y en caso contrario, la
-        cadena `str` proporciona una explicación del motivo de la no
-        aprobación.
-        """
-        pass
 
     def unidades(self) -> 'QuerySet[Unidad]':
         """
@@ -663,16 +657,12 @@ class Orden(models.Model):
     def reporte(self) -> 'Reporte':
         """
         Retorna el Reporte de la Orden o nada sí no tiene reporte.
-
-        :returns: Reporte: Reporte asociado a la orden o None si no tiene reporte.
         """
         return Reporte.objects.filter(orden=self).first()
 
     def agregar_unidad(self, unidad: 'Unidad'):
         """
         Agrega una unidad a la orden.
-
-        :param unidad: Unidad que se agregará
         """
         return self._unidades.add(unidad)
 
@@ -788,7 +778,6 @@ class Carrito(models.Model):
             orden = Orden.objects.create(
                 nombre=f"{self.prestatario.username}{self.inicio}",
                 materia=self.materia,
-                prestatario=self.prestatario,
                 inicio=self.inicio,
                 final=self.final
             )
