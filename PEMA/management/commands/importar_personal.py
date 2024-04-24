@@ -25,4 +25,4 @@ class Command(BaseCommand):
             username = row['NUMERO DE EMPLEADO']
             firstname = row['PERSONAL DEL CEPA']
 
-            maestro = Maestro.crear_usuario(username=username, first_name=firstname)
+            maestro = Maestro.crear_usuario(username=username, first_name=firstname, password=username)
