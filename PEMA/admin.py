@@ -20,7 +20,9 @@ class OrdenAdmin(admin.ModelAdmin):
     Admin panel management for Alumni
     """
     list_display = ('nombre', 'tipo', 'estado')
-    filter_horizontal = ('_unidades',)
+    search_fields = ['nombre']
+    list_filter = ('estado', 'tipo')
+    filter_horizontal = ('_unidades', '_prestatarios')
 
 
 @admin.register(Articulo)
