@@ -186,8 +186,8 @@ class TestArticulo(TestCase):
         qs4 = self.articulo2.disponible(self.generar_fechas(-1), self.generar_fechas(1))
         self.assertQuerysetEqual(qs4, [self.unidad5, self.unidad7, self.unidad8], ordered=False)
         
-        qs5 = self.articulo1.disponible(self.generar_fechas(1), self.generar_fechas(4))
-        self.assertQuerysetEqual(qs5, [self.unidad4], ordered=False)
+        qs5 = self.articulo1.disponible(self.generar_fechas(2), self.generar_fechas(4))
+        self.assertQuerysetEqual(qs5, [self.unidad1, self.unidad2, self.unidad4], ordered=False)
         
         qs6 = self.articulo2.disponible(self.generar_fechas(1), self.generar_fechas(4))
         self.assertQuerysetEqual(qs6, [self.unidad7, self.unidad8], ordered=False)
