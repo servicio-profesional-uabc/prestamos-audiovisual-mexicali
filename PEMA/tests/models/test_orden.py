@@ -22,7 +22,7 @@ class TestOrden(TestCase):
 
         materia = Materia.objects.create(nombre="Fotografia", year=2022, semestre=1)
 
-        self.orden = Orden.objects.create(materia=materia, inicio=make_aware(datetime(2024, 3, 16, 12)),
+        self.orden = Orden.objects.create(prestatario=self.prestataio, materia=materia, inicio=make_aware(datetime(2024, 3, 16, 12)),
                                           final=make_aware(datetime(2024, 3, 16, 18)), )
 
     def test_agregar_unidad(self):

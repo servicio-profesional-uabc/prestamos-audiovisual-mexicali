@@ -18,8 +18,8 @@ class TestCaseAlmacen(TestCase):
 
         # crear orden
         now = make_aware(datetime.datetime.now())
-        self.orden1 = Orden.objects.create(materia=self.materia1, inicio=now, final=now, )
-        self.orden2 = Orden.objects.create(materia=self.materia2, inicio=now, final=now, )
+        self.orden1 = Orden.objects.create(prestatario=self.prestatario, materia=self.materia1, inicio=now, final=now, )
+        self.orden2 = Orden.objects.create(prestatario=self.prestatario, materia=self.materia2, inicio=now, final=now, )
 
     def test_get_users(self):
         # obtener usuarios

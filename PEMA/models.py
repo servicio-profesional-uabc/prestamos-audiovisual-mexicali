@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -81,7 +82,7 @@ class Prestatario(User):
 
         :return: Lista de órdenes del usuario.
         """
-        return Orden.objects.filter(_prestatarios__in=[self])
+        return Orden.objects.filter(_corresponsables__in=[self])
 
     def reportes(self) -> QuerySet['Reporte']:
         """
@@ -443,11 +444,11 @@ class EstadoOrden(models.TextChoices):
      * `APROBADA`: Orden aprobada por el maestro o coordinador.
      * `CANCELADA`: Orden cancelado por el prestatario.
     """
-    PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
-    PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
-    RECHAZADA = "RE", _("RECHAZADA")
-    APROBADA = "AP", _("APROBADA")
-    CANCELADA = "CN", _("CANCELADO")
+    PENDIENTE_CR = "PC", _("Esperando corresponsables")
+    PENDIENTE_AP = "PA", _("Esperando autorización")
+    RECHAZADA = "RE", _("Rechazada")
+    APROBADA = "AP", _("Aprobada")
+    CANCELADA = "CN", _("Cancelada")
 
 
 class Articulo(models.Model):
@@ -527,7 +528,7 @@ class Articulo(models.Model):
         return Unidad.objects.filter(articulo=self)
 
     def __str__(self):
-        return self.nombre
+        return f"{self.codigo}-{self.nombre}"
 
 
 class Unidad(models.Model):
@@ -557,7 +558,7 @@ class Unidad(models.Model):
         return Orden.objects.filter(unidadorden__unidad=self)
 
     def __str__(self):
-        return f"{self.articulo}"
+        return f"{self.num_control}-{self.num_control}-{self.articulo.nombre}"
 
 
 class Orden(models.Model):
@@ -570,7 +571,6 @@ class Orden(models.Model):
         Utilizar ``estado`` unicamente en filtros
 
     :ivar materia: Materia de la orden.
-    :ivar prestatario: Usuario que hace la solicitud.
     :ivar inicio: Fecha de inicio de la orden.
     :ivar final: Fecha de devolución de la orden.
 
@@ -587,34 +587,19 @@ class Orden(models.Model):
         ordering = ("emision",)
         verbose_name_plural = "Ordenes"
 
-    class Estado(models.TextChoices):
-        """
-        Opciones para el estado de la orden:
-            * PENDIENTE_CR: Esperando confirmación de los corresponsables.
-            * PENDIENTE_AP: Esperando aprobación del maestro o coordinador
-            * RECHAZADA: Orden rechazada por el maestro o coordinador.
-            * APROBADA: Orden aprobada por el maestro o coordinador.
-            * CANCELADA: Orden cancelado por el prestatario.
-            * CONCLUIDA: Orden que se llevo a cabo sin incidentes de principio a fin.
-        """
-        PENDIENTE_CR = "PC", _("PENDIENTE CORRESPONSABLES")
-        PENDIENTE_AP = "PA", _("PENDIENTE APROBACION")
-        RECHAZADA = "RE", _("RECHAZADA")
-        APROBADA = "AP", _("APROBADA")
-        CANCELADA = "CN", _("CANCELADO")
-
     class Tipo(models.TextChoices):
         """Opciones para el tipo de orden."""
-        ORDINARIA = "OR", _("ORDINARIA")
-        EXTRAORDINARIA = "EX", _("EXTRAORDINARIA")
+        ORDINARIA = "OR", _("Ordinaria")
+        EXTRAORDINARIA = "EX", _("Extraordinaria")
 
     class Ubicacion(models.TextChoices):
         """Opciones para el lugar de la orden"""
-        CAMPUS = "CA", _("CAMPUS")
-        EXTERNO = "EX", _("EXTERNO")
+        CAMPUS = "CA", _("Campus")
+        EXTERNO = "EX", _("Externo")
 
     # obligatorio
-    nombre = models.CharField(blank=False, max_length=125)
+    nombre = models.CharField(blank=False, null=False, max_length=250)
+    prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2)
@@ -627,14 +612,14 @@ class Orden(models.Model):
     descripcion = models.TextField(blank=True, max_length=512)
 
     # opcional
-    _prestatarios = models.ManyToManyField(to=Prestatario)
+    _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables')
     _unidades = models.ManyToManyField(to=Unidad, blank=True)
 
     # automático
     emision = models.DateTimeField(auto_now_add=True)
 
     def agregar_prestatario(self, prestatario: 'Prestatario'):
-        self._prestatarios.add(prestatario)
+        self._corresponsables.add(prestatario)
 
     def es_ordinaria(self) -> bool:
         return self.tipo == TipoOrden.ORDINARIA
@@ -719,7 +704,7 @@ class Orden(models.Model):
         return Reporte.objects.get_or_create(almacen=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
-        return f"{self.nombre}"
+        return f"{self.prestatario}"
 
 
 class Carrito(models.Model):
@@ -734,7 +719,7 @@ class Carrito(models.Model):
     :ivar final: Fecha de devolución del préstamo.
     """
 
-    prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    prestatario = models.OneToOneField(to=Prestatario, on_delete=models.CASCADE)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
@@ -776,11 +761,14 @@ class Carrito(models.Model):
 
         with transaction.atomic():
             orden = Orden.objects.create(
+                prestatario=self.prestatario,
                 nombre=f"{self.prestatario.username}{self.inicio}",
                 materia=self.materia,
                 inicio=self.inicio,
                 final=self.final
             )
+
+            orden.agregar_prestatario(self.prestatario)
 
             # TODO: convertir los ArticuloCarrito a UnidadOrden
 

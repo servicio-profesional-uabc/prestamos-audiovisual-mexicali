@@ -15,7 +15,7 @@ class TestCarrito(TestCase):
         Prestatario.crear_grupo()
         grupo_prestatario = Group.objects.get(name='prestatarios')
 
-        self.user = User.objects.create_user(id=0, username="<USERNAME>", password="<PASSWORD>")
+        self.user = Prestatario.crear_usuario(id=0, username="<USERNAME>", password="<PASSWORD>")
 
         self.user.groups.add(grupo_prestatario)
 
