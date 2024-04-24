@@ -1,5 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
+from django.contrib import messages
 
 from .models import *
 
@@ -28,6 +29,17 @@ class OrdenAdmin(admin.ModelAdmin):
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo')
 
+    actions = ['entregar', 'devolver']
+
+    #TODO: implementar estos metodos
+
+    @admin.action(description='Marcar como entregado')
+    def entregar(self, request, queryset):
+        messages.success(request, "Todavía no hago esto Teehee")
+
+    @admin.action(description='Marcar como devuelto')
+    def devolver(self, request, queryset):
+        messages.error(request, "Ni esto")
 
 @admin.register(Articulo)
 class ArticuloAdmin(ImportExportModelAdmin):
@@ -46,7 +58,7 @@ class CarritoAdmin(admin.ModelAdmin):
     @admin.action(description='Ordenar artículos del carrito')
     def ordenar(self, request, queryset):
         for obj in queryset:
-            obj.ordenar()  # messages.success(request, "Successfully made uppercase!")
+            obj.ordenar()
 
 
 @admin.register(Unidad)
