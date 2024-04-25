@@ -807,7 +807,6 @@ class Reporte(models.Model):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    emisor = models.ForeignKey(to=User, on_delete=models.CASCADE)
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
     estado = models.CharField(max_length=2, choices=Estado.choices, default=Estado.ACTIVO)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
