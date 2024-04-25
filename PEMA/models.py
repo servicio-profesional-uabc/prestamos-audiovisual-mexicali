@@ -573,9 +573,6 @@ class Orden(models.Model):
     el Carrito, para que el encargado del Almacén sepa
     específicamente que entregar.
 
-    .. warning::
-        Utilizar ``estado`` unicamente en filtros
-
     :ivar materia: Materia de la orden.
     :ivar prestatario: Usuario que hace la solicitud.
     :ivar inicio: Fecha de inicio de la orden.
@@ -586,6 +583,7 @@ class Orden(models.Model):
 
     :ivar tipo: Tipo de orden, ordinaria o extraordinaria.
     :ivar lugar: Lugar donde se usara el material.
+    :ivar descripcion_lugar: Lugar donde será la producción.
     :ivar estado: Guarda el último estado de la orden.
     :ivar emision: Fecha de emisión de la orden.
     """
@@ -797,13 +795,13 @@ class Reporte(models.Model):
     """
     Clase que representa un reporte a una Orden.
 
-    :param almacen: Usuario que emitió el reporte.
+    :param emisor: Usuario que emitió el reporte.
     :param orden: Orden a la que se refiere el reporte.
     :param estado: Estado de la orden.automatico
     :param descripcion: Información de la orden.
     :param emision: Fecha de emisión del reporte.
     """
-    
+
     class Estado(models.TextChoices):
         """Opciones para el estado del reporte."""
         ACTIVO = "AC", _("ACTIVO")
@@ -814,6 +812,9 @@ class Reporte(models.Model):
     estado = models.CharField(max_length=2, choices=Estado.choices, default=Estado.ACTIVO)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     emision = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.orden}"
 
 
 class Categoria(models.Model):

@@ -79,6 +79,8 @@ class UnidadAdmin(admin.ModelAdmin):
 
 @admin.register(Reporte)
 class ReporteAdmin(admin.ModelAdmin):
+    search_fields = ['orden']
+    list_display = ('orden', 'estado')
     autocomplete_fields = ('orden', )
     exclude = ('emisor',)
 
