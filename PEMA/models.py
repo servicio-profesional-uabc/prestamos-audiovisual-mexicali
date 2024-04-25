@@ -467,21 +467,23 @@ class Articulo(models.Model):
 
         :returns: Unidades disponibles en el rango especificado.
         """
-
-        ordenesAprobadas = Orden.objects.filter(estado="AP")
-        # ordenesConflicto = []
+    
+        ordenesAprobadas = Orden.objects.filter(estado="AP").filter(materia__in=self.materias())
         unidadesConflicto = []
         idConflicto = []
         for ord in ordenesAprobadas:
-            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (
-                    ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
-                # ordenesConflicto.append(ord)
+            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
                 unidadesConflicto.append(ord.unidades())
         for unid in unidadesConflicto:
             for unidad in unid:
                 idConflicto.append(unidad.num_control)
 
-        return Unidad.objects.difference(Unidad.objects.filter(num_control__in=idConflicto))
+        idUnidadesArticulo = []
+        for u in self.unidades():
+            idUnidadesArticulo.append(u.num_control)
+            
+        return self.unidades().difference(Unidad.objects.filter(num_control__in=idConflicto).filter(num_control__in=idUnidadesArticulo))
+        
 
     def categorias(self) -> QuerySet['Categoria']:
         """Devuelve la lista de categorías en las que pertenece el artículo."""
