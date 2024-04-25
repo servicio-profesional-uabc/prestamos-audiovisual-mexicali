@@ -50,7 +50,7 @@ class TestCarrito(TestCase):
         self.carrito.agregar(articulo=self.articulo, unidades=1)
         self.carrito.agregar(articulo=self.articulo, unidades=3)
 
-        a = self.carrito._articulos.filter(articulo=self.articulo)
+        a = self.carrito.articulos_carrito().filter(articulo=self.articulo)
 
         self.assertEquals(len(a), 1, msg="Cantidad incorrecta de elementos")
         self.assertEquals(a.first().unidades, 3, msg="No se actualizó la cantidad de unidades")
