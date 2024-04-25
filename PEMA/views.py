@@ -199,11 +199,18 @@ class OrdenesAutorizadasView(View):
     def get(self, request):
         ordenes_autorizadas = Orden.objects.filter(estado=Orden.Estado.APROBADA)
 
+        '''almacen_usuario = request.user
+
+        for orden in ordenes_autorizadas:
+            autorizacion = AutorizacionOrden.objects.create(estado="Aceptada",autorizador=almacen_usuario,orden=orden,tipo=orden.tipo)
+            autorizacion.save()'''
+
         return render(
             request=request,
             template_name="almacen_permisos/ordenes_autorizadas.html",
             context={'ordenes_autorizadas': ordenes_autorizadas}
         )
+
 
 class DetallesOrdenAutorizadaView(View):
     def get(self, request, id):
@@ -378,4 +385,16 @@ class OrdenesDevueltasView(View):
             request=request,
             template_name="almacen_permisos/ordenes_devueltas.html",
             context={'ordenes_devueltas': ordenes_devueltas}
+        )
+
+
+class PrincipalAlmacenView(View):
+    def get(self, request):
+        orden = Orden.objects.filter(estado=Orden.Estado.APROBADA)
+
+        return render(
+            request=request,
+            template_name="almacen_permisos/principal.html",
+            context={"orden": orden}
+
         )

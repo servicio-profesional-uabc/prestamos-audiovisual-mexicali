@@ -1,0 +1,5 @@
+@media screen and (min-width: 992px){
+    .navbar .container-fluid{
+        flex-direction: column;
+    }
+}

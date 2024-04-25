@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+  <body>
+
+  <nav class="navbar navbar-expand-lg bg-body-tertiary" >
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Ordenes autorizadas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Ordenes devueltas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Ordenes prestadas</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="ordenes_reportadas.html">Ordenes reportada</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<nav class="navbar">
+  <div class="container-fluid">
+    <ul class="nav">
+      <li class="nav-item">
+        <form class="d-flex" role="search">
+          <input class="form-control me-auto" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Productos
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#">Action</a></li>
+          <li><a class="dropdown-item" href="#">Another action</a></li>
+          <li><a class="dropdown-item" href="#">Something else here</a></li>
+        </ul>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Estado
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#">Action</a></li>
+          <li><a class="dropdown-item" href="#">Another action</a></li>
+          <li><a class="dropdown-item" href="#">Something else here</a></li>
+        </ul>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Vencido
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#">Action</a></li>
+          <li><a class="dropdown-item" href="#">Another action</a></li>
+          <li><a class="dropdown-item" href="#">Something else here</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+    <table class="table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Orden</th>
+                <th scope="col">Productos</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Comienzo</th>
+                <th scope="col">Final</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for articulo in orden.articulos.all%}
+                <tr>
+                    <th scope="row">{{ articulo.id }}</th>
+                    <td>{{ articulo.productos }}</td>
+                    <td>{{ articulo.estado }}</td>
+                    <td>{{ articulo.inicio }}</td>
+                    <td>{{ articulo.final }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+  </body>
+</html>
+{% endblock %}

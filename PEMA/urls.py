@@ -164,6 +164,11 @@ urlpatterns = [
         route='reportar_orden/<int:id>/',
         view=views.ReportarOrdenView.as_view(),
         name='reportar_orden'
-    )
+    ),
+    path(
+        route='principal_almacen',
+        view=views.PrincipalAlmacenView.as_view(),
+        name='principal_almacen',
+    ),
 
 ]
