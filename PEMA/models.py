@@ -803,17 +803,14 @@ class Reporte(models.Model):
     :param descripcion: Información de la orden.
     :param emision: Fecha de emisión del reporte.
     """
-
-    class Meta:
-        unique_together = ('almacen', 'orden')
-
+    
     class Estado(models.TextChoices):
         """Opciones para el estado del reporte."""
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+    emisor = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
     estado = models.CharField(max_length=2, choices=Estado.choices, default=Estado.ACTIVO)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     emision = models.DateTimeField(auto_now_add=True)

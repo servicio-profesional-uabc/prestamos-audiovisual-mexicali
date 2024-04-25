@@ -40,9 +40,9 @@ class OrdenAdmin(admin.ModelAdmin):
             orden.entregar(request.user)
 
             if orden.entregada():
-                messages.success(request, 'Orden entregada!')
+                messages.success(request, f'Orden {orden} entregada')
             else:
-                messages.warning(request, 'Orden desconocida!')
+                messages.warning(request, f'No se pudo entregar la orden {orden}')
 
     @admin.action(description='Marcar como devuelto')
     def devolver(self, request, queryset):
@@ -77,6 +77,18 @@ class UnidadAdmin(admin.ModelAdmin):
     search_fields = ['num_control', 'num_serie', 'articulo']
 
 
+@admin.register(Reporte)
+class ReporteAdmin(admin.ModelAdmin):
+    autocomplete_fields = ('orden', )
+    exclude = ('emisor',)
+
+    def save_model(self, request, obj, form, change):
+        # Registrar el usuario que está usando el admin como el emisor
+        # del reporte
+        obj.emisor = request.user
+        super().save_model(request, obj, form, change)
+
+
 admin.site.register(Perfil)
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
@@ -84,4 +96,4 @@ admin.site.register(Categoria)
 admin.site.register(AutorizacionOrden)
 admin.site.register(ArticuloCarrito)
 admin.site.register(CorresponsableOrden)
-admin.site.register(Reporte)
+
