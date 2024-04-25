@@ -1,3 +1,4 @@
+from random import shuffle
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -768,15 +769,13 @@ class Carrito(models.Model):
         return Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
                                     final=self.final)
 
-    def ordenar(self) -> None:
+    def ordenar(self) -> Exception:
         """
         Convierte el carrito en una orden (Transacción).
 
-        :returns: None
+        :returns: Error que detuvo la transacción
         """
-
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
-
         try:
             with transaction.atomic():
                 orden = self.crear_orden()
@@ -802,11 +801,11 @@ class Carrito(models.Model):
                     CorresponsableOrden.objects.create(prestatario=corresponsable, orden=orden)
 
                 self.delete()
-
                 # TODO: enviar correo a los Cooresponsables
 
         except Exception as e:
             print(f"Hubo un error, la transacción ha sido cancelada. {str(e)}")
+            return e
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         return self._corresponsables.all()
