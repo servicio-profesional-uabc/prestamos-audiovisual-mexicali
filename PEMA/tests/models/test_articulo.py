@@ -87,7 +87,7 @@ class TestArticulo(TestCase):
         
         self.orden1 = Orden.objects.create(
             materia=self.materia1,
-            prestatario=self.user,
+            prestatario=self.prestatario,
             lugar="orden 12:00 a 14:00",
             estado="AP",
             inicio=self.generar_fechas(0),
@@ -95,7 +95,7 @@ class TestArticulo(TestCase):
         )
         self.orden2 = Orden.objects.create(
             materia=self.materia1,
-            prestatario=self.user,
+            prestatario=self.prestatario,
             lugar="orden 11:00 a 14:00",
             estado="AP",
             inicio=self.generar_fechas(-1),
@@ -103,7 +103,7 @@ class TestArticulo(TestCase):
         )
         self.orden3 = Orden.objects.create(
             materia=self.materia1,
-            prestatario=self.user,
+            prestatario=self.prestatario,
             lugar="orden 15:00 a 17:00",
             estado="AP",
             inicio=self.generar_fechas(3),
@@ -111,7 +111,7 @@ class TestArticulo(TestCase):
         )
         self.orden4 = Orden.objects.create(
             materia=self.materia1,
-            prestatario=self.user,
+            prestatario=self.prestatario,
             lugar="orden 16:00 a 18:00",
             estado="AP",
             inicio=self.generar_fechas(4),
@@ -119,7 +119,7 @@ class TestArticulo(TestCase):
         )
         self.orden5 = Orden.objects.create(
             materia=self.materia1,
-            prestatario=self.user,
+            prestatario=self.prestatario,
             lugar="orden 13:00 a 16:00",
             estado="AP",
             inicio=self.generar_fechas(1),
@@ -127,7 +127,7 @@ class TestArticulo(TestCase):
         )
         self.orden6 = Orden.objects.create(
             materia=self.materia1,
-            prestatario=self.user,
+            prestatario=self.prestatario,
             lugar="orden 11:00 a 18:00",
             estado="AP",
             inicio=self.generar_fechas(-1),
