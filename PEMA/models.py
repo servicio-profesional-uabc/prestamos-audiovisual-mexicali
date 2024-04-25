@@ -1,3 +1,4 @@
+from random import shuffle
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -753,36 +754,58 @@ class Carrito(models.Model):
         data.unidades = unidades
         data.save()
 
+    def articulos_carrito(self):
+        return self._articulos.all()
+
     def articulos(self) -> QuerySet['Articulo']:
         """
         Devuelve los artículos en el carrito.
         :returns: Artículos en el carrito.
         """
+        # TODO: implementar este metodo
+        pass
 
-        return self._articulos.all()
+    def crear_orden(self):
+        return Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
+                                    final=self.final)
 
-    def ordenar(self) -> None:
+    def ordenar(self) -> Exception:
         """
         Convierte el carrito en una orden (Transacción).
 
-        :returns: None
+        :returns: Error que detuvo la transacción
         """
-
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
+        try:
+            with transaction.atomic():
+                orden = self.crear_orden()
 
-        with transaction.atomic():
-            orden = Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
-                                         final=self.final)
+                for articuloCarrito in self.articulos_carrito():
+                    unidades = articuloCarrito.articulo.unidades()
+                    len_unidades = len(unidades)
 
-            self.agregar_corresponsable(self.prestatario)
+                    if len_unidades < articuloCarrito.unidades:
+                        # no hay suficientes artículos disponibles
+                        raise Exception("No hay suficientes artículos disponibles")
 
-            for corresponsable in self.corresponsables():
-                orden.agregar_corresponsable(corresponsable)
-                CorresponsableOrden.objects.create(prestatario=corresponsable, orden=orden)
+                    # elige la cantidad de elementos al azar
+                    shuffle(unidades)
+                    for i in range(0, len_unidades):
+                        orden.agregar_unidad(unidades[i])
 
-            self.delete()
+                # agregar a los integrantes de la producción
+                self.agregar_corresponsable(self.prestatario)
 
-            # TODO: enviar correo a los Cooresponsables
+                for corresponsable in self.corresponsables():
+                    orden.agregar_corresponsable(corresponsable)
+                    CorresponsableOrden.objects.create(prestatario=corresponsable, orden=orden)
+
+                self.delete()
+                # TODO: enviar correo a los Cooresponsables
+
+        except Exception as e:
+            print(f"Hubo un error, la transacción ha sido cancelada. {str(e)}")
+            return e
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         return self._corresponsables.all()
