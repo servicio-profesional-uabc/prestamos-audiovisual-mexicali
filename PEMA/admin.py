@@ -35,7 +35,14 @@ class OrdenAdmin(admin.ModelAdmin):
 
     @admin.action(description='Marcar como entregado')
     def entregar(self, request, queryset):
-        messages.success(request, "Todavía no hago esto Teehee")
+        for orden in queryset:
+
+            orden.entregar(request.user)
+
+            if orden.entregada():
+                messages.success(request, 'Orden entregada!')
+            else:
+                messages.warning(request, 'Orden desconocida!')
 
     @admin.action(description='Marcar como devuelto')
     def devolver(self, request, queryset):
