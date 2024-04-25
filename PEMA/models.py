@@ -659,7 +659,7 @@ class Orden(models.Model):
         """
         return Articulo.objects.filter(unidad__in=self.unidades())
 
-    def reporte(self) -> 'Reporte':
+    def reporte(self) -> Any | None:
         """
         Retorna el Reporte de la Orden o nada sí no tiene reporte.
         """
@@ -697,7 +697,7 @@ class Orden(models.Model):
         :returns: El registro de devolución, si el registro se creó
         """
 
-        return Devolucion.objects.get_or_create(almacen=almacen, orden=self)
+        return Devolucion.objects.get_or_create(emisor=almacen, orden=self)
 
     def reportar(self, almacen: 'Almacen', descripcion: str) -> tuple['Reporte', bool]:
         """
@@ -711,7 +711,7 @@ class Orden(models.Model):
         :returns: Reporte y sí el objeto se creó.
         """
 
-        return Reporte.objects.get_or_create(almacen=almacen, orden=self, descripcion=descripcion)
+        return Reporte.objects.get_or_create(emisor=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
         return f"{self.prestatario}"
@@ -807,7 +807,8 @@ class Reporte(models.Model):
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE)
+    emisor = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, related_name='reportes')
     estado = models.CharField(max_length=2, choices=Estado.choices, default=Estado.ACTIVO)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     emision = models.DateTimeField(auto_now_add=True)

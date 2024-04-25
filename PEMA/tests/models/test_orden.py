@@ -52,7 +52,7 @@ class TestOrden(TestCase):
     def test_reporte(self):
         almacen = Almacen.get_user(self.almacen)
 
-        self.assertEqual(first=self.orden.reporte(), second=None, msg="Ya existe un reporte")
+        self.assertIsNone(self.orden.reporte(), msg="Ya existe un reporte")
 
         self.orden.reportar(almacen=almacen, descripcion="Nada")
 
