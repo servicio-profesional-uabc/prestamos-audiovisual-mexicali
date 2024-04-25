@@ -467,12 +467,13 @@ class Articulo(models.Model):
 
         :returns: Unidades disponibles en el rango especificado.
         """
-    
+
         ordenesAprobadas = Orden.objects.filter(estado="AP").filter(materia__in=self.materias())
         unidadesConflicto = []
         idConflicto = []
         for ord in ordenesAprobadas:
-            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
+            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (
+                    ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
                 unidadesConflicto.append(ord.unidades())
         for unid in unidadesConflicto:
             for unidad in unid:
@@ -481,9 +482,9 @@ class Articulo(models.Model):
         idUnidadesArticulo = []
         for u in self.unidades():
             idUnidadesArticulo.append(u.num_control)
-            
-        return self.unidades().difference(Unidad.objects.filter(num_control__in=idConflicto).filter(num_control__in=idUnidadesArticulo))
-        
+
+        return self.unidades().difference(
+            Unidad.objects.filter(num_control__in=idConflicto).filter(num_control__in=idUnidadesArticulo))
 
     def categorias(self) -> QuerySet['Categoria']:
         """Devuelve la lista de categorías en las que pertenece el artículo."""
@@ -554,12 +555,16 @@ class EstadoOrden(models.TextChoices):
      * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
      * `APROBADA`: Orden aprobada por el maestro o coordinador.
      * `CANCELADA`: Orden cancelado por el prestatario.
+     * `ENTREGADA`: Orden entregada al prestatario.
+     * `DEVUELTA`: Orden devuelta al Almacén.`
     """
     APROBADA = "AP", _("Listo para iniciar")
     PENDIENTE_CR = "PC", _("Esperando corresponsables")
     PENDIENTE_AP = "PA", _("Esperando autorización")
     RECHAZADA = "RE", _("Rechazada")
     CANCELADA = "CN", _("Cancelada")
+    ENTREGADA = "EN", _("Activa")
+    DEVUELTA = "DE", _("Terminado")
 
 
 class Orden(models.Model):
@@ -567,9 +572,6 @@ class Orden(models.Model):
     Una orden es un conjunto de Unidades de cada Artículo definido
     el Carrito, para que el encargado del Almacén sepa
     específicamente que entregar.
-
-    .. warning::
-        Utilizar ``estado`` unicamente en filtros
 
     :ivar materia: Materia de la orden.
     :ivar prestatario: Usuario que hace la solicitud.
@@ -581,6 +583,7 @@ class Orden(models.Model):
 
     :ivar tipo: Tipo de orden, ordinaria o extraordinaria.
     :ivar lugar: Lugar donde se usara el material.
+    :ivar descripcion_lugar: Lugar donde será la producción.
     :ivar estado: Guarda el último estado de la orden.
     :ivar emision: Fecha de emisión de la orden.
     """
@@ -618,6 +621,23 @@ class Orden(models.Model):
     # automático
     emision = models.DateTimeField(auto_now_add=True)
 
+    def entregada(self):
+        return self.estado == EstadoOrden.ENTREGADA
+
+    def entregar(self, entregador):
+        """
+        Actualiza el estado de la orden para indicar que se le entregó
+        el equipo al Prestatario.
+        """
+        if (self.estado == EstadoOrden.CANCELADA
+                or self.estado == EstadoOrden.RECHAZADA
+                or self.estado == EstadoOrden.DEVUELTA):
+            return
+
+        entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
+        self.estado = EstadoOrden.ENTREGADA
+        self.save()
+
     def agregar_corresponsable(self, prestatario: 'Prestatario'):
         self._corresponsables.add(prestatario)
 
@@ -639,7 +659,7 @@ class Orden(models.Model):
         """
         return Articulo.objects.filter(unidad__in=self.unidades())
 
-    def reporte(self) -> 'Reporte':
+    def reporte(self) -> Any | None:
         """
         Retorna el Reporte de la Orden o nada sí no tiene reporte.
         """
@@ -669,16 +689,6 @@ class Orden(models.Model):
 
         # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
 
-    def entregar(self, almacen: 'Almacen') -> tuple['Entrega', bool]:
-        """
-        Generar el registro que el Almacén entrego el equipo.
-
-        :param almacen: Almacén que entrega el equipo.
-        :returns: Registro de entrega y si el registro se creó
-        """
-
-        return Entrega.objects.get_or_create(almacen=almacen, orden=self)
-
     def recibir(self, almacen: 'Almacen') -> tuple['Devolucion', bool]:
         """
         Generar el registro que el Almacén recibió el equipo de vuelta.
@@ -687,7 +697,7 @@ class Orden(models.Model):
         :returns: El registro de devolución, si el registro se creó
         """
 
-        return Devolucion.objects.get_or_create(almacen=almacen, orden=self)
+        return Devolucion.objects.get_or_create(emisor=almacen, orden=self)
 
     def reportar(self, almacen: 'Almacen', descripcion: str) -> tuple['Reporte', bool]:
         """
@@ -701,7 +711,7 @@ class Orden(models.Model):
         :returns: Reporte y sí el objeto se creó.
         """
 
-        return Reporte.objects.get_or_create(almacen=almacen, orden=self, descripcion=descripcion)
+        return Reporte.objects.get_or_create(emisor=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
         return f"{self.prestatario}"
@@ -785,26 +795,26 @@ class Reporte(models.Model):
     """
     Clase que representa un reporte a una Orden.
 
-    :param almacen: Usuario que emitió el reporte.
+    :param emisor: Usuario que emitió el reporte.
     :param orden: Orden a la que se refiere el reporte.
     :param estado: Estado de la orden.automatico
     :param descripcion: Información de la orden.
     :param emision: Fecha de emisión del reporte.
     """
 
-    class Meta:
-        unique_together = ('almacen', 'orden')
-
     class Estado(models.TextChoices):
         """Opciones para el estado del reporte."""
         ACTIVO = "AC", _("ACTIVO")
         INACTIVO = "IN", _("INACTIVO")
 
-    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+    emisor = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, related_name='reportes')
     estado = models.CharField(max_length=2, choices=Estado.choices, default=Estado.ACTIVO)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     emision = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.orden}"
 
 
 class Categoria(models.Model):
@@ -840,13 +850,12 @@ class Entrega(models.Model):
     Entrega al almacen. Se genera cada vez que Almacen entrega el
     equipo al Prestatario.
 
-    :param almacen: Encargado del Almacen.
+    :param entregador: Encargado del Almacen.
     :param orden: Orden que se entrega.
     :param emision: Fecha en la que se hace la emisión.
     """
-
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
+    entregador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 
