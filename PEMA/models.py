@@ -554,12 +554,16 @@ class EstadoOrden(models.TextChoices):
      * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
      * `APROBADA`: Orden aprobada por el maestro o coordinador.
      * `CANCELADA`: Orden cancelado por el prestatario.
+     * `ENTREGADA`: Orden entregada al prestatario.
+     * `DEVUELTA`: Orden devuelta al Almacén.`
     """
     APROBADA = "AP", _("Listo para iniciar")
     PENDIENTE_CR = "PC", _("Esperando corresponsables")
     PENDIENTE_AP = "PA", _("Esperando autorización")
     RECHAZADA = "RE", _("Rechazada")
     CANCELADA = "CN", _("Cancelada")
+    ENTREGADA = "EN", _("Activa")
+    DEVUELTA = "DE", _("Terminado")
 
 
 class Orden(models.Model):
