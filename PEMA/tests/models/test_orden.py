@@ -52,13 +52,13 @@ class TestOrden(TestCase):
     def test_reporte(self):
         almacen = Almacen.get_user(self.almacen)
 
+        # Si no hay reporte
         self.assertIsNone(self.orden.reporte(), msg="Ya existe un reporte")
 
+        # si hay un reporte
         self.orden.reportar(almacen=almacen, descripcion="Nada")
-
         self.assertIsNotNone(obj=self.orden.reporte(), msg="No existe un reporte")
 
         # verificar que una orden no se puede reportar 2 veces
         self.orden.reportar(almacen=almacen, descripcion="Nada")
-
         self.assertEqual(len(Reporte.objects.filter(orden=self.orden)), 1)
