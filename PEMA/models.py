@@ -629,9 +629,8 @@ class Orden(models.Model):
         Actualiza el estado de la orden para indicar que se le entregó
         el equipo al Prestatario.
         """
-        if (self.estado == EstadoOrden.CANCELADA
-                or self.estado == EstadoOrden.RECHAZADA
-                or self.estado == EstadoOrden.DEVUELTA):
+        if (
+                self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.RECHAZADA or self.estado == EstadoOrden.DEVUELTA):
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
@@ -753,13 +752,19 @@ class Carrito(models.Model):
         data.unidades = unidades
         data.save()
 
+    def articulos_carrito(self):
+        return self._articulos.all()
+
     def articulos(self) -> QuerySet['Articulo']:
         """
         Devuelve los artículos en el carrito.
         :returns: Artículos en el carrito.
         """
+        # TODO: implementar este metodo
+        pass
 
-        return self._articulos.all()
+    def crear_orden(self):
+        return Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio, final=self.final)
 
     def ordenar(self) -> None:
         """
@@ -771,9 +776,22 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
 
         with transaction.atomic():
-            orden = Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
-                                         final=self.final)
+            orden = self.crear_orden()
 
+            for articuloCarrito in self.articulos_carrito():
+                unidades = articuloCarrito.articulo.unidades()
+                len_unidades = len(unidades)
+
+                if len_unidades < articuloCarrito.unidades:
+                    # no hay suficientes artículos disponibles
+                    transaction.rollback()
+                    return
+
+                # TODO: hacer que elija unidades random
+                for i in range(0, len_unidades):
+                    orden.agregar_unidad(unidades[i])
+
+            # agregar a los integrantes de la producción
             self.agregar_corresponsable(self.prestatario)
 
             for corresponsable in self.corresponsables():
