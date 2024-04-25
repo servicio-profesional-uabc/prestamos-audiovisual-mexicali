@@ -1,4 +1,3 @@
-from random import shuffle
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -630,8 +629,9 @@ class Orden(models.Model):
         Actualiza el estado de la orden para indicar que se le entregó
         el equipo al Prestatario.
         """
-        if (
-                self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.RECHAZADA or self.estado == EstadoOrden.DEVUELTA):
+        if (self.estado == EstadoOrden.CANCELADA
+                or self.estado == EstadoOrden.RECHAZADA
+                or self.estado == EstadoOrden.DEVUELTA):
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
