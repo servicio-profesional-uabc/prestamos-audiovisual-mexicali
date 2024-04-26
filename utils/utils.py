@@ -1,6 +1,7 @@
 import pandas as pd
 from openpyxl import load_workbook
 from PEMA.models import Articulo
+from PEMA.models import Maestro
 
 
 def importar_material(file_path):
@@ -36,6 +37,22 @@ def importar_material(file_path):
         # crear unidad
         unidad, creada = articulo.crear_unidad(num_control=num_control, num_serie=num_serie)
 
+def importar_personal(file_path):
+    """
+    Importa la lista de personal del CEPA
+    :param file_path: [ath del archivo xlsx
+    :return:
+    """
+    df = pd.read_excel(file_path, header=1)
+
+    for index, row in df.iterrows():
+        username = row['NUMERO DE EMPLEADO']
+        first_name = row['PERSONAL DEL CEPA']
+
+    maestro, creado = Maestro.crear_usuario(
+        username=username,
+        first_name=first_name
+    )
 
 '''
 # pathInventario = r"C:\Users\Hecta\Documents\test pandas\Inventario CEPA (Actualizado nov 2023).xlsx"

@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -68,12 +70,11 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
 def autorizacion_orden_updated(sender, instance, created, **kwargs):
     # TODO: faltan pruebas unitarias para este trigger
 
+    if created: # si la autorización cambia de estado
+        return
+
     autorizacion = instance
     orden = instance.orden
-
-    if created:
-        # si se creo no hacer nada
-        return
 
     # TODO: bloquear el estado una vez que se rechaze o acepte
 
@@ -86,6 +87,20 @@ def autorizacion_orden_updated(sender, instance, created, **kwargs):
     orden.save()
 
 
+@receiver(post_save, sender=AutorizacionOrden)
+def autorizacion_orden_created(sender, instance, created, **kwargs):
+    if not created: # se crea una autorizacion
+        return
+
+    orden = instance.orden
+
+    send_mail(subject="Email de pruebfrom .forms import LoginForma",
+              message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
+                      "prueba fue exitosa. Atentamente, Galindo.", from_email=settings.EMAIL_HOST_USER,
+              fail_silently=False, recipient_list=["egalindo54@uabc.edu.mx"])
+
+
 post_save.connect(user_post_save, sender=User)
 post_save.connect(corresponsable_orden_updated, sender=CorresponsableOrden)
+post_save.connect(autorizacion_orden_created, sender=AutorizacionOrden)
 post_save.connect(autorizacion_orden_updated, sender=AutorizacionOrden)

@@ -36,6 +36,7 @@ input[type="email"] {
 /* Estilos para el botón de confirmar */
 button[type="submit"] {
     padding: 10px 20px;
+    margin-top: auto;
     margin-bottom: 10px;
     background-color: #00723F;
     color: #fff;
@@ -71,7 +72,7 @@ a.btn:hover {
 /**Estilos para detalles de orden*/
 
 .form-container {
-    margin-top: 100px;
+    margin-top: 20px;
 
 }
 
@@ -117,9 +118,9 @@ footer p {
 
 .select-text {
     position: absolute;
-    top: -20px; /* Ajusta esta distancia según tu preferencia */
-    left: 50%; /* Centra horizontalmente */
-    transform: translateX(-50%); /* Centra horizontalmente */
+    top: -20px; 
+    left: 50%; 
+    transform: translateX(-50%);
 }
 
 .list-group-item {
