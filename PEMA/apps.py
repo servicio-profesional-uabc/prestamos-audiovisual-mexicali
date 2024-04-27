@@ -6,4 +6,4 @@ class PemaConfig(AppConfig):
     name = 'PEMA'
 
     def ready(self):
-        from . import signals
+        import PEMA.signals
