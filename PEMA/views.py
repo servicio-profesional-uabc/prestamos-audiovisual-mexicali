@@ -214,6 +214,13 @@ class CancelarOrdenView(View):
             request=request,
             template_name="cancelar_orden.html"
         )
+    
+class AutorizacionSolitudView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="autorizacion_solicitudes.html"
+        )
 
 
 def test(request):
