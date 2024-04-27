@@ -1,36 +1,21 @@
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import User
 from django import forms
-from django.utils.timezone import make_aware
+from django.contrib.auth.forms import AuthenticationForm
 
-from .models import User, Carrito, Materia, UsuarioMateria, Prestatario
-from django import forms
-
-from django.contrib.auth.hashers import check_password
-from datetime import date, timezone, timedelta
+from .models import Carrito, Prestatario
 
 
 class UserLoginForm(AuthenticationForm):
     """
     Form para login de cualquier usuario User
     """
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'class': '',
-            'placeholder': ''
-        })
-    )
+    username = forms.CharField()
+    password = forms.CharField()
 
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            'class': '',
-            'placeholder': ''
-        })
-    )
 
 # Forms para Filtros/Carrito
 class DateInput(forms.DateInput):
-     input_type = 'date'
+    input_type = 'date'
+
 
 class FiltrosForm(forms.ModelForm):
     """
@@ -79,7 +64,6 @@ class FiltrosForm(forms.ModelForm):
         super(FiltrosForm, self).__init__(*args, **kwargs)
         self.fields['materia'].queryset = user.materias()
 
-
     class Meta:
         model = Carrito
         fields = ['inicio', 'materia']
@@ -88,9 +72,10 @@ class FiltrosForm(forms.ModelForm):
             # https://stackoverflow.com/questions/61076688/django-form-dateinput-with-widget-in-update-loosing-the-initial-value
             'inicio': forms.DateInput(
                 # format=('%Y-%m-%d'),
-                attrs={'class': 'form-control',
+                attrs={
+                    'class': 'form-control',
                        'placeholder': 'Select a date',
                        'type': 'date'
                        }
-                ),
-            }
+            ),
+        }
