@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import get_object_or_404
@@ -7,6 +7,7 @@ from django.http import HttpResponseNotAllowed
 from django.http import HttpResponse
 from django.http import HttpResponseBadRequest
 from django.http import HttpResponseRedirect
+from django.utils.timezone import make_aware
 from django.views import View
 from django.core.mail import send_mail
 from django.conf import settings
@@ -23,6 +24,9 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from django.db import IntegrityError
 
+
+INICIO_HORARIO = 7
+FIN_HORARIO = 20
 
 class IndexView(View):
     def get(self, request):
@@ -65,24 +69,43 @@ class FiltrosView(View, LoginRequiredMixin):
     def post(self, request):
         print(request.POST)
         prestatario = Prestatario.get_user(request.user)
-        # fecha_inicio = request.POST.get('inicio')
-        # duracion = request.POST.get('duracion')
-        # materia = request.POST.get('materia')
-        # print(duracion)
-        # print(fecha_inicio)
-        # print(materia)
 
         form = FiltrosForm(prestatario, request.POST)
-        # print(form.materia)
-        # print(form.cleaned_data['materia'])
         if form.is_valid():
-            print(form.cleaned_data['materia'])
+            materia = form.cleaned_data['materia']
+            duracion = form.cleaned_data['duracion']
+            inicio = form.cleaned_data['inicio']
+            hora_inicio = form.cleaned_data['hora_inicio']
 
+            # [x] Agregar fecha inicio agregarle su hora de inicio
+            # [x] Sumarle la duracion de horas a dicha fecha
+            # [] Validar que sea elegido en fecha sea 3 dias de anticipacion
+            # [] Validar que inicio sea entre semana (no importa que pase por fin eso se hace extra al hacer solicitud)
+            # [] Guardar dicha fecha final en la variable final de carrito
+
+            hora_inicio_datetime = datetime.strptime(hora_inicio, '%H:%M:%S')
+
+            # Asignar hora elegida a fecha de inicio
+            hora = datetime.time(hora_inicio_datetime)
+            fecha_inicio = datetime.combine(inicio, hora)
+
+            tiempo_duracion = int(duracion)
+
+            fecha_final = fecha_inicio + timedelta(hours=tiempo_duracion)
+            fecha_final = make_aware(fecha_final)
+
+            if not (INICIO_HORARIO <= fecha_final.time().hour <= FIN_HORARIO):
+                messages.error(request, 'La combinación de hora y duración del préstamo marcan fuera de horario de atención. Intente de nuevo.')
+                return redirect('filtros')
+
+            messages.success(request, 'El filtro para tu orden se ha creado exitosamente.')
+            return redirect('filtros')
         else:
+            # Verificar que se eligieron todos los campos antes de guardar
+            messages.error(request, "Error al generar tu filtro. Verifica que hayas seleccionado todos los campos.")
+            return redirect('filtros')
             for field, errors in form.errors.items():
                 print(f"Field: {field}, Errors: {errors}")
-
-
         return redirect('filtros')
 
         # if (fecha_inicio == "" or fecha_inicio == None) or \
@@ -96,11 +119,6 @@ class FiltrosView(View, LoginRequiredMixin):
         #         messages.error(request, "No puedes dejar vacío el campo de materia. Si no aparecen tus materias contacta al administrador.")
         #     return redirect('filtros')
 
-            # carrito = form.save(commit=False)
-            # carrito.prestatario = prestatario
-            # carrito.materia = Materia.objects.get(nombre="Iluminacion")
-            # carrito.final = carrito.inicio + timedelta(days=3)
-            # print(f"xdddddd {carrito.inicio}")
 
 class SolicitudView(View):
     def get(self, request):
