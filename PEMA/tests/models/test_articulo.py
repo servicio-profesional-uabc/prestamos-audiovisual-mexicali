@@ -89,7 +89,7 @@ class TestArticulo(TestCase):
             materia=self.materia1,
             prestatario=self.prestatario,
             lugar="orden 12:00 a 14:00",
-            estado="AP",
+            estado="PA",
             inicio=self.generar_fechas(0),
             final=self.generar_fechas(2)
         )
@@ -97,7 +97,7 @@ class TestArticulo(TestCase):
             materia=self.materia1,
             prestatario=self.prestatario,
             lugar="orden 11:00 a 14:00",
-            estado="AP",
+            estado="PC",
             inicio=self.generar_fechas(-1),
             final=self.generar_fechas(2)
         )
@@ -113,7 +113,7 @@ class TestArticulo(TestCase):
             materia=self.materia1,
             prestatario=self.prestatario,
             lugar="orden 16:00 a 18:00",
-            estado="AP",
+            estado="PA",
             inicio=self.generar_fechas(4),
             final=self.generar_fechas(6)
         )
@@ -121,7 +121,7 @@ class TestArticulo(TestCase):
             materia=self.materia1,
             prestatario=self.prestatario,
             lugar="orden 13:00 a 16:00",
-            estado="AP",
+            estado="PC",
             inicio=self.generar_fechas(1),
             final=self.generar_fechas(4)
         )
