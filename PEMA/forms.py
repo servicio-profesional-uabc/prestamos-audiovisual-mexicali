@@ -1,10 +1,14 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django import forms
+from django.utils.timezone import make_aware
+
 from .models import User, Carrito, Materia, UsuarioMateria, Prestatario
 from django import forms
+
 from django.contrib.auth.hashers import check_password
-from datetime import date
+from datetime import date, timezone, timedelta
+
 
 class UserLoginForm(AuthenticationForm):
     """
@@ -42,6 +46,7 @@ class FiltrosForm(forms.ModelForm):
         (8, "8 hora"),
         (24, "1 dia (24h)"),
         (48, "2 dias (48h)"),
+        (72, "3 días (72h)"),
         (96, "4 dias (96h)"),
     ])
     hora_inicio = forms.ChoiceField(label="Hora", required=True, choices=[
@@ -73,6 +78,7 @@ class FiltrosForm(forms.ModelForm):
     def __init__(self, user: Prestatario, *args, **kwargs):
         super(FiltrosForm, self).__init__(*args, **kwargs)
         self.fields['materia'].queryset = user.materias()
+
 
     class Meta:
         model = Carrito
