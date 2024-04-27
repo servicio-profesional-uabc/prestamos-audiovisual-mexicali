@@ -39,11 +39,11 @@ class Prestatario(User):
         :param user: Usuario del que se quiere obtener el prestatario
         :returns: Prestatario o None si no es Prestatario
         """
-
         try:
-            return Prestatario.objects.get(pk=user.pk)
+            user = Prestatario.objects.get(pk=user.pk)
         except Prestatario.DoesNotExist:
-            return None
+            user = None
+        return user
 
     @staticmethod
     def crear_usuario(*args, **kwargs) -> 'Prestatario':
@@ -91,14 +91,12 @@ class Prestatario(User):
 
         :returns: Lista de reportes del prestatario.
         """
-
         return Reporte.objects.filter(orden__in=self.ordenes())
 
     def materias(self) -> QuerySet['Materia']:
         """
         Devuelve las materias del prestatario.
         """
-
         return self.materia_set.all()
 
     def carrito(self) -> Any | None:
@@ -108,11 +106,12 @@ class Prestatario(User):
 
         :return:  El carrito del prestatario o None si no existe.
         """
-
         try:
-            return Carrito.objects.get(prestatario=self)
+            carrito = Carrito.objects.get(prestatario=self)
         except Carrito.DoesNotExist:
-            return None
+            carrito = None
+        return carrito
+
 
     def suspendido(self) -> bool:
         """
@@ -120,7 +119,6 @@ class Prestatario(User):
 
         :returns: Si el usuario está suspendido del sistema
         """
-
         return self.reportes().filter(estado=Reporte.Estado.ACTIVO).exists()
 
 
@@ -208,10 +206,7 @@ class Maestro(User):
     def crear_grupo() -> tuple[Any, bool]:
         """
         Crea el 'Permission Group' para el usuario maestro.
-
-        :returns: El grupo y sí se creó
         """
-
         # grupo
         group, created = Group.objects.get_or_create(name='maestro')
 
@@ -224,8 +219,7 @@ class Maestro(User):
     @classmethod
     def crear_usuario(cls, *args, **kwargs) -> User:
         """Crea un usuario de tipo prestatario"""
-
-        grupo, _ = cls.crear_grupo()
+        grupo, _ = Maestro.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
         grupo.user_set.add(user)
 
@@ -255,15 +249,13 @@ class Almacen(User):
     @staticmethod
     def get_user(user: User) -> Any | None:
         """
-        Obtiene el usuario Almacen.
-
-        :param user: Usuario del que se quiere obtener el Almacen.
-        :returns: Prestatario o None si no es Almacen.
+        Obtiene el usuario Almacen o None si no existe
         """
         try:
-            return Almacen.objects.get(pk=user.pk)
+            almacen = Almacen.objects.get(pk=user.pk)
         except Almacen.DoesNotExist:
-            return None
+            almacen = None
+        return almacen
 
     @staticmethod
     def crear_grupo() -> tuple['Group', bool]:
@@ -634,11 +626,18 @@ class Orden(models.Model):
     def rechazar(self):
         self.estado = EstadoOrden.RECHAZADA
 
+    def rechazada(self):
+        return self.estado == EstadoOrden.RECHAZADA
+
     def autorizar(self):
         self.estado = EstadoOrden.APROBADA
 
-    def entregada(self):
-        return self.estado == EstadoOrden.ENTREGADA
+    def entregada(self) -> bool:
+        """
+        Si la orden ya se entregó y si existe el registro, Revisar
+        `Orden.entrgar` para más información.
+        """
+        return self.estado == EstadoOrden.ENTREGADA and Entrega.objects.filter(orden=self).exists()
 
     def entregar(self, entregador):
         """
@@ -668,12 +667,14 @@ class Orden(models.Model):
         """
         Si una orden es ordinaria
         """
+        # TODO: Hacer el proceso como un algoritmo
         return self.tipo == TipoOrden.ORDINARIA
 
     def es_extraordinaria(self) -> bool:
         """
         Si una orden es extraordinaria.
         """
+        # TODO: Hacer el proceso como un algoritmo
         return self.tipo == TipoOrden.EXTRAORDINARIA
 
     def unidades(self) -> QuerySet['Unidad']:
@@ -824,7 +825,7 @@ class Carrito(models.Model):
 
                     if len_unidades < articuloCarrito.unidades:
                         # no hay suficientes artículos disponibles
-                        raise Exception("No hay suficientes artículos disponibles")
+                        raise Exception("No hay suficientes unidades disponibles")
 
                     # elige la cantidad de elementos al azar
                     shuffle(unidades)
