@@ -15,7 +15,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
 
 from .forms import FiltrosForm
-from .models import Orden, User, Prestatario, EstadoOrden, Materia, Carrito
+from .models import Orden, User, Prestatario, EstadoOrden, Materia, Carrito, Articulo, Categoria
 
 from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion
 from django.urls import reverse
@@ -194,9 +194,29 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class CatalogoView(View):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        categorias = Categoria.objects.all()
+        
+        try:
+            articulos = Articulo.objects.filter(materia__in=Prestatario.materias(prestatario))
+            unidades_disponibles = []
+            for articulo in articulos:
+                unidades_disponibles.append(articulo.disponible(make_aware(datetime(2024, 10, 5, 12)), make_aware(datetime(2024, 10, 5, 14))))
+                
+        except:
+            articulos = None
+            unidades_disponibles = None
+            
+            
+        context = {'unidades_disponibles' : unidades_disponibles,
+                   'categorias' : categorias
+                   }
+        
+            
         return render(
             request=request,
-            template_name="catalogo.html"
+            template_name="catalogo.html",
+            context=context
         )
 
 

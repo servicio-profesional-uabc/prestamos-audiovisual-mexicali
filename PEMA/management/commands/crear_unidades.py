@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
-from PEMA.models import Prestatario, Orden, Materia, Articulo, Unidad
+from PEMA.models import Prestatario, Orden, Materia, Articulo, Unidad, Categoria
 from django.utils.timezone import make_aware
 from datetime import datetime
 from django.conf import settings
@@ -41,6 +41,17 @@ class Command(BaseCommand):
             semestre = 1
         )
 
+        materia1.agregar_alumno(user)
+        materia2.agregar_alumno(user)
+        
+        # Categorias
+        categoria1, created = Categoria.objects.get_or_create(
+            nombre="Camaras"
+        )
+        categoria2, created = Categoria.objects.get_or_create(
+            nombre="Iluminación"
+        )
+        
         # articulos
         articulo1, created = Articulo.objects.get_or_create(
             nombre="CamaraNikon",
@@ -51,6 +62,9 @@ class Command(BaseCommand):
             nombre="CamaraCanon",
             codigo="111"
         )
+        
+        categoria1.agregar(articulo=articulo1)
+        categoria1.agregar(articulo=articulo2)
         
         unidad1, created = Unidad.objects.get_or_create(
             estado="ACTIVO",
@@ -170,6 +184,8 @@ class Command(BaseCommand):
         orden5.agregar_unidad(unidad6)
         orden6.agregar_unidad(unidad7)
         
+
+        
         
         
         user.is_superuser = False
@@ -183,6 +199,9 @@ class Command(BaseCommand):
         articulo1.save()
         articulo2.save()
         print('Se guardaron los articulos...')
+        categoria1.save()
+        categoria2.save()
+        print('Se guardaron las categorias...')
         unidad1.save()
         unidad2.save()
         unidad3.save()
@@ -200,6 +219,14 @@ class Command(BaseCommand):
         orden6.save()
         print('Se guardaron las ordenes...')
 
-        print(articulo1.disponible(make_aware(datetime(2024, 9, 5)), make_aware(datetime(2024, 11, 5, 12))))
+        print(articulo1.disponible(make_aware(datetime(2024, 10, 5, 12)), make_aware(datetime(2024, 10, 5, 14))))
         
-        print(articulo2.disponible(make_aware(datetime(2024, 9, 5)), make_aware(datetime(2024, 11, 5, 17))))
+        print(articulo1.disponible(make_aware(datetime(2024, 10, 5, 11)), make_aware(datetime(2024, 10, 5, 14))))
+        
+        print(articulo2.disponible(make_aware(datetime(2024, 10, 5, 14)), make_aware(datetime(2024, 10, 5, 16))))
+        
+        print(materia1.alumnos())
+        
+        print(Prestatario.materias(user))
+        
+        
