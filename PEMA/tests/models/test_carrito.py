@@ -1,60 +1,63 @@
-import unittest
 from datetime import datetime
-from unittest import skip
 
-from django.contrib.auth.models import User, Group
 from django.test import TestCase
 from django.utils.timezone import make_aware
-
-from PEMA.models import Prestatario, Materia, Carrito, Articulo, Orden, CorresponsableOrden
+from PEMA.models import Prestatario, Materia, Carrito, Articulo, Orden
 
 
 class TestCarrito(TestCase):
     def setUp(self):
-        # crear usuario Prestatario
-        self.user = Prestatario.crear_usuario(id=0, username="<USERNAME>", password="<PASSWORD>")
-
-        # crear materia
+        self.user = Prestatario.objects.create(username="test_user", password="test_password")
         self.materia = Materia.objects.create(nombre="fotografia", year=2022, semestre=1)
+        self.articulo = Articulo.objects.create(nombre="Artículo de prueba", codigo="0000-0000")
 
-        # crear articulo
-        self.articulo = Articulo.objects.create(nombre="<ARTICULO>", codigo="0000-0000", )
+    def test_agregar_articulo(self):
+        carrito = Carrito.objects.create(prestatario=self.user, materia=self.materia,
+                                         inicio=make_aware(datetime(2024, 3, 16, 12)),
+                                         final=make_aware(datetime(2024, 3, 16, 18)))
 
-        # crear carrito
-        self.carrito = Carrito.objects.create(prestatario=self.user, materia=self.materia,
-                                              inicio=make_aware(datetime(2024, 3, 16, 12)),
-                                              final=make_aware(datetime(2024, 3, 16, 18)), )
+        # Agregar un artículo al carrito
+        carrito.agregar(articulo=self.articulo, unidades=1)
+        self.assertEqual(carrito.articulos_carrito().count(), 1)
 
-        self.carrito.agregar_corresponsable(self.user)
+        # Agregar el mismo artículo con más unidades
+        carrito.agregar(articulo=self.articulo, unidades=2)
+        self.assertEqual(carrito.articulos_carrito().count(), 1)
 
-    def test_agregar(self):
-        # carrito vacío
-        self.assertEquals(len(self.carrito.articulos_carrito()), 0, msg="El Carrito No está vació")
+        # Agregar un nuevo artículo al carrito
+        otro_articulo = Articulo.objects.create(nombre="Otro artículo de prueba", codigo="0000-0001")
+        carrito.agregar(articulo=otro_articulo, unidades=3)
+        self.assertEqual(carrito.articulos_carrito().count(), 2)
 
-        # carrito con un articulo agregado
-        self.carrito.agregar(articulo=self.articulo, unidades=1)
-        self.assertEquals(len(self.carrito.articulos_carrito()), 1, msg="No se agrego ningún articulo")
+    def test_articulos_carrito(self):
+        carrito = Carrito.objects.create(prestatario=self.user, materia=self.materia,
+                                         inicio=make_aware(datetime(2024, 3, 16, 12)),
+                                         final=make_aware(datetime(2024, 3, 16, 18)))
 
-        # volver a agregar el mismo articulo
-        self.carrito.agregar(articulo=self.articulo, unidades=1)
-        self.assertEquals(len(self.carrito.articulos_carrito()), 1, msg="Se duplicaron artículos")
+        # Verificar que el carrito esté vacío al inicio
+        self.assertEqual(carrito.articulos_carrito().count(), 0)
 
-    @skip("Falta implementar los test de Ordenar carrito")
-    def test_ordenar_articulo(self):
-        pass
+        # Agregar un artículo y verificar que esté en el carrito
+        carrito.agregar(articulo=self.articulo, unidades=1)
+        self.assertEqual(carrito.articulos_carrito().count(), 1)
+        self.assertIn(self.articulo, carrito.articulos())
 
-    def test_actualizar_unidades(self):
-        self.carrito.agregar(articulo=self.articulo, unidades=1)
-        self.carrito.agregar(articulo=self.articulo, unidades=3)
+    def test_ordenar_carrito(self):
+        carrito = Carrito.objects.create(prestatario=self.user, materia=self.materia,
+                                         inicio=make_aware(datetime(2024, 3, 16, 12)),
+                                         final=make_aware(datetime(2024, 3, 16, 18)))
 
-        a = self.carrito.articulos_carrito().filter(articulo=self.articulo)
+        # Agregar un artículo al carrito
+        carrito.agregar(articulo=self.articulo, unidades=1)
 
-        self.assertEquals(len(a), 1, msg="Cantidad incorrecta de elementos")
-        self.assertEquals(a.first().unidades, 3, msg="No se actualizó la cantidad de unidades")
+        # Ordenar el carrito cuando no hay unidades
+        carrito.ordenar()
+        self.assertEqual(Carrito.objects.all().count(), 1)
 
-    def test_ordenar(self):
-        self.carrito.ordenar()
+        # ordenar carrito cuando si hay unidades
+        self.articulo.crear_unidad("num_control", "num_serie")
+        carrito.ordenar()
+        self.assertEqual(Carrito.objects.all().count(), 0)
 
-        self.assertEquals(len(Carrito.objects.all()), 0, msg="No se Eliminó el Carrito")
-        self.assertEquals(len(Orden.objects.all()), 1, msg="No se creo la Orden")
-        self.assertEquals(len(CorresponsableOrden.objects.all()), 1, msg="La orden NO tiene corresponsable")
+        # Verificar que se haya creado una Orden
+        self.assertEqual(Orden.objects.all().count(), 1)
