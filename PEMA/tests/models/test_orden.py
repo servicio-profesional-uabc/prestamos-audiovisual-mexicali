@@ -3,7 +3,7 @@ from datetime import datetime
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia
+from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia, AutorizacionEstado
 
 
 class TestOrden(TestCase):
@@ -62,3 +62,21 @@ class TestOrden(TestCase):
         # verificar que una orden no se puede reportar 2 veces
         self.orden.reportar(almacen=almacen, descripcion="Nada")
         self.assertEqual(len(Reporte.objects.filter(orden=self.orden)), 1)
+
+    def test_entregada(self):
+        # La orden no está marcada como entregada inicialmente
+        self.assertFalse(self.orden.entregada())
+
+        # Marcar la orden como entregada
+        self.orden.entregar(self.almacen)
+        self.assertTrue(self.orden.entregada())
+
+    def test_entregar(self):
+        # La orden no está marcada como entregada inicialmente
+        self.assertFalse(self.orden.entregada())
+
+        # Marcar la orden como entregada
+        self.orden.entregar(self.almacen)
+
+        # Verificar que la orden ha sido marcada como entregada
+        self.assertTrue(self.orden.entregada())
