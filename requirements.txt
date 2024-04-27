@@ -12,8 +12,13 @@ django-widget-tweaks==1.4.12
 # archivos
 pandas==2.2.1
 openpyxl==3.1.2
+django-import-export==3.3.8
 
+# optional
 # Documentacion automatica
 Sphinx==7.2.6
 sphinx-markdown-builder==0.6.6
 sphinx-rtd-theme==2.0.0
+
+# Mejor página de Admin
+django-admin-interface==0.28.6

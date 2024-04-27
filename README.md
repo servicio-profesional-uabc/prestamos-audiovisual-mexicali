@@ -1,11 +1,20 @@
+[![Django CI](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/actions/workflows/django.yml/badge.svg)](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/actions/workflows/django.yml)
+
 # Sistema PEMA
-PEMA es un programa diseñado para facilitar la gestión de préstamos de material de grabación audiovisual en la Facultad de Artes, campus Mexicali.
+PEMA es un programa diseñado para facilitar la gestión de préstamos de
+material de grabación audiovisual en la Facultad de Artes, campus
+Mexicali. 
 
 ## Documentación Completa
-Toda la información detallada sobre el proyecto está disponible en la [sección de wiki](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki). Esta documentación proporciona una guía completa para comprender y utilizar el sistema PEMA.
+Toda la información detallada sobre el proyecto está disponible en la
+[sección de
+wiki](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki). Esta
+documentación proporciona una guía completa para comprender y utilizar
+el sistema PEMA. 
 
 ## Configuración del Entorno de Desarrollo
-Puedes encontrar instrucciones más detalladas [aquí](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki/Entorno-de-desarrollo).
+Puedes encontrar instrucciones más detalladas
+[aquí](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/wiki/Entorno-de-desarrollo). 
 
 
 ### Linux (Ubuntu)

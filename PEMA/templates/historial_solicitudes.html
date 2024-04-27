@@ -3,112 +3,145 @@
 {% load static %}
 
 {% block content %}
+
 <head>
     <title>Historial de Solicitudes</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body>
+
+<body class="text-center">
+    <div class="container mt-5">
+        <h4>Historial de Solicitudes</h4>
+
+        {% if solicitudes %}
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for solicitud in solicitudes %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'detalles_solicitud' solicitud.id %}"
+                                class="list-group-item list-group-item-action">{{ solicitud.nombre }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
     <div class="container mt-5 order-details-container text-center">
         <h4 style="font-size: 28px;">Historial de Solicitudes</h4>
 
-        <br/>
+        <br />
         <h4>Ordenes aprobadas</h4>
-        <hr class="hr"/>
+        <hr class="hr" />
         {% if solicitudes_aprobadas %}
-            <table class="table table-responsive table-bordered table-striped mx-auto mt-4 " style="max-width: 500px;">
-                <thead>
-                </thead>
-                <tbody>
+        <table class="table table-responsive table-bordered table-striped mx-auto mt-4 " style="max-width: 500px;">
+            <thead>
+            </thead>
+            <tbody>
                 {% for solicitud in solicitudes_aprobadas %}
-                    <tr>
-                        <td class="d-flex">
-                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color: #00723f; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
-                        </td>
-                    </tr>
+                <tr>
+                    <td class="d-flex">
+                        <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block"
+                            style="background-color: #00723f; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                    </td>
+                </tr>
                 {% endfor %}
-                </tbody>
-            </table>
+            </tbody>
+        </table>
         {% else %}
-            <p>No tienes solicitudes.</p>
+        <p>No tienes solicitudes.</p>
         {% endif %}
-        <br/>
+        <br />
 
         <h4>Ordenes pendientes en aprobación</h4>
-        <hr class="hr"/>
+        <hr class="hr" />
         {% if solicitudes_pendientes_ap %}
-            <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
-                {% for solicitud in solicitudes_pendientes_ap %}
-                    <tbody>
-                    <tr>
-                        <td style="display: flex">
-                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color:#686865; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
-                        </td>
-                    </tr>
-                    </tbody>
-                {% endfor %}
-            </table>
+        <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
+            {% for solicitud in solicitudes_pendientes_ap %}
+            <tbody>
+                <tr>
+                    <td style="display: flex">
+                        <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block"
+                            style="background-color:#686865; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                    </td>
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
         {% else %}
-            <p>No tienes solicitudes.</p>
+        <p>No tienes solicitudes.</p>
         {% endif %}
-        <br/>
+        <br />
 
 
         <h4>Ordenes pendientes por corresponsables</h4>
-        <hr class="hr"/>
+        <hr class="hr" />
         {% if solicitudes_pendientes_cr %}
-            <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
-                {% for solicitud in solicitudes_pendientes_cr %}
-                    <tbody>
-                    <tr>
-                        <td style="display: flex">
-                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color:#686865; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
-                        </td>
-                    </tr>
-                    </tbody>
-                {% endfor %}
-            </table>
+        <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
+            {% for solicitud in solicitudes_pendientes_cr %}
+            <tbody>
+                <tr>
+                    <td style="display: flex">
+                        <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block"
+                            style="background-color:#686865; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                    </td>
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
         {% else %}
-            <p>No tienes solicitudes.</p>
+        <p>No tienes solicitudes.</p>
         {% endif %}
-        <br/>
+        <br />
 
         <h4>Ordenes rechazadas</h4>
-        <hr class="hr"/>
+        <hr class="hr" />
         {% if solicitudes_rechazadas %}
-            <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
-                {% for solicitud in solicitudes_rechazadas %}
-                    <tbody>
-                    <tr>
-                        <td style="display: flex">
-                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color:#d91a1a; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
-                        </td>
-                    </tr>
-                    </tbody>
-                {% endfor %}
-            </table>
+        <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
+            {% for solicitud in solicitudes_rechazadas %}
+            <tbody>
+                <tr>
+                    <td style="display: flex">
+                        <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block"
+                            style="background-color:#d91a1a; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                    </td>
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
         {% else %}
-            <p>No tienes solicitudes.</p>
+        <p>No tienes solicitudes.</p>
         {% endif %}
-        <br/>
+        <br />
 
         <h4>Ordenes canceladas</h4>
-        <hr class="hr"/>
+        <hr class="hr" />
         {% if solicitudes_canceladas %}
-            <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
-                {% for solicitud in solicitudes_canceladas %}
-                    <tbody>
-                    <tr>
-                        <td style="display: flex">
-                            <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block" style="background-color:#1c1b1b; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
-                        </td>
-                    </tr>
-                    </tbody>
-                {% endfor %}
-            </table>
+        <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
+            {% for solicitud in solicitudes_canceladas %}
+            <tbody>
+                <tr>
+                    <td style="display: flex">
+                        <a href="{% url 'detalles_orden' solicitud.id %}" class="btn btn-success btn-lg btn-block"
+                            style="background-color:#1c1b1b; flex-grow: 1;">Orden - Creada: {{ solicitud.emision }}</a>
+                    </td>
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
         {% else %}
-            <p>No tienes solicitudes.</p>
+        <p>No tienes solicitudes.</p>
         {% endif %}
-        <br/>
+        <br />
 
         <div class="text-center mt-4">
             <a href="menu" class="btn btn-secondary">Regresar</a>
