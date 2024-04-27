@@ -67,15 +67,3 @@ class FiltrosForm(forms.ModelForm):
     class Meta:
         model = Carrito
         fields = ['inicio', 'materia']
-        widgets = {
-            # Widget para fecha
-            # https://stackoverflow.com/questions/61076688/django-form-dateinput-with-widget-in-update-loosing-the-initial-value
-            'inicio': forms.DateInput(
-                # format=('%Y-%m-%d'),
-                attrs={
-                    'class': 'form-control',
-                       'placeholder': 'Select a date',
-                       'type': 'date'
-                       }
-            ),
-        }
