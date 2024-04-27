@@ -19,13 +19,14 @@ class IndexView(View):
             template_name="index.html"
         )
 
+
 class MenuView(View):
     def get(self, request):
         matricula = request.user.username
         return render(
             request=request,
             template_name="menu.html",
-            context={'matricula':matricula}
+            context={'matricula': matricula}
         )
 
     def post(self, request):
@@ -39,14 +40,15 @@ class CarritoView(View):
             template_name="carrito.html"
         )
 
+
 class FiltrosView(View):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
         form = FiltrosForm()
         context = {
-            'prestatario':prestatario,
-            'form':form,
+            'prestatario': prestatario,
+            'form': form,
         }
 
         return render(
@@ -55,24 +57,8 @@ class FiltrosView(View):
         )
 
     def post(self, request):
-        prestatario = Prestatario.get_user(request.user)
-        data = request.POST
-        fecha_inicio = request.POST.get('inicio')
-        tiempo = request.POST.get('time')
-        materias = request.POST.get('materias')
-
-        # if fecha_inicio != "":
-        #     pass
-        #
-        # if request.POST.get('time') == "":
-        #     messages.error(request, "FALLO")
-
         return redirect('filtros')
-            # carrito = form.save(commit=False)
-            # carrito.prestatario = prestatario
-            # carrito.materia = Materia.objects.get(nombre="Iluminacion")
-            # carrito.final = carrito.inicio + timedelta(days=3)
-            # print(f"xdddddd {carrito.inicio}")
+
 
 class SolicitudView(View):
     def get(self, request):
@@ -100,7 +86,6 @@ class Permisos(View):
                     almacen_group = Group.objects.get(name='almacen')
                     permisos = almacen_group.permissions.all()
 
-
         return render(
             request=request,
             template_name="menu.html",
@@ -121,7 +106,6 @@ class HistorialSolicitudesView(View):
         try:
             solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_CR)
             solicitudes_pendientes_cr.order_by('emision')
-            #print(solicitudes_pendientes_cr.get(lugar=Orden.Ubicacion.EXTERNO))
         except:
             solicitudes_pendientes_cr = None
 
@@ -143,19 +127,17 @@ class HistorialSolicitudesView(View):
         except:
             solicitudes_canceladas = None
 
-
-        context = {'solicitudes_pendientes_ap' : solicitudes_pendientes_ap,
-                   'solicitudes_pendientes_cr' : solicitudes_pendientes_cr,
-                   'solicitudes_aprobadas' : solicitudes_aprobadas,
-                   'solicitudes_rechazadas' : solicitudes_rechazadas,
-                   'solicitudes_canceladas' : solicitudes_canceladas,}
+        context = {'solicitudes_pendientes_ap': solicitudes_pendientes_ap,
+                   'solicitudes_pendientes_cr': solicitudes_pendientes_cr,
+                   'solicitudes_aprobadas': solicitudes_aprobadas,
+                   'solicitudes_rechazadas': solicitudes_rechazadas,
+                   'solicitudes_canceladas': solicitudes_canceladas, }
 
         return render(
             request=request,
             template_name="historial_solicitudes.html",
             context=context,
         )
-
 
 
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -224,8 +206,3 @@ def test(request):
     )
 
     return HttpResponse("OK")
-
-
-
-
-    
