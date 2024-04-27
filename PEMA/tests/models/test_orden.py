@@ -1,9 +1,10 @@
 from datetime import datetime
+from random import shuffle
 
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia, AutorizacionEstado
+from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia, AutorizacionEstado, CorresponsableOrden
 
 
 class TestOrden(TestCase):
@@ -80,3 +81,38 @@ class TestOrden(TestCase):
 
         # Verificar que la orden ha sido marcada como entregada
         self.assertTrue(self.orden.entregada())
+
+
+    def test_estado_corresponsables(self):
+        # definir usuarios
+        prest1 = Prestatario.crear_usuario("P1", "password")
+        prest2 = Prestatario.crear_usuario("P2", "password")
+
+        self.orden.agregar_corresponsable(prest2)
+        self.orden.agregar_corresponsable(prest1)
+
+        autorizaciones_corresponsables = CorresponsableOrden.objects.all()
+
+        # CorresponsableOrden
+        self.assertEqual(autorizaciones_corresponsables.count(), 2)
+
+        # default
+        self.assertEqual(self.orden.estado_corresponsables(), AutorizacionEstado.PENDIENTE)
+
+        # uno rechaza
+        cualquiera = autorizaciones_corresponsables.first()
+        cualquiera.estado = AutorizacionEstado.RECHAZADA
+        cualquiera.save()
+
+        self.assertEqual(self.orden.estado_corresponsables(), AutorizacionEstado.RECHAZADA)
+
+        # todos autorizan
+        autorizaciones_corresponsables.update(estado=AutorizacionEstado.ACEPTADA)
+        self.assertEqual(self.orden.estado_corresponsables(), AutorizacionEstado.ACEPTADA)
+
+        # autorizaciones_corresponsables.update(estado=AutorizacionEstado.ACEPTADA)
+
+
+
+
+
