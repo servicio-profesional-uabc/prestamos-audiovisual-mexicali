@@ -468,8 +468,7 @@ class Articulo(models.Model):
 
         :returns: Unidades disponibles en el rango especificado.
         """
-        ordenesP = Orden.objects.filter(estado="AP") | Orden.objects.filter(estado="PA") | Orden.objects.filter(
-            estado="PC")
+        ordenesP = Orden.objects.filter(estado__in=["AP", "PA", "PC"], materia__in=self.materias())
         ordenesAprobadas = ordenesP.filter(materia__in=self.materias())
         unidadesConflicto = []
         idConflicto = []

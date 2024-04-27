@@ -116,4 +116,3 @@ def autorizacion_orden_created(sender, instance, created, **kwargs):
               message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
                       "prueba fue exitosa. Atentamente, Galindo.", from_email=settings.EMAIL_HOST_USER,
               fail_silently=False, recipient_list=["egalindo54@uabc.edu.mx"])
-
