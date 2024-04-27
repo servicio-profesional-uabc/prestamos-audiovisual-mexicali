@@ -58,9 +58,10 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
     orden = instance.orden
 
     if created:
-        # si el registro se crea
+        # si el registro se crea, no hace nada
         return
 
+    # si el registro se modifica
     # verificar las respuestas de los corresponsables
     match orden.estado_corresponsables():
         case AutorizacionEstado.ACEPTADA:
@@ -79,9 +80,10 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
 def autorizacion_orden_updated(sender, instance, created, **kwargs):
     # TODO: faltan pruebas unitarias para este trigger
 
-    if created:  # si la autorización cambia de estado
+    if created:  # si la autorización se crea
         return
 
+    # si la autorización cambia de estado
     if instance.aceptada():
         instance.orden.autorizar()
 

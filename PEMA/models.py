@@ -6,6 +6,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -464,19 +465,32 @@ class Articulo(models.Model):
 
         :returns: Unidades disponibles en el rango especificado.
         """
-        ordenesP = Orden.objects.filter(
-            estado__in=[EstadoOrden.APROBADA, EstadoOrden.PENDIENTE_AP, EstadoOrden.PENDIENTE_CR,
-                        EstadoOrden.ENTREGADA], materia__in=self.materias())
 
-        ordenesAprobadas = ordenesP.filter(materia__in=self.materias())
-        unidadesConflicto = []
+        ordenesP = Orden.objects.filter(
+            # filtrar materias para las que está disponible el artículo
+            materia__in=self.materias(),
+
+            # filtrar si ya está resevado o entregado el artículo
+            estado__in=[
+                EstadoOrden.APROBADA,
+                EstadoOrden.PENDIENTE_AP,
+                EstadoOrden.PENDIENTE_CR,
+                EstadoOrden.ENTREGADA
+            ],
+        )
+
+        unidadesConflicto = ordenesP.filter((
+            # extraer ordenes que colisionan
+            Q(inicio=inicio) |
+            Q(final=final) |
+            Q(inicio__lt=inicio, final__gt=inicio) |
+            Q(inicio__lt=final, final__gt=final) |
+            Q(inicio__gt=inicio, final__lt=final)
+        ))
+
         idConflicto = []
-        for ord in ordenesAprobadas:
-            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio < ord.final) or (
-                    ord.inicio < final < ord.final) or (ord.inicio > inicio and ord.final < final)):
-                unidadesConflicto.append(ord.unidades())
         for unid in unidadesConflicto:
-            for unidad in unid:
+            for unidad in unid.unidades():
                 idConflicto.append(unidad.num_control)
 
         idUnidadesArticulo = []
