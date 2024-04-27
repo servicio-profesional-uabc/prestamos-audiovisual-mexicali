@@ -11,7 +11,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion
+from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion, CorresponsableOrden
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -390,11 +390,12 @@ class OrdenesDevueltasView(View):
 
 class PrincipalAlmacenView(View):
     def get(self, request):
-        orden = Orden.objects.filter(estado=Orden.Estado.APROBADA)
+        ordenes_aprobadas = Orden.objects.filter(estado=EstadoOrden.APROBADA)
+
+        print("ESTOOO",ordenes_aprobadas)  # Comprueba si obtienes resultados aquí
 
         return render(
             request=request,
             template_name="almacen_permisos/principal.html",
-            context={"orden": orden}
-
+            context={"ordenes": ordenes_aprobadas}
         )

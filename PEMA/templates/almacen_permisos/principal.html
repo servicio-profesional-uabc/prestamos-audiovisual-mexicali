@@ -72,11 +72,11 @@
   </div>
 </nav>
 
-<div class="container">
-    <table class="table-hover">
+<div class="container mt-auto">
+    <table class="table table-hover">
         <thead>
             <tr>
-                <th scope="col">Orden</th>
+                <th scope="col">ID</th>
                 <th scope="col">Productos</th>
                 <th scope="col">Estado</th>
                 <th scope="col">Comienzo</th>
@@ -84,13 +84,19 @@
             </tr>
         </thead>
         <tbody>
-            {% for articulo in orden.articulos.all%}
+            {% for orden in ordenes %}
                 <tr>
-                    <th scope="row">{{ articulo.id }}</th>
-                    <td>{{ articulo.productos }}</td>
-                    <td>{{ articulo.estado }}</td>
-                    <td>{{ articulo.inicio }}</td>
-                    <td>{{ articulo.final }}</td>
+                    <td>{{ orden.id }}</td>
+                    <td>
+                        <ul>
+                            {% for articulo in orden.articulos.all %}
+                                <li>{{ articulo }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ orden.estado }}</td>
+                    <td>{{ orden.inicio }}</td>
+                    <td>{{ orden.final }}</td>
                 </tr>
             {% endfor %}
         </tbody>
