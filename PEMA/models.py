@@ -456,7 +456,7 @@ class Articulo(models.Model):
 
         return Unidad.objects.get_or_create(articulo=self, num_control=num_control, num_serie=num_serie)
 
-    def disponible(self, inicio, final) -> 'QuerySet[Unidad]':
+    def disponible(self, inicio, final) -> QuerySet['Unidad']:
         """
         Lista con las unidades disponibles en el rango [inicio, final].
 
@@ -466,7 +466,7 @@ class Articulo(models.Model):
         :returns: Unidades disponibles en el rango especificado.
         """
 
-        ordenesP = Orden.objects.filter(
+        ordenes_reservadas = Orden.objects.filter(
             # filtrar materias para las que está disponible el artículo
             materia__in=self.materias(),
 
@@ -477,28 +477,24 @@ class Articulo(models.Model):
                 EstadoOrden.PENDIENTE_CR,
                 EstadoOrden.ENTREGADA
             ],
+
+            # Ordenes con el artículo
+            _unidades__in=self.unidades()
         )
 
-        unidadesConflicto = ordenesP.filter((
+        ordenes_conflicto = ordenes_reservadas.filter((
             # extraer ordenes que colisionan
-            Q(inicio=inicio) |
-            Q(final=final) |
-            Q(inicio__lt=inicio, final__gt=inicio) |
-            Q(inicio__lt=final, final__gt=final) |
-            Q(inicio__gt=inicio, final__lt=final)
+                Q(inicio=inicio) |
+                Q(final=final) |
+                Q(inicio__lt=inicio, final__gt=inicio) |
+                Q(inicio__lt=final, final__gt=final) |
+                Q(inicio__gt=inicio, final__lt=final)
         ))
 
-        idConflicto = []
-        for unid in unidadesConflicto:
-            for unidad in unid.unidades():
-                idConflicto.append(unidad.num_control)
+        unidades_conflicto = Unidad.objects.filter(orden__in=ordenes_conflicto)
 
-        idUnidadesArticulo = []
-        for u in self.unidades():
-            idUnidadesArticulo.append(u.num_control)
+        return self.unidades().exclude(id__in=unidades_conflicto)
 
-        return self.unidades().difference(
-            Unidad.objects.filter(num_control__in=idConflicto).filter(num_control__in=idUnidadesArticulo))
 
     def categorias(self) -> QuerySet['Categoria']:
         """Devuelve la lista de categorías en las que pertenece el artículo."""
