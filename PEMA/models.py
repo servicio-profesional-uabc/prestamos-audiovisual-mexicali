@@ -466,6 +466,8 @@ class Articulo(models.Model):
         :returns: Unidades disponibles en el rango especificado.
         """
 
+        # fokin sheet
+
         ordenes_reservadas = Orden.objects.filter(
             # filtrar si ya está resevado o entregado el artículo
             estado__in=[
