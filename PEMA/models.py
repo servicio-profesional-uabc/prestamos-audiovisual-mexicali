@@ -468,7 +468,8 @@ class Articulo(models.Model):
 
         :returns: Unidades disponibles en el rango especificado.
         """
-        ordenesP = Orden.objects.filter(estado="AP") | Orden.objects.filter(estado="PA") | Orden.objects.filter(estado="PC")
+        ordenesP = Orden.objects.filter(estado="AP") | Orden.objects.filter(estado="PA") | Orden.objects.filter(
+            estado="PC")
         ordenesAprobadas = ordenesP.filter(materia__in=self.materias())
         unidadesConflicto = []
         idConflicto = []
@@ -630,14 +631,15 @@ class Orden(models.Model):
         Actualiza el estado de la orden para indicar que se le entregó
         el equipo al Prestatario.
         """
-        if (self.estado == EstadoOrden.CANCELADA
-                or self.estado == EstadoOrden.RECHAZADA
-                or self.estado == EstadoOrden.DEVUELTA):
+        if self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.RECHAZADA or self.estado == EstadoOrden.DEVUELTA:
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
         self.estado = EstadoOrden.ENTREGADA
         self.save()
+
+    def corresponsables(self) -> QuerySet['Prestatario']:
+        return self._corresponsables.all()
 
     def agregar_corresponsable(self, prestatario: 'Prestatario'):
         self._corresponsables.add(prestatario)
@@ -676,17 +678,17 @@ class Orden(models.Model):
         corresponsables_orden = CorresponsableOrden.objects.filter(orden=self)
         estados = set([orden.estado for orden in corresponsables_orden])
 
-        if CorresponsableOrden.Estado.RECHAZADA in estados:
+        if AutorizacionEstado.RECHAZADA in estados:
             # Sí alguno de los corresponsables rechazo la orden
-            return CorresponsableOrden.Estado.RECHAZADA
+            return AutorizacionEstado.RECHAZADA
 
-        if CorresponsableOrden.Estado.PENDIENTE in estados:
+        if AutorizacionEstado.PENDIENTE in estados:
             # Si todavía faltán corresponsables de aceptar
-            return CorresponsableOrden.Estado.PENDIENTE
+            return AutorizacionEstado.PENDIENTE
 
-        if len(estados) == 1 and CorresponsableOrden.Estado.ACEPTADA in estados:
+        if len(estados) == 1 and AutorizacionEstado.ACEPTADA in estados:
             # Si todos los corresponsables aceptaron
-            return CorresponsableOrden.Estado.ACEPTADA
+            return AutorizacionEstado .ACEPTADA
 
         # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
 
@@ -765,10 +767,6 @@ class Carrito(models.Model):
         # TODO: implementar este metodo
         pass
 
-    def crear_orden(self):
-        return Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
-                                    final=self.final)
-
     def ordenar(self) -> Exception:
         """
         Convierte el carrito en una orden (Transacción).
@@ -778,8 +776,14 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
         try:
             with transaction.atomic():
-                orden = self.crear_orden()
+                orden = Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
+                                             final=self.final)
 
+                # agregar corresponsables del carrito a la orden
+                for corresponsable in self._corresponsables.all():
+                    orden.agregar_corresponsable(corresponsable)
+
+                # agregar unidades
                 for articuloCarrito in self.articulos_carrito():
                     unidades = articuloCarrito.articulo.unidades()
                     len_unidades = len(unidades)
@@ -793,15 +797,7 @@ class Carrito(models.Model):
                     for i in range(0, len_unidades):
                         orden.agregar_unidad(unidades[i])
 
-                # agregar a los integrantes de la producción
-                self.agregar_corresponsable(self.prestatario)
-
-                for corresponsable in self.corresponsables():
-                    orden.agregar_corresponsable(corresponsable)
-                    CorresponsableOrden.objects.create(prestatario=corresponsable, orden=orden)
-
                 self.delete()
-                # TODO: enviar correo a los Cooresponsables
 
         except Exception as e:
             print(f"Hubo un error, la transacción ha sido cancelada. {str(e)}")
@@ -899,37 +895,38 @@ class Devolucion(models.Model):
 
 # Autorizaciones
 
+class AutorizacionEstado(models.TextChoices):
+    """
+    Opciones para el estado de la orden:
+        * PENDIENTE: Esperando confirmación.
+        * RECHAZADA: Corresponsabilidad rechazada.
+        * ACEPTADA: Corresponsabilidad aceptada.
+    """
+    PENDIENTE = "PN", _("Pendiente")
+    RECHAZADA = "RE", _("Rechazada")
+    ACEPTADA = "AC", _("Aceptada")
+
+
 class Autorizacion(models.Model):
     class Meta:
         abstract = True
 
-    class Estado(models.TextChoices):
-        """
-        Opciones para el estado de la orden:
-            * PENDIENTE: Esperando confirmación.
-            * RECHAZADA: Corresponsabilidad rechazada.
-            * ACEPTADA: Corresponsabilidad aceptada.
-        """
-        PENDIENTE = "PN", _("Pendiente")
-        RECHAZADA = "RE", _("Rechazada")
-        ACEPTADA = "AC", _("Aceptada")
-
-    estado = models.CharField(default=Estado.PENDIENTE, choices=Estado.choices, max_length=2)
+    estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 
     def esta_pendiente(self) -> bool:
-        return self.estado == self.Estado.PENDIENTE
+        return self.estado == AutorizacionEstado.PENDIENTE
 
     def aceptada(self) -> bool:
-        return self.estado == self.Estado.ACEPTADA
+        return self.estado == AutorizacionEstado.ACEPTADA
 
     def rechazada(self) -> bool:
-        return self.estado == self.Estado.RECHAZADA
+        return self.estado == AutorizacionEstado.RECHAZADA
 
     def aceptar(self):
-        self.estado = self.Estado.ACEPTADA
+        self.estado = AutorizacionEstado.ACEPTADA
 
     def rechazar(self):
-        self.estado = self.Estado.RECHAZADA
+        self.estado = AutorizacionEstado.RECHAZADA
 
 
 class AutorizacionOrden(Autorizacion):
@@ -958,6 +955,7 @@ class CorresponsableOrden(Autorizacion):
 
     prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+    estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 
 
 # Clases de relación

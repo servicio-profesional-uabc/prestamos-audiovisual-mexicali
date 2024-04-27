@@ -12,12 +12,7 @@ from PEMA.models import Prestatario, Materia, Carrito, Articulo, Orden, Correspo
 class TestCarrito(TestCase):
     def setUp(self):
         # crear usuario Prestatario
-        Prestatario.crear_grupo()
-        grupo_prestatario = Group.objects.get(name='prestatarios')
-
         self.user = Prestatario.crear_usuario(id=0, username="<USERNAME>", password="<PASSWORD>")
-
-        self.user.groups.add(grupo_prestatario)
 
         # crear materia
         self.materia = Materia.objects.create(nombre="fotografia", year=2022, semestre=1)
@@ -29,6 +24,8 @@ class TestCarrito(TestCase):
         self.carrito = Carrito.objects.create(prestatario=self.user, materia=self.materia,
                                               inicio=make_aware(datetime(2024, 3, 16, 12)),
                                               final=make_aware(datetime(2024, 3, 16, 18)), )
+
+        self.carrito.agregar_corresponsable(self.user)
 
     def test_agregar(self):
         # carrito vacío
