@@ -128,3 +128,12 @@ footer p {
     color: white;
 }
 
+/**Pantalla de autorizacion de solicitud**/
+
+.container-solicitudes {
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
