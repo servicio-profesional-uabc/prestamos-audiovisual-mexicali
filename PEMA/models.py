@@ -142,8 +142,6 @@ class Coordinador(User):
 
     @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
-        # TODO: que hacer si no hay coordinador
-        # TODO: enviar los correos
         for coordinador in Coordinador.objects.all():
             AutorizacionOrden.objects.create(autorizador=coordinador, orden=orden, tipo=orden.tipo)
 
@@ -466,13 +464,16 @@ class Articulo(models.Model):
 
         :returns: Unidades disponibles en el rango especificado.
         """
-        ordenesP = Orden.objects.filter(estado__in=["AP", "PA", "PC"], materia__in=self.materias())
+        ordenesP = Orden.objects.filter(
+            estado__in=[EstadoOrden.APROBADA, EstadoOrden.PENDIENTE_AP, EstadoOrden.PENDIENTE_CR,
+                        EstadoOrden.ENTREGADA], materia__in=self.materias())
+
         ordenesAprobadas = ordenesP.filter(materia__in=self.materias())
         unidadesConflicto = []
         idConflicto = []
         for ord in ordenesAprobadas:
-            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio and ord.final > inicio) or (
-                    ord.inicio < final and ord.final > final) or (ord.inicio > inicio and ord.final < final)):
+            if (ord.inicio == inicio or ord.final == final or (ord.inicio < inicio < ord.final) or (
+                    ord.inicio < final < ord.final) or (ord.inicio > inicio and ord.final < final)):
                 unidadesConflicto.append(ord.unidades())
         for unid in unidadesConflicto:
             for unidad in unid:
