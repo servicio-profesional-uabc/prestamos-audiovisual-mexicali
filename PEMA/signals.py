@@ -25,7 +25,7 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
         CorresponsableOrden.objects.exclude(id__in=instance.corresponsables()).delete()
 
 
-m2m_changed.connect(update_corresponsable_orden, sender=Orden._corresponsables.through)
+# m2m_changed.connect(update_corresponsable_orden, sender=Orden._corresponsables.through)
 
 
 @receiver(post_save, sender=User)
@@ -34,9 +34,7 @@ def user_post_save(sender, instance, created, **kwargs):
     Esta señal se ejecuta cada vez que se guarda un usuario.
 
     Crea un perfil asociado a ese usuario, el cual contiene información
-    adicional para el modelo estándar de usuario de Django. Para obtener
-    más detalles sobre qué datos contiene este perfil, revisa el modelo
-    `Perfil`.
+    adicional para el modelo estándar de usuario de Django.
     """
     if not created:
         return

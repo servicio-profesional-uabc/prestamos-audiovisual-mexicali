@@ -631,8 +631,7 @@ class Orden(models.Model):
         Actualiza el estado de la orden para indicar que se le entregó
         el equipo al Prestatario.
         """
-        if (
-                self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.RECHAZADA or self.estado == EstadoOrden.DEVUELTA):
+        if self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.RECHAZADA or self.estado == EstadoOrden.DEVUELTA:
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
@@ -679,17 +678,17 @@ class Orden(models.Model):
         corresponsables_orden = CorresponsableOrden.objects.filter(orden=self)
         estados = set([orden.estado for orden in corresponsables_orden])
 
-        if CorresponsableOrden.Estado.RECHAZADA in estados:
+        if AutorizacionEstado.RECHAZADA in estados:
             # Sí alguno de los corresponsables rechazo la orden
-            return CorresponsableOrden.Estado.RECHAZADA
+            return AutorizacionEstado.RECHAZADA
 
-        if CorresponsableOrden.Estado.PENDIENTE in estados:
+        if AutorizacionEstado.PENDIENTE in estados:
             # Si todavía faltán corresponsables de aceptar
-            return CorresponsableOrden.Estado.PENDIENTE
+            return AutorizacionEstado.PENDIENTE
 
-        if len(estados) == 1 and CorresponsableOrden.Estado.ACEPTADA in estados:
+        if len(estados) == 1 and AutorizacionEstado.ACEPTADA in estados:
             # Si todos los corresponsables aceptaron
-            return CorresponsableOrden.Estado.ACEPTADA
+            return AutorizacionEstado .ACEPTADA
 
         # TODO: ¿Qué hacer sí ocurre un error?, En mi opinión se debería enviar un correo al administrador
 
