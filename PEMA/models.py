@@ -759,13 +759,11 @@ class Carrito(models.Model):
     def articulos_carrito(self):
         return self._articulos.all()
 
-    def articulos(self) -> QuerySet['Articulo']:
+    def articulos(self):
         """
-        Devuelve los artículos en el carrito.
-        :returns: Artículos en el carrito.
+        Devuelve los objetos Articulo que hay en el carrito.
         """
-        # TODO: implementar este metodo
-        pass
+        return Articulo.objects.filter(articulocarrito__carrito=self)
 
     def ordenar(self) -> Exception:
         """

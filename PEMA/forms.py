@@ -1,32 +1,20 @@
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
 from django import forms
-from .models import User, Carrito
-from django import forms
-from django.contrib.auth.hashers import check_password
-from datetime import date
+from .models import Carrito
+
 
 class UserLoginForm(AuthenticationForm):
     """
     Form para login de cualquier usuario User
     """
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'class': '',
-            'placeholder': ''
-        })
-    )
+    username = forms.CharField()
+    password = forms.CharField()
 
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            'class': '',
-            'placeholder': ''
-        })
-    )
 
 # Forms para Filtros/Carrito
 class DateInput(forms.DateInput):
-     input_type = 'date'
+    input_type = 'date'
+
 
 class FiltrosForm(forms.ModelForm):
     """

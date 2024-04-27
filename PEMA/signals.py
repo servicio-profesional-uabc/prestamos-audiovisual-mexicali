@@ -117,8 +117,3 @@ def autorizacion_orden_created(sender, instance, created, **kwargs):
                       "prueba fue exitosa. Atentamente, Galindo.", from_email=settings.EMAIL_HOST_USER,
               fail_silently=False, recipient_list=["egalindo54@uabc.edu.mx"])
 
-
-post_save.connect(user_post_save, sender=User)
-post_save.connect(corresponsable_orden_updated, sender=CorresponsableOrden)
-post_save.connect(autorizacion_orden_created, sender=AutorizacionOrden)
-post_save.connect(autorizacion_orden_updated, sender=AutorizacionOrden)

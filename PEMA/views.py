@@ -1,27 +1,15 @@
-from django.contrib.auth import authenticate, login
-from datetime import timedelta
-from django.utils import timezone
-from django.shortcuts import render, redirect, get_object_or_404
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseNotAllowed
-from django.http import HttpResponse
-from django.http import HttpResponseBadRequest
-from django.http import HttpResponseRedirect
-from django.views import View
-from django.core.mail import send_mail
 from django.conf import settings
-from django.http import HttpResponse
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
+from django.shortcuts import render
+from django.views import View
 
 from .forms import FiltrosForm
-from .models import Orden, User, Prestatario, EstadoOrden, Materia, Carrito
-
-from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion
-from django.urls import reverse
-from django.shortcuts import redirect
-from django.utils import timezone
-from django.db import IntegrityError
+from .models import Orden, Prestatario, Group, EstadoOrden
 
 
 class IndexView(View):

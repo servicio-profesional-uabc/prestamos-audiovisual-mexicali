@@ -1,9 +1,10 @@
 from datetime import datetime
+from random import shuffle
 
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia
+from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia, AutorizacionEstado, CorresponsableOrden
 
 
 class TestOrden(TestCase):
@@ -62,3 +63,56 @@ class TestOrden(TestCase):
         # verificar que una orden no se puede reportar 2 veces
         self.orden.reportar(almacen=almacen, descripcion="Nada")
         self.assertEqual(len(Reporte.objects.filter(orden=self.orden)), 1)
+
+    def test_entregada(self):
+        # La orden no está marcada como entregada inicialmente
+        self.assertFalse(self.orden.entregada())
+
+        # Marcar la orden como entregada
+        self.orden.entregar(self.almacen)
+        self.assertTrue(self.orden.entregada())
+
+    def test_entregar(self):
+        # La orden no está marcada como entregada inicialmente
+        self.assertFalse(self.orden.entregada())
+
+        # Marcar la orden como entregada
+        self.orden.entregar(self.almacen)
+
+        # Verificar que la orden ha sido marcada como entregada
+        self.assertTrue(self.orden.entregada())
+
+
+    def test_estado_corresponsables(self):
+        # definir usuarios
+        prest1 = Prestatario.crear_usuario("P1", "password")
+        prest2 = Prestatario.crear_usuario("P2", "password")
+
+        self.orden.agregar_corresponsable(prest2)
+        self.orden.agregar_corresponsable(prest1)
+
+        autorizaciones_corresponsables = CorresponsableOrden.objects.all()
+
+        # CorresponsableOrden
+        self.assertEqual(autorizaciones_corresponsables.count(), 2)
+
+        # default
+        self.assertEqual(self.orden.estado_corresponsables(), AutorizacionEstado.PENDIENTE)
+
+        # uno rechaza
+        cualquiera = autorizaciones_corresponsables.first()
+        cualquiera.estado = AutorizacionEstado.RECHAZADA
+        cualquiera.save()
+
+        self.assertEqual(self.orden.estado_corresponsables(), AutorizacionEstado.RECHAZADA)
+
+        # todos autorizan
+        autorizaciones_corresponsables.update(estado=AutorizacionEstado.ACEPTADA)
+        self.assertEqual(self.orden.estado_corresponsables(), AutorizacionEstado.ACEPTADA)
+
+        # autorizaciones_corresponsables.update(estado=AutorizacionEstado.ACEPTADA)
+
+
+
+
+
