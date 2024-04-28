@@ -9,9 +9,8 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.views import View
 
-from .forms import FiltrosForm
-from .models import Orden, Prestatario, EstadoOrden, Carrito
-
+from .forms import FiltrosForm, ActualizarPerfil
+from .models import Orden, Prestatario, EstadoOrden
 
 class IndexView(View):
     def get(self, request):
@@ -21,13 +20,49 @@ class IndexView(View):
         )
 
 
+class ActualizarPerfilView(LoginRequiredMixin, View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': ActualizarPerfil(),
+            }
+        )
+
+    def post(self, request):
+        form = ActualizarPerfil(request.POST)
+
+        if form.is_valid():
+            user = request.user
+            u = User.objects.get(username=user.username)
+            u.email = form.cleaned_data['email']
+            u.save()
+
+            form.save()
+            return HttpResponse("Exito")
+
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': form,
+            }
+        )
+
+
+
 class MenuView(View, LoginRequiredMixin):
     def get(self, request):
-        matricula = request.user.username
+
+        #if not request.user.email:
+            # el usuario tiene datos incompletos
+        #    return redirect('actualizar_perfil')
+
         return render(
             request=request,
             template_name="menu.html",
-            context={'matricula': matricula, 'user': request.user}
+            context={'matricula': request.user.username, 'user': request.user}
         )
 
     def post(self, request):

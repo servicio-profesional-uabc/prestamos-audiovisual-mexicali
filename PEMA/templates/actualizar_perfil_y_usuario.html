@@ -1,0 +1,7 @@
+{% load widget_tweaks %}
+
+<form method="POST" action="{% url 'filtros' %}">
+    {% csrf_token %}
+    {{ form_actualizar_perfil }}
+    <input type="submit">
+</form>
