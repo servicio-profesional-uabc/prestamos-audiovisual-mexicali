@@ -1,18 +1,16 @@
-from datetime import timedelta, datetime, date
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.utils.timezone import make_aware
 from django.views import View
 
-from .forms import FiltrosForm
-from .models import Orden, Prestatario, Group, EstadoOrden, Carrito
+from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
 class IndexView(View):
@@ -23,13 +21,55 @@ class IndexView(View):
         )
 
 
+class ActualizarPerfilView(LoginRequiredMixin, View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': ActualizarPerfil(),
+                'form_actualizar_usuario': UpdateUserForm(),
+            }
+        )
+
+    def post(self, request):
+        perfil, _ = Perfil.user_data(user=request.user)
+
+        perfil_form = ActualizarPerfil(request.POST, instance=perfil)
+        usuario = UpdateUserForm(request.POST, instance=request.user)
+
+        print("1")
+
+        if perfil_form.is_valid() and usuario.is_valid():
+            print("2")
+            perfil_form.save()
+            usuario.save()
+            return HttpResponse("Exito")
+
+        print("3")
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': perfil_form,
+                'form_actualizar_usuario': usuario,
+            }
+        )
+
+
+
 class MenuView(View, LoginRequiredMixin):
     def get(self, request):
-        matricula = request.user.username
+
+        # Trabajo en proceso
+        #if not request.user.email:
+            # el usuario tiene datos incompletos
+            #return redirect('actualizar_perfil')
+
         return render(
             request=request,
             template_name="menu.html",
-            context={'matricula': matricula, 'user': request.user}
+            context={'matricula': request.user.username, 'user': request.user}
         )
 
     def post(self, request):
@@ -46,31 +86,26 @@ class CarritoView(View):
 
 class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
-        prestatario = Prestatario.get_user(request.user)
-        form = FiltrosForm()
-
         return render(
             request=request,
             template_name="filtros.html",
             context={
-                'prestatario': prestatario,
-                'form': form
+                'form': FiltrosForm()
             },
         )
 
     def post(self, request):
-        prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
         if form.is_valid():
             carrito = form.save(commit=False)
-            carrito.prestatario = prestatario
+            carrito.prestatario = request.user
             carrito.save()
-            messages.success(request, 'El filtro para tu orden se ha creado exitosamente.')
+            return redirect("catalogo")
 
         return render(
             request=request,
-            context={'prestatario': prestatario, 'form': form},
+            context={'form': form},
             template_name="filtros.html",
         )
 

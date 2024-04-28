@@ -769,7 +769,7 @@ class Carrito(models.Model):
     :ivar final: Fecha de devolución del préstamo.
     """
 
-    prestatario = models.OneToOneField(to=Prestatario, on_delete=models.CASCADE)
+    prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
