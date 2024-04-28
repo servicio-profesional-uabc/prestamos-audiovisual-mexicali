@@ -64,7 +64,7 @@ class FiltrosView(View, LoginRequiredMixin):
 
         if form.is_valid():
             carrito = form.save(commit=False)
-            form.prestatario = prestatario
+            carrito.prestatario = prestatario
             carrito.save()
             messages.success(request, 'El filtro para tu orden se ha creado exitosamente.')
 

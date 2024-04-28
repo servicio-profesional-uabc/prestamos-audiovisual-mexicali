@@ -24,11 +24,6 @@ class FiltrosForm(forms.ModelForm):
     """
     Form para filtrar catalogo/carrito
     """
-
-    class Meta:
-        model = Carrito
-        fields = ['inicio', 'materia']
-
     materia = forms.ModelChoiceField(required=True, queryset=Materia.objects.all())
 
     duracion = forms.ChoiceField(required=True, choices=(
@@ -69,25 +64,10 @@ class FiltrosForm(forms.ModelForm):
         ('20:00:00', '8:00 PM'),
     ))
 
-    def clean_inicio(self):
-        # [x] Agregar fecha inicio agregarle su hora de inicio
-        # [x] Sumarle la duracion de horas a dicha fecha
-        # [X] Validar que sea elegido en fecha sea 3 dias de anticipacion
-        # [X] Validar que inicio sea entre semana (no importa que pase por fin eso se hace extra al hacer solicitud)
-        # [X] Guardar dicha fecha final en la variable final de carrito
-
-        # Si fecha de inicio de préstamo es antes de los tres días de anticipación mostrar error.
-        inicio = self.cleaned_data.get('inicio')
+    def clean_hora_inicio(self):
         hora_inicio = self.cleaned_data.get('hora_inicio')
         duracion = self.cleaned_data.get('duracion')
-
-        print(hora_inicio)
-
-        if inicio.date().weekday() >= 5:
-            raise forms.ValidationError("Por favor elija fecha de inicio de préstamo entre semana.")
-
-        if inicio.date() < (date.today() + timedelta(days=3)):
-            raise forms.ValidationError("Por favor elija una fecha tres días a partir de hoy.")
+        inicio = self.cleaned_data.get('inicio')
 
         hora_inicio_datetime = datetime.strptime(hora_inicio, '%H:%M:%S')
         hora = datetime.time(hora_inicio_datetime)
@@ -106,4 +86,28 @@ class FiltrosForm(forms.ModelForm):
             raise forms.ValidationError(
                 'La fecha de devolución del préstamo es en fin de semana. Intente de nuevo cambiándo la duración del préstamo.')
 
+        return hora_inicio
+
+
+    def clean_inicio(self):
+        # [x] Agregar fecha inicio agregarle su hora de inicio
+        # [x] Sumarle la duracion de horas a dicha fecha
+        # [X] Validar que sea elegido en fecha sea 3 dias de anticipacion
+        # [X] Validar que inicio sea entre semana (no importa que pase por fin eso se hace extra al hacer solicitud)
+        # [X] Guardar dicha fecha final en la variable final de carrito
+
+        # Si fecha de inicio de préstamo es antes de los tres días de anticipación mostrar error.
+        inicio = self.cleaned_data.get('inicio')
+
+        if inicio.date().weekday() >= 5:
+            raise forms.ValidationError("Por favor elija fecha de inicio de préstamo entre semana.")
+
+        if inicio.date() < (date.today() + timedelta(days=3)):
+            raise forms.ValidationError("Por favor elija una fecha tres días a partir de hoy.")
+
+
         return inicio
+
+    class Meta:
+        model = Carrito
+        fields = ['inicio', 'materia']
