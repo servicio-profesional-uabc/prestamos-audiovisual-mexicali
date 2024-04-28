@@ -14,6 +14,7 @@ from django.views import View
 from .forms import FiltrosForm
 from .models import Orden, Prestatario, Group, EstadoOrden, Carrito
 
+
 class IndexView(View):
     def get(self, request):
         return render(
@@ -46,23 +47,24 @@ class CarritoView(View):
 class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
-
-        form = FiltrosForm(prestatario)
+        form = FiltrosForm()
 
         return render(
             request=request,
-            context={'prestatario': prestatario, 'form': form},
             template_name="filtros.html",
+            context={
+                'prestatario': prestatario,
+                'form': form
+            },
         )
 
     def post(self, request):
-
         prestatario = Prestatario.get_user(request.user)
-        form = FiltrosForm(prestatario, request.POST)
+        form = FiltrosForm(request.POST)
 
         if form.is_valid():
             carrito = form.save(commit=False)
-            form.prestatario = prestatario
+            carrito.prestatario = prestatario
             carrito.save()
             messages.success(request, 'El filtro para tu orden se ha creado exitosamente.')
 
