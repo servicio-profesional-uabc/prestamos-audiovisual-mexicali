@@ -24,6 +24,24 @@
 <div class="container text-center mt-3 justify-content-center">
     <form method="POST" action="{% url 'filtros' %}" >
         {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="errors">
+                <h3>Errores encontrados:</h3>
+                <ul>
+                    {% for field, error_list in form.errors.items %}
+                        {% for error in error_list %}
+                            <li>{{ field }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+    {{ form }}
+
+    {% comment %}
+
         <h5 class="mt-2">Seleccionar materia y duración del préstamo</h5>
         <div class="row mb-4 mt-2">
             <div class="col me-3">
@@ -36,14 +54,7 @@
         <div class="row mb-4 mt-2">
             <h5>Selecciona la fecha</h5>
             {% render_field form.inicio type="date" class="form-control" placeholder="selecciona una fecha de inicio" %}
-{#            <div class="col d-flex align-items-center justify-content-center">#}
-{#                <input#}
-{#                        type="date"#}
-{#                        id="inicio"#}
-{#                        name="inicio"#}
-{#                        required#}
-{#                />#}
-{#            </div>#}
+
         </div>
         <div class="row mb-5">
             <h5>Selecciona la hora</h5>
@@ -76,7 +87,10 @@
                     </div>
                 </div>
             </div>
-        </div>
+              </div>
+
+                {% endcomment %}
+ <button type="submit" class="btn btn-danger">Continuar</button>
     </form>
 
 {#    <script>#}

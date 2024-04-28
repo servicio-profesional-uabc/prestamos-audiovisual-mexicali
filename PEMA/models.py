@@ -374,7 +374,7 @@ class Materia(models.Model):
 
     _articulos = models.ManyToManyField(to='Articulo', blank=True)
     _alumnos = models.ManyToManyField(to=User, blank=True)
-    _maestros = models.ManyToManyField(to=Maestro, blank=False, related_name='materias_profesor')
+    _maestros = models.ManyToManyField(to=User, blank=False, related_name='materias_profesor')
 
     def alumnos(self) -> QuerySet['User']:
         """
