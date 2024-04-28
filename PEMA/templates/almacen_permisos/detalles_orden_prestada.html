@@ -63,9 +63,9 @@
                     ¿Desea marcar el préstamo como devuelto?
                 </div>
                 <div class="modal-footer">
-                    <form action="{% url 'ordenes_devueltas' id=orden.id%}" method="GET" name="devolucionOrden">
-                        {% csrf_token %}
-                        <input type="hidden" name="id" value="{{ orden.id }}">
+                                <form action="{% url 'cambiar_estado_d' orden.id 'DEVUELTO' %}" method="POST" name="devueltoOrden">
+                                {% csrf_token %}
+                                <input type="hidden" name="orden_id" value="{{ orden.id }}">
                         <button type="submit" class="btn btn-danger">Marcar como Devuelto</button>
                     </form>
                 </div>

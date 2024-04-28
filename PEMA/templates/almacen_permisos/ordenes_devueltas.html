@@ -1,47 +1,114 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block content %}
-<head>
-    <title>Ordenes devuelta</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-<div class="container mt-5 order-details-container text-center">
-    <h4 style="font-size: 28px;">Ordenes devuelta</h4>
-    <hr class="hr"/>
-    {% if ordenes_devueltas %}
-        <table class="table table-responsive table-bordered table-striped mx-auto mt-4 " style="max-width: 500px;">
-            <thead>
-            </thead>
-            <tbody>
-            {% for solicitud in ordenes_devueltas %}
+
+  <body>
+
+  <nav class="navbar navbar-expand-lg bg-body-tertiary" >
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="principal">Ordenes autorizadas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="ordenes_devueltas">Ordenes devueltas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="ordenes_prestadas">Ordenes prestadas</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="ordenes_reportadas">Ordenes reportada</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<nav class="navbar">
+  <div class="container-fluid">
+    <ul class="nav">
+      <li class="nav-item">
+        <form class="d-flex" role="search">
+          <input class="form-control me-auto" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Productos
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#">Action</a></li>
+          <li><a class="dropdown-item" href="#">Another action</a></li>
+          <li><a class="dropdown-item" href="#">Something else here</a></li>
+        </ul>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Estado
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#">Action</a></li>
+          <li><a class="dropdown-item" href="#">Another action</a></li>
+          <li><a class="dropdown-item" href="#">Something else here</a></li>
+        </ul>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Vencido
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#">Action</a></li>
+          <li><a class="dropdown-item" href="#">Another action</a></li>
+          <li><a class="dropdown-item" href="#">Something else here</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container mt-auto">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Productos</th>
+                <th scope="col">Prestatario</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Comienzo</th>
+                <th scope="col">Final</th>
+                <th scope="col">Detalles</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for orden in ordenes %}
                 <tr>
-                    <td class="d-flex">
-                        <form method="POST" action="{% url 'detalles_orden_devuelta' id=solicitud.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary btn-lg btn-block">Ver Detalles de la Solicitud {{ orden.id }}</button>
-                        </form>
+                    <td>{{ orden.id }}</td>
+                    <td>
+                        <ul>
+                            {% for articulo in orden.articulos.all %}
+                                <li>{{ articulo }}</li>
+                            {% endfor %}
+                        </ul>
                     </td>
+                    <td>{{ orden.prestatario }}</td>
+                    <td>{{ orden.estado }}</td>
+                    <td>{{ orden.inicio }}</td>
+                    <td>{{ orden.final }}</td>
+                    <td><a href="{% url 'detalles_orden_devuelta' id=orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
                 </tr>
             {% endfor %}
-            <!-- Agrega la nueva fila para la solicitud aquí -->
-
-            </tbody>
-        </table>
-    {% else %}
-        <p>No tienes reportes.</p>
-    {% endif %}
+        </tbody>
+    </table>
 </div>
 
-        <div class="justify-content-center text-center">
-            <a href="{% url 'menu' %}" class="btn btn-secondary justify-content-center">Regresar</a>
-        </div>
 
-
-    </div>
-</body>
+  </body>
 </html>
 {% endblock %}
-```

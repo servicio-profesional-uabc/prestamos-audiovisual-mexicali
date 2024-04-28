@@ -3,6 +3,7 @@ from . import views
 from django.views.generic.base import TemplateView
 from . forms import UserLoginForm
 from django.contrib.auth.views import LoginView, LogoutView
+from .views import cambiar_estado_ENTREGADO
 
 
 urlpatterns = [
@@ -80,11 +81,6 @@ urlpatterns = [
         name='recuperar_contrasena'
     ),
 
-    path(
-        route='ordenes_autorizadas',
-        view=views.OrdenesAutorizadasView.as_view(),
-        name='ordenes_autorizadas'
-    ),
     path(
         route='detalles_orden_autorizada/<int:id>/',
         view=views.DetallesOrdenAutorizadaView.as_view(),
@@ -170,5 +166,10 @@ urlpatterns = [
         view=views.PrincipalAlmacenView.as_view(),
         name='principal',
     ),
-
+    path('cambiar_estado/<int:orden_id>/<str:estado>/',
+         view=views.cambiar_estado_ENTREGADO,
+         name='cambiar_estado'),
+    path('cambiar_estado_d/<int:orden_id>/<str:estado>/',
+         view=views.cambiar_estado_DEVUELTO,
+         name='cambiar_estado_d'),
 ]

@@ -119,6 +119,7 @@ USE_TZ = True
 
 STATIC_ROOT = 'static/'
 STATIC_URL = 'static/'
+
 LOGIN_REDIRECT_URL = 'menu'
 LOGOUT_REDIRECT_URL = ''
 

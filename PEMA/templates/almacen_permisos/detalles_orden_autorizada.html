@@ -65,8 +65,9 @@
                         </div>
 
                         <div class="modal-footer">
-                            <form action="{% url 'ordenes_prestadas' id=orden.id %}" method="POST" name="prestarOrden">
+                                <form action="{% url 'cambiar_estado' orden.id 'ENTREGADO' %}" method="POST" name="prestarOrden">
                                 {% csrf_token %}
+                                <input type="hidden" name="orden_id" value="{{ orden.id }}">
                                 <button type="submit" class="btn btn-danger">Prestar</button>
                             </form>
                         </div>
@@ -75,7 +76,7 @@
             </div>
 
         <div class="justify-content-center text-center">
-            <a href="{% url 'ordenes_autorizadas' %}" class="btn btn-secondary justify-content-center">Regresar</a>
+            <a href="{% url 'principal' %}" class="btn btn-secondary justify-content-center">Regresar</a>
         </div>
 
     </main>
