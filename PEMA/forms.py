@@ -1,9 +1,9 @@
 from datetime import date, timedelta, datetime
 
-from django.contrib.auth.forms import AuthenticationForm
 from django import forms
-from .models import Carrito
 from django.contrib.auth.forms import AuthenticationForm
+
+from .models import Carrito, Materia
 from .models import Prestatario
 
 
@@ -25,21 +25,25 @@ class FiltrosForm(forms.ModelForm):
     Form para filtrar catalogo/carrito
     """
 
-    materia = forms.ModelChoiceField(queryset=None, required=True)
+    class Meta:
+        model = Carrito
+        fields = ['inicio', 'materia']
 
-    duracion = forms.ChoiceField(label="Tiempo", required=True, choices=[
+    materia = forms.ModelChoiceField(required=True, queryset=Materia.objects.all())
+
+    duracion = forms.ChoiceField(required=True, choices=(
         (1, "1 hora"),
-        (2, "2 hora"),
-        (3, "3 hora"),
-        (4, "4 hora"),
-        (8, "8 hora"),
+        (2, "2 horas"),
+        (3, "3 horas"),
+        (4, "4 horas"),
+        (8, "8 horas"),
         (24, "1 dia (24h)"),
         (48, "2 dias (48h)"),
         (72, "3 días (72h)"),
         (96, "4 dias (96h)"),
-    ])
+    ))
 
-    hora_inicio = forms.ChoiceField(required=True, choices=[
+    hora_inicio = forms.ChoiceField(required=True, choices=(
         ('09:00:00', '9:00 AM'),
         ('09:30:00', '9:30 AM'),
         ('10:00:00', '10:00 AM'),
@@ -63,19 +67,7 @@ class FiltrosForm(forms.ModelForm):
         ('19:00:00', '7:00 PM'),
         ('19:30:00', '7:30 PM'),
         ('20:00:00', '8:00 PM'),
-    ])
-
-    def __init__(self, user: Prestatario, *args, **kwargs):
-        super(FiltrosForm, self).__init__(*args, **kwargs)
-        self.fields['materia'].queryset = user.materias()
-
-    def clean_hora_inicio(self):
-        hora_inicio = self.cleaned_data.get('hora_inicio', False)
-
-        if bool(hora_inicio):
-            raise forms.ValidationError("Hora inicio no debe estar vacío")
-
-        return hora_inicio
+    ))
 
     def clean_inicio(self):
         # [x] Agregar fecha inicio agregarle su hora de inicio
@@ -94,7 +86,7 @@ class FiltrosForm(forms.ModelForm):
         if inicio.date().weekday() >= 5:
             raise forms.ValidationError("Por favor elija fecha de inicio de préstamo entre semana.")
 
-        if inicio.date() < date.today() + timedelta(days=3):
+        if inicio.date() < (date.today() + timedelta(days=3)):
             raise forms.ValidationError("Por favor elija una fecha tres días a partir de hoy.")
 
         hora_inicio_datetime = datetime.strptime(hora_inicio, '%H:%M:%S')
@@ -115,7 +107,3 @@ class FiltrosForm(forms.ModelForm):
                 'La fecha de devolución del préstamo es en fin de semana. Intente de nuevo cambiándo la duración del préstamo.')
 
         return inicio
-
-    class Meta:
-        model = Carrito
-        fields = ['inicio', 'materia']
