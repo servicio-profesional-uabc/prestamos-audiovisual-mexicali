@@ -22,13 +22,13 @@ class IndexView(View):
         )
 
 
-class MenuView(View):
+class MenuView(View, LoginRequiredMixin):
     def get(self, request):
         matricula = request.user.username
         return render(
             request=request,
             template_name="menu.html",
-            context={'matricula': matricula}
+            context={'matricula': matricula, 'user': request.user}
         )
 
     def post(self, request):
@@ -78,31 +78,6 @@ class SolicitudView(View):
         return render(
             request=request,
             template_name="solicitud.html"
-        )
-
-
-class Permisos(View):
-    def get(self, request):
-        if request.user.is_authenticated:
-            nombre_grupo_perteneciente = request.user.groups.first().name
-            if nombre_grupo_perteneciente:
-                if nombre_grupo_perteneciente == "prestatario":
-                    prestatario_group = Group.objects.get(name='prestatarios')
-                    permisos = prestatario_group.permissions.all()
-                elif nombre_grupo_perteneciente == "maestro":
-                    maestro_group = Group.objects.get(name='maestro')
-                    permisos = maestro_group.permissions.all()
-                elif nombre_grupo_perteneciente == "coordinador":
-                    coordinador_group = Group.objects.get(name='coordinador')
-                    permisos = coordinador_group.permissions.all()
-                elif nombre_grupo_perteneciente == "almacen":
-                    almacen_group = Group.objects.get(name='almacen')
-                    permisos = almacen_group.permissions.all()
-
-        return render(
-            request=request,
-            template_name="menu.html",
-            context={'grupo': nombre_grupo_perteneciente}
         )
 
 
