@@ -1,18 +1,16 @@
-from datetime import timedelta, datetime, date
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.utils.timezone import make_aware
 from django.views import View
 
 from .forms import FiltrosForm
-from .models import Orden, Prestatario, Group, EstadoOrden, Carrito
+from .models import Orden, Prestatario, EstadoOrden, Carrito
 
 
 class IndexView(View):
@@ -46,31 +44,26 @@ class CarritoView(View):
 
 class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
-        prestatario = Prestatario.get_user(request.user)
-        form = FiltrosForm()
-
         return render(
             request=request,
             template_name="filtros.html",
             context={
-                'prestatario': prestatario,
-                'form': form
+                'form': FiltrosForm()
             },
         )
 
     def post(self, request):
-        prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
         if form.is_valid():
             carrito = form.save(commit=False)
-            carrito.prestatario = prestatario
+            carrito.prestatario = request.user
             carrito.save()
-            messages.success(request, 'El filtro para tu orden se ha creado exitosamente.')
+            return redirect("catalogo")
 
         return render(
             request=request,
-            context={'prestatario': prestatario, 'form': form},
+            context={'form': form},
             template_name="filtros.html",
         )
 

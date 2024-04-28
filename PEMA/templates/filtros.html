@@ -22,7 +22,7 @@
 
 
     <div class="container text-center mt-3 justify-content-center">
-        <form method="POST" action=".">
+        <form method="POST" action="{% url 'filtros' %}">
             {% csrf_token %}
 
             {% if form.errors %}
