@@ -9,8 +9,9 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.views import View
 
-from .forms import FiltrosForm, ActualizarPerfil
-from .models import Orden, Prestatario, EstadoOrden
+from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .models import Orden, Prestatario, EstadoOrden, Perfil
+
 
 class IndexView(View):
     def get(self, request):
@@ -27,26 +28,31 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
             template_name="actualizar_perfil_y_usuario.html",
             context={
                 'form_actualizar_perfil': ActualizarPerfil(),
+                'form_actualizar_usuario': UpdateUserForm(),
             }
         )
 
     def post(self, request):
-        form = ActualizarPerfil(request.POST)
+        perfil, _ = Perfil.user_data(user=request.user)
 
-        if form.is_valid():
-            user = request.user
-            u = User.objects.get(username=user.username)
-            u.email = form.cleaned_data['email']
-            u.save()
+        perfil_form = ActualizarPerfil(request.POST, instance=perfil)
+        usuario = UpdateUserForm(request.POST, instance=request.user)
 
-            form.save()
+        print("1")
+
+        if perfil_form.is_valid() and usuario.is_valid():
+            print("2")
+            perfil_form.save()
+            usuario.save()
             return HttpResponse("Exito")
 
+        print("3")
         return render(
             request=request,
             template_name="actualizar_perfil_y_usuario.html",
             context={
-                'form_actualizar_perfil': form,
+                'form_actualizar_perfil': perfil_form,
+                'form_actualizar_usuario': usuario,
             }
         )
 
@@ -55,9 +61,10 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
 class MenuView(View, LoginRequiredMixin):
     def get(self, request):
 
+        # Trabajo en proceso
         #if not request.user.email:
             # el usuario tiene datos incompletos
-        #    return redirect('actualizar_perfil')
+            #return redirect('actualizar_perfil')
 
         return render(
             request=request,

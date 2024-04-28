@@ -1,7 +1,13 @@
 {% load widget_tweaks %}
 
-<form method="POST" action="{% url 'filtros' %}">
+Bienvenido {{ user.username }}!
+
+<form method="POST" action="{% url 'actualizar_perfil' %}">
     {% csrf_token %}
-    {{ form_actualizar_perfil }}
+
+    {% render_field form_actualizar_perfil.telefono type="tel" name="telphone" placeholder="+52 999 999 9999" pattern="+[0-9]{2} [0-9]{3} [0-9]{3} [0-9]{4}" maxlength="12" %}
+
+    {{ form_actualizar_usuario }}
     <input type="submit">
+
 </form>
