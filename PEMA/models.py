@@ -374,7 +374,7 @@ class Materia(models.Model):
 
     _articulos = models.ManyToManyField(to='Articulo', blank=True)
     _alumnos = models.ManyToManyField(to=User, blank=True)
-    _maestros = models.ManyToManyField(to=Maestro, blank=False, related_name='materias_profesor')
+    _maestros = models.ManyToManyField(to=User, blank=False, related_name='materias_profesor')
 
     def alumnos(self) -> QuerySet['User']:
         """
@@ -773,6 +773,7 @@ class Carrito(models.Model):
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
+
     _articulos = models.ManyToManyField(to='ArticuloCarrito', blank=True)
     _corresponsables = models.ManyToManyField(to='Prestatario', blank=True, related_name='corresponsables_carrito')
 
