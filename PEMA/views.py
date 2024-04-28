@@ -185,31 +185,33 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         return redirect("historial_solicitudes")
 
 
-class CatalogoView(View):
+class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
+    """
+    Vista donde el usuario agrega articulos a su carrito.
+    """
+    def test_func(self):
+        """
+        :return: Si prestatario ha comenzado el proceso de carrito (debió haber completado Filtro)
+        """
+        prestatario = Prestatario.get_user(self.request.user)
+        carrito = get_object_or_404(Carrito, prestatario=prestatario)
+        return prestatario == carrito.prestatario
+
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
         categorias = Categoria.objects.all()
         
-        try:
-            articulos = Articulo.objects.filter(materia__in=Prestatario.materias(prestatario))
-            unidades_disponibles = []
-            for articulo in articulos:
-                unidades_disponibles.append(articulo.disponible(make_aware(datetime(2024, 10, 5, 12)), make_aware(datetime(2024, 10, 5, 14))))
+        articulos = Articulo.objects.filter(materia__in=Prestatario.materias(prestatario))
+        unidades_disponibles = []
+        for articulo in articulos:
+            unidades_disponibles.append(articulo.disponible(make_aware(datetime(2024, 10, 5, 12)), make_aware(datetime(2024, 10, 5, 14))))
                 
-        except:
-            articulos = None
-            unidades_disponibles = None
-            
-            
-        context = {'unidades_disponibles' : unidades_disponibles,
-                   'categorias' : categorias
-                   }
-        
-            
         return render(
             request=request,
             template_name="catalogo.html",
-            context=context
+            context={'unidades_disponibles' : unidades_disponibles,
+                     'categorias' : categorias,
+                     }
         )
 
 
