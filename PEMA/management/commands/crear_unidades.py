@@ -3,7 +3,13 @@ from django.contrib.auth.models import User
 from PEMA.models import Prestatario, Orden, Materia, Articulo, Unidad, Categoria
 from django.utils.timezone import make_aware
 from datetime import datetime
+
 from django.conf import settings
+from django.core.management.base import BaseCommand
+from django.utils.timezone import make_aware
+
+
+from PEMA.models import Prestatario, Orden, Materia, Articulo
 
 
 class Command(BaseCommand):
@@ -12,10 +18,10 @@ class Command(BaseCommand):
     Crea ordenes de diferentes estados y usuario para el usuario 117 con password 123
     """
 
-    USERNAME = '115'
+    USERNAME = 'P. Crear Unidades'
     PASSWORD = '123'
     ID = '115'
-    
+
     class ErrorMessages:
         ENVIRONMENT = 'No se puede ejecutar este comando en entornos de producción'
 
@@ -24,10 +30,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(Command.ErrorMessages.ENVIRONMENT))
             return
 
-        try:
-            user = Prestatario.crear_usuario(id=self.ID, username=self.USERNAME, password=self.PASSWORD)
-        except:
-            user = User.objects.get(id=self.ID)
+        user = Prestatario.crear_usuario(id=self.ID, username=self.USERNAME, password=self.PASSWORD)
 
         # materias
         materia1, created = Materia.objects.get_or_create(
@@ -119,7 +122,7 @@ class Command(BaseCommand):
         # Agregar articulo a materia
         materia1.agregar_articulo(articulo1)
         materia1.agregar_articulo(articulo2)
-        
+
         # ordenes
         orden1, created = Orden.objects.get_or_create(
             prestatario=user,
@@ -176,7 +179,7 @@ class Command(BaseCommand):
             materia=materia1,
         )
 
-        #Agregar unidades a las ordenes
+        # Agregar unidades a las ordenes
         orden1.agregar_unidad(unidad1)
         orden2.agregar_unidad(unidad2)
         orden3.agregar_unidad(unidad3)

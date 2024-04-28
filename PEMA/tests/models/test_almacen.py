@@ -18,13 +18,14 @@ class TestCaseAlmacen(TestCase):
 
         # crear orden
         now = make_aware(datetime.datetime.now())
-        self.orden1 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario, inicio=now, final=now, )
-        self.orden2 = Orden.objects.create(materia=self.materia2, prestatario=self.prestatario, inicio=now, final=now, )
+        self.orden1 = Orden.objects.create(prestatario=self.prestatario, materia=self.materia1, inicio=now, final=now, )
+        self.orden2 = Orden.objects.create(prestatario=self.prestatario, materia=self.materia2, inicio=now, final=now, )
 
     def test_get_users(self):
         # obtener usuarios
         usuario_almacen = Almacen.get_user(self.almacen)
-        usuario_no_almacen = Almacen.get_user(self.prestatario)
-
-        self.assertIsNone(usuario_no_almacen, msg="Usuario es almacen")
         self.assertEqual(usuario_almacen, self.almacen, msg="Usuario NO es almacen")
+
+    def test_get_user_no_almacen(self):
+        usuario_no_almacen = Almacen.get_user(self.prestatario)
+        self.assertIsNone(usuario_no_almacen, msg="Usuario es almacen")
