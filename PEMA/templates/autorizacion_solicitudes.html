@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<head>
+    <title>Ordenes por autorizar</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<div class="container-prestamos">
+    <h4>Ordenes de Préstamos para Autorizar</h4>
+    {% if solicitudes and solicitudes|length > 0 %}
+        <ul>
+            {% for solicitud in solicitudes %}
+                <li>
+                    <div>
+                        <h3>{{ solicitud.nombre }}</h3>
+                        <p>Prestatario: {{ solicitud.prestatario.first_name }} {{ solicitud.prestatario.last_name }}</p>
+                        <p>Estado: {{ solicitud.get_estado_display }}</p>
+                        <p>Fecha de solicitud: {{ solicitud.emision }}</p>
+                        <a href="{% url 'autorizar_solicitud' solicitud.id %}" class="btn btn-primary">Autorizar</a>
+                        <a href="{% url 'rechazar_solicitud' solicitud.id %}" class="btn btn-danger">Rechazar</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay solicitudes pendientes para autorizar.</p>
+    {% endif %}
+</div>
+{% endblock %}

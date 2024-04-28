@@ -74,8 +74,11 @@ urlpatterns = [
         view=views.CancelarOrdenView.as_view(),
         name='cancelar_orden'
     ),
-
-
+    path(
+        route='autorizacion_solicitudes',
+        view=views.AutorizacionSolitudView.as_view(),
+        name='autorizacion_solicitudes'
+    ),
 ]
 
 # https://github.com/fabiocaccamo/django-admin-interface/issues/4
