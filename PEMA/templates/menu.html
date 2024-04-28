@@ -4,7 +4,7 @@
 {% block content %}
 <body>
 
-    {% if grupo == "prestatarios" %}
+    {% if user.groups.first.name == "prestatarios" %}
         <div class="container mt-5">
             <div class="row justify-content-center">
                 <div class="col-md-6 mb-3">
@@ -45,7 +45,7 @@
         </div>
 
 
-    {% elif grupo == "maestro" %}
+    {% elif user.groups.first.name == "maestro" %}
         <div class="card" style="width: 18rem;">
           <img src="..." class="card-img-top" alt="...">
           <div class="card-body">
@@ -65,7 +65,7 @@
         </div>
 
 
-    {% elif grupo == "almacen" %}
+    {% elif user.groups.first.name == "almacen" %}
         <div class="container mt-3">
             <div class="row justify-content-center">
                 <div class="col-md-6 mb-3">
@@ -137,7 +137,7 @@
         </div>
 
 
-    {% elif grupo == "coordinador"  %}
+    {% elif user.groups.first.name == "coordinador" %}
         <div class="card" style="width: 18rem;">
           <img src="..." class="card-img-top" alt="...">
           <div class="card-body">

@@ -2,9 +2,25 @@ from datetime import date, timedelta, datetime
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
 
-from .models import Carrito, Materia
-from .models import Prestatario
+from .models import Carrito, Materia, Perfil
+
+
+class UpdateUserForm(forms.ModelForm):
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['email']
+
+
+class ActualizarPerfil(forms.ModelForm):
+    class Meta:
+        model = Perfil
+        fields = ['telefono']
+
+    telefono = forms.CharField(required=True)
 
 
 class UserLoginForm(AuthenticationForm):
@@ -24,6 +40,11 @@ class FiltrosForm(forms.ModelForm):
     """
     Form para filtrar catalogo/carrito
     """
+
+    class Meta:
+        model = Carrito
+        fields = ['inicio', 'materia']
+
     materia = forms.ModelChoiceField(required=True, queryset=Materia.objects.all())
 
     duracion = forms.ChoiceField(required=True, choices=(
@@ -88,7 +109,6 @@ class FiltrosForm(forms.ModelForm):
 
         return hora_inicio
 
-
     def clean_inicio(self):
         # [x] Agregar fecha inicio agregarle su hora de inicio
         # [x] Sumarle la duracion de horas a dicha fecha
@@ -105,9 +125,4 @@ class FiltrosForm(forms.ModelForm):
         if inicio.date() < (date.today() + timedelta(days=3)):
             raise forms.ValidationError("Por favor elija una fecha tres días a partir de hoy.")
 
-
         return inicio
-
-    class Meta:
-        model = Carrito
-        fields = ['inicio', 'materia']
