@@ -1,27 +1,18 @@
-from django.contrib.auth import authenticate, login
-from datetime import timedelta
-from django.utils import timezone
-from django.shortcuts import render, redirect, get_object_or_404
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseNotAllowed
-from django.http import HttpResponse
-from django.http import HttpResponseBadRequest
-from django.http import HttpResponseRedirect
-from django.views import View
-from django.core.mail import send_mail
+from datetime import datetime, timedelta, time
+
 from django.conf import settings
-from django.http import HttpResponse
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-
-from .forms import FiltrosForm
-from .models import Orden, User, Prestatario, EstadoOrden, Materia, Carrito
-
-from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion
-from django.urls import reverse
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
-from django.utils import timezone
-from django.db import IntegrityError
+from django.shortcuts import render
+from django.utils.timezone import make_aware
+from django.views import View
+
+from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
 class IndexView(View):
@@ -31,13 +22,56 @@ class IndexView(View):
             template_name="index.html"
         )
 
-class MenuView(View):
+
+class ActualizarPerfilView(LoginRequiredMixin, View):
+    """
+    Vista para registrar los datos faltantes del usuario
+    """
     def get(self, request):
-        matricula = request.user.username
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': ActualizarPerfil(),
+                'form_actualizar_usuario': UpdateUserForm(),
+            }
+        )
+
+    def post(self, request):
+        perfil = Perfil.user_data(user=request.user)
+
+        perfil_form = ActualizarPerfil(request.POST, instance=perfil)
+        usuario = UpdateUserForm(request.POST, instance=request.user)
+
+        if perfil_form.is_valid() and usuario.is_valid():
+            perfil_form.save()
+            usuario.save()
+            return redirect('menu')
+
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': perfil_form,
+                'form_actualizar_usuario': usuario,
+            }
+        )
+
+
+class MenuView(View, LoginRequiredMixin):
+    def get(self, request):
+        # Todos los usaurios deben tener perfil
+        # TODO: pantalla de error si no existe el Pefil
+        datos_usuario = Perfil.user_data(user=request.user)
+
+        if datos_usuario.incompleto():
+            # el usuario tiene datos incompletos
+            return redirect('actualizar_perfil')
+
         return render(
             request=request,
             template_name="menu.html",
-            context={'matricula':matricula}
+            context={'matricula': request.user.username, 'user': request.user}
         )
 
     def post(self, request):
@@ -51,72 +85,59 @@ class CarritoView(View):
             template_name="carrito.html"
         )
 
-class FiltrosView(View):
+
+class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
-        prestatario = Prestatario.get_user(request.user)
-
-        form = FiltrosForm()
-        context = {
-            'prestatario':prestatario,
-            'form':form,
-        }
-
         return render(
             request=request,
-            template_name="filtros.html"
+            template_name="filtros.html",
+            context={
+                'form': FiltrosForm()
+            },
         )
 
     def post(self, request):
-        prestatario = Prestatario.get_user(request.user)
-        data = request.POST
-        fecha_inicio = request.POST.get('inicio')
-        tiempo = request.POST.get('time')
-        materias = request.POST.get('materias')
+        form = FiltrosForm(request.POST)
 
-        # if fecha_inicio != "":
-        #     pass
-        #
-        # if request.POST.get('time') == "":
-        #     messages.error(request, "FALLO")
+        if form.is_valid():
+            carrito = form.save(commit=False)
+            carrito.prestatario = request.user
+            # [x] Agregar fecha inicio agregarle su hora de inicio
+            # [x] Sumarle la duracion de horas a dicha fecha
+            # [X] Validar que sea elegido en fecha sea 3 dias de anticipacion
+            # [X] Validar que inicio sea entre semana (no importa que pase por fin eso se hace extra al hacer solicitud)
+            # [X] Guardar dicha fecha final en la variable final de carrito
 
-        return redirect('filtros')
-            # carrito = form.save(commit=False)
-            # carrito.prestatario = prestatario
-            # carrito.materia = Materia.objects.get(nombre="Iluminacion")
-            # carrito.final = carrito.inicio + timedelta(days=3)
-            # print(f"xdddddd {carrito.inicio}")
+            # TODO: Hacer operaciones de métodos de Carrito y usar esas esto es temporal (WIP)
+            inicio = form.cleaned_data.get('inicio')
+            hora_inicio = form.cleaned_data.get('hora_inicio')
+            duracion = form.cleaned_data.get('duracion')
+
+            tiempo_duracion = int(duracion)
+
+            # Retorna str entonces convertir a objeto time
+            hora_inicio = datetime.strptime(hora_inicio, '%H:%M:%S').time()
+            fecha_inicio = datetime.combine(inicio, hora_inicio)
+
+            # Guardar fechas actualizadas
+            carrito.inicio = make_aware(fecha_inicio)
+            carrito.final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
+
+            carrito.save()
+            return redirect("catalogo")
+
+        return render(
+            request=request,
+            context={'form': form},
+            template_name="filtros.html",
+        )
+
 
 class SolicitudView(View):
     def get(self, request):
         return render(
             request=request,
             template_name="solicitud.html"
-        )
-
-
-class Permisos(View):
-    def get(self, request):
-        if request.user.is_authenticated:
-            nombre_grupo_perteneciente = request.user.groups.first().name
-            if nombre_grupo_perteneciente:
-                if nombre_grupo_perteneciente == "prestatario":
-                    prestatario_group = Group.objects.get(name='prestatarios')
-                    permisos = prestatario_group.permissions.all()
-                elif nombre_grupo_perteneciente == "maestro":
-                    maestro_group = Group.objects.get(name='maestro')
-                    permisos = maestro_group.permissions.all()
-                elif nombre_grupo_perteneciente == "coordinador":
-                    coordinador_group = Group.objects.get(name='coordinador')
-                    permisos = coordinador_group.permissions.all()
-                elif nombre_grupo_perteneciente == "almacen":
-                    almacen_group = Group.objects.get(name='almacen')
-                    permisos = almacen_group.permissions.all()
-
-
-        return render(
-            request=request,
-            template_name="menu.html",
-            context={'grupo': nombre_grupo_perteneciente}
         )
 
 
@@ -133,7 +154,6 @@ class HistorialSolicitudesView(View):
         try:
             solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_CR)
             solicitudes_pendientes_cr.order_by('emision')
-            #print(solicitudes_pendientes_cr.get(lugar=Orden.Ubicacion.EXTERNO))
         except:
             solicitudes_pendientes_cr = None
 
@@ -155,19 +175,17 @@ class HistorialSolicitudesView(View):
         except:
             solicitudes_canceladas = None
 
-
-        context = {'solicitudes_pendientes_ap' : solicitudes_pendientes_ap,
-                   'solicitudes_pendientes_cr' : solicitudes_pendientes_cr,
-                   'solicitudes_aprobadas' : solicitudes_aprobadas,
-                   'solicitudes_rechazadas' : solicitudes_rechazadas,
-                   'solicitudes_canceladas' : solicitudes_canceladas,}
+        context = {'solicitudes_pendientes_ap': solicitudes_pendientes_ap,
+                   'solicitudes_pendientes_cr': solicitudes_pendientes_cr,
+                   'solicitudes_aprobadas': solicitudes_aprobadas,
+                   'solicitudes_rechazadas': solicitudes_rechazadas,
+                   'solicitudes_canceladas': solicitudes_canceladas, }
 
         return render(
             request=request,
             template_name="historial_solicitudes.html",
             context=context,
         )
-
 
 
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -214,7 +232,8 @@ class CancelarOrdenView(View):
             request=request,
             template_name="cancelar_orden.html"
         )
-    
+
+
 class AutorizacionSolitudView(View):
     def get(self, request):
         return render(
@@ -236,8 +255,3 @@ def test(request):
     )
 
     return HttpResponse("OK")
-
-
-
-
-    

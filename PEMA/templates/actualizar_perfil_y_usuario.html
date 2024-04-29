@@ -1,0 +1,24 @@
+{% load widget_tweaks %}
+
+Bienvenido {{ user.username }}!
+
+<form method="POST" action="{% url 'actualizar_perfil' %}">
+    {% csrf_token %}
+
+    {% if form.errors %}
+        <div class="errors">
+            <ul>
+                {% for field, error_list in form.errors.items %}
+                    {% for error in error_list %}
+                        <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {{ form_actualizar_perfil }}
+    {{ form_actualizar_usuario }}
+
+    <input type="submit">
+</form>
