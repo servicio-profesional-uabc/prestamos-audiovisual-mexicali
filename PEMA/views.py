@@ -11,7 +11,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion, CorresponsableOrden
+from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, Reporte
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -220,7 +220,7 @@ class PrincipalAlmacenView(View):
     def get(self, request):
         ordenes_aprobadas = Orden.objects.filter(estado=EstadoOrden.APROBADA)
 
-        print("ESTOOO",ordenes_aprobadas)  # Comprueba si obtienes resultados aquí
+        print("ESTOOO",ordenes_aprobadas)
 
         return render(
             request=request,
@@ -248,14 +248,24 @@ class DetallesOrdenAutorizadaView(View):
 class OrdenesPrestadasView(View):
     def get(self, request):
         ordenes_prestadas = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
-        print("ESTOOO 2",ordenes_prestadas)  # Comprueba si obtienes resultados aquí
 
+        # AQUI SIN RPEORTESSS
+        ordenes_sin_reporte_activo = []
+
+        for orden in ordenes_prestadas:
+            if not orden.reporte() or orden.reporte().estado != Reporte.Estado.ACTIVO:
+                ordenes_sin_reporte_activo.append(orden)
+
+        print("ESTOOO 2", ordenes_sin_reporte_activo)
 
         return render(
             request=request,
             template_name="almacen_permisos/ordenes_prestadas.html",
-            context={'ordenes': ordenes_prestadas}
+            context={'ordenes': ordenes_sin_reporte_activo}
         )
+
+
+
 
 class DetallesOrdenPrestadaView(View):
     def get(self, request, id):
@@ -273,35 +283,37 @@ class DetallesOrdenPrestadaView(View):
 ##################ORDENES REPORTADAS#########################
 class OrdenesReportadasView(View):
     def get(self, request):
-        ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.RECHAZADA)
-        print("ESTOOO 6",ordenes_devueltas)  # Comprueba si obtienes resultados aquí
-
+        ordenes_activas = Orden.objects.filter(reportes__estado=Reporte.Estado.ACTIVO)
+        print("ESTOOO 6", ordenes_activas)  # Comprueba si obtienes resultados aquí
 
         return render(
             request=request,
             template_name="almacen_permisos/ordenes_reportadas.html",
-            context={'ordenes': ordenes_devueltas}
+            context={'ordenes': ordenes_activas}
         )
 
 
 
 class ReportarOrdenView(View):
     def get(self, request, id):
+        orden = get_object_or_404(Orden, id=id)
         return render(
             request=request,
-            template_name="reportar_orden.html"
+            template_name="almacen_permisos/reportar_orden.html",
+            context={"orden":orden},
         )
+
 
 class DetallesOrdenReportadaView(View):
     def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RECHAZADA)
+        orden = get_object_or_404(Orden, id=id)
+
 
         return render(
             request=request,
             template_name="almacen_permisos/detalles_orden_reportada.html",
             context={"orden": orden}
         )
-
 
 
 #devolucion = recibir
@@ -311,7 +323,7 @@ class DetallesOrdenReportadaView(View):
 class OrdenesDevueltasView(View):
     def get(self, request):
         ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.DEVUELTA)
-        print("EST 33",ordenes_devueltas)  # Comprueba si obtienes resultados aquí
+        print("EST 33",ordenes_devueltas)
 
         return render(
             request=request,
@@ -343,6 +355,15 @@ class OrdenesReportadasCordinadorView(View):
             template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
         )
 
+class DesactivarReportadasView(View):
+    def get(self, request, id):
+
+
+        return render(
+            request=request,
+            template_name="coordinador_permisos/desactivar_reportadas.html"
+        )
+
 
 ##################################3
 def cambiar_estado_ENTREGADO(request, orden_id, estado):
@@ -370,3 +391,42 @@ def cambiar_estado_DEVUELTO(request, orden_id, estado):
             return render(request, 'error.html', {'mensaje': 'La orden no existe'})
     else:
         return render(request, 'error.html', {'mensaje': 'Método no permitido'})
+
+
+class ReporteOrdenActivada(View):
+    def get(self, request, orden_id):
+        # Obtener la orden
+        orden = get_object_or_404(Orden, id=orden_id)
+        # Renderizar la plantilla para el formulario
+        return render(
+            request=request,
+            template_name="almacen_permisos/tramite_orden_reportada.html",
+            context={'orden': orden}
+        )
+
+    def post(self, request, orden_id):
+        # Obtener la orden
+        orden = get_object_or_404(Orden, id=orden_id)
+
+        # Obtener el valor del campo "reporte" del formulario
+        reporte = request.POST.get('reporte')
+
+        # Verificar si la orden ya tiene un reporte
+        reporte_obj = orden.reporte()
+
+        if reporte_obj:
+            # Actualizar el reporte existente
+            reporte_obj.descripcion = reporte
+            reporte_obj.estado = Reporte.Estado.ACTIVO
+            reporte_obj.save()
+        else:
+            # Crear un nuevo reporte
+            Reporte.objects.create(
+                emisor=request.user,
+                orden=orden,
+                descripcion=reporte,
+                estado=Reporte.Estado.ACTIVO
+            )
+
+        # Redirigir a la página de detalles de la orden
+        return redirect('ordenes_reportadas')

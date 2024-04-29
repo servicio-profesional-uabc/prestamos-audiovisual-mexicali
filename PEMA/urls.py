@@ -127,12 +127,12 @@ urlpatterns = [
         name='ordenes_reportadas'
     ),
     path(
-        route='detalles_orden_reportada',
+        route='detalles_orden_reportada<int:id>',
         view=views.DetallesOrdenReportadaView.as_view(),
         name='detalles_orden_reportada'
     ),
     path(
-        route='detalles_orden_reportada/<int:id>/',
+       route='detalles_orden_reportada/<int:id>/<str:reporte>/',
         view=views.DetallesOrdenReportadaView.as_view(),
         name='detalles_orden_reportada'
     ),
@@ -172,4 +172,13 @@ urlpatterns = [
     path('cambiar_estado_d/<int:orden_id>/<str:estado>/',
          view=views.cambiar_estado_DEVUELTO,
          name='cambiar_estado_d'),
+    path('tramite_orden_reportada/<int:orden_id>',
+         view=views.ReporteOrdenActivada.as_view(),
+         name='tramite_orden_reportada'),
+    path(
+        route='desactivacion_reportadas/<int:id>/',
+        view=views.DesactivarReportadasView.as_view(),
+        name='desactivacion_reportadas'
+    ),
+
 ]

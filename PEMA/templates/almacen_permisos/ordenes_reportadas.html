@@ -98,10 +98,10 @@
                         </ul>
                     </td>
                     <td>{{ orden.prestatario }}</td>
-                    <td>{{ orden.estado }}</td>
+                    <td>{{ orden.reportes.estado }}</td>
                     <td>{{ orden.inicio }}</td>
                     <td>{{ orden.final }}</td>
-                    <td><a href="{% url 'detalles_orden_reportada' id=orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                    <td><a href="{% url 'detalles_orden_reportada' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
                 </tr>
             {% endfor %}
         </tbody>
