@@ -307,26 +307,33 @@ class Perfil(models.Model):
     están incluidos mediante métodos específicos.
 
     :ivar usuario: Usuario del perfil.
-    :ivar telefono: Número de teléfono.
+    :ivar numero_telefono: Número de teléfono.
     """
 
     usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
-    telefono = PhoneNumberField(null=True)
+    numero_telefono = PhoneNumberField(blank=True, null=False, region='MX')
 
     @classmethod
-    def user_data(cls, user: User) -> tuple['Perfil', bool]:
+    def user_data(cls, user: User) -> 'Perfil':
         """
         :param user: El usuario del cual se desea obtener el perfil.
         :returns: El perfil asociado al usuario.
         """
+        return Perfil.objects.get(usuario=user)
 
-        return Perfil.objects.get_or_create(usuario=user)
+    def incompleto(self):
+        # TODO: pruebas pendientes
+        return self.email().strip() == "" or self.telefono().strip() == ""
+
+    def telefono(self):
+        perfil = Perfil.user_data(user=self.usuario)
+        return str(perfil.numero_telefono)
 
     def email(self) -> str:
         """
         :return: Obtener el email del perfil
         """
-        return self.usuario.email
+        return str(self.usuario.email)
 
     def apellido(self) -> str:
         """

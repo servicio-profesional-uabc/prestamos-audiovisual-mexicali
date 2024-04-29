@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -22,6 +21,9 @@ class IndexView(View):
 
 
 class ActualizarPerfilView(LoginRequiredMixin, View):
+    """
+    Vista para registrar los datos faltantes del usuario
+    """
     def get(self, request):
         return render(
             request=request,
@@ -33,20 +35,16 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
         )
 
     def post(self, request):
-        perfil, _ = Perfil.user_data(user=request.user)
+        perfil = Perfil.user_data(user=request.user)
 
         perfil_form = ActualizarPerfil(request.POST, instance=perfil)
         usuario = UpdateUserForm(request.POST, instance=request.user)
 
-        print("1")
-
         if perfil_form.is_valid() and usuario.is_valid():
-            print("2")
             perfil_form.save()
             usuario.save()
-            return HttpResponse("Exito")
+            return redirect('menu')
 
-        print("3")
         return render(
             request=request,
             template_name="actualizar_perfil_y_usuario.html",
@@ -57,14 +55,15 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
         )
 
 
-
 class MenuView(View, LoginRequiredMixin):
     def get(self, request):
+        # Todos los usaurios deben tener perfil
+        # TODO: pantalla de error si no existe el Pefil
+        datos_usuario = Perfil.user_data(user=request.user)
 
-        # Trabajo en proceso
-        #if not request.user.email:
+        if datos_usuario.incompleto():
             # el usuario tiene datos incompletos
-            #return redirect('actualizar_perfil')
+            return redirect('actualizar_perfil')
 
         return render(
             request=request,
