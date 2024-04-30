@@ -24,14 +24,14 @@ class TestOrden(TestCase):
         materia = Materia.objects.create(nombre="Fotografia", year=2022, semestre=1)
 
         self.orden_ordinaria = Orden.objects.create(prestatario=self.prestataio, materia=materia,
-                                          inicio=make_aware(datetime(2024, 3, 16, 12)),
-                                          final=make_aware(datetime(2024, 3, 16, 18)),
-                                          tipo=TipoOrden.ORDINARIA)
+                                                    inicio=make_aware(datetime(2024, 3, 16, 12)),
+                                                    final=make_aware(datetime(2024, 3, 16, 18)),
+                                                    tipo=TipoOrden.ORDINARIA)
 
         self.orden_extraordinaria = Orden.objects.create(prestatario=self.prestataio, materia=materia,
-                                          inicio=make_aware(datetime(2024, 3, 16, 12)),
-                                          final=make_aware(datetime(2024, 3, 16, 18)),
-                                          tipo=TipoOrden.EXTRAORDINARIA)
+                                                         inicio=make_aware(datetime(2024, 3, 16, 12)),
+                                                         final=make_aware(datetime(2024, 3, 16, 18)),
+                                                         tipo=TipoOrden.EXTRAORDINARIA)
 
     def test_agregar_unidad(self):
         self.orden_ordinaria.agregar_unidad(self.unidad1)
@@ -54,8 +54,10 @@ class TestOrden(TestCase):
         self.orden_ordinaria.agregar_unidad(self.unidad2)
         self.assertEqual(len(self.orden_ordinaria.articulos()), 2, msg="Hay menos articulos registrados")
 
-        self.assertIn(member=self.articulo1, container=self.orden_ordinaria.articulos(), msg="Articulo1 No existe en la orden")
-        self.assertIn(member=self.articulo2, container=self.orden_ordinaria.articulos(), msg="Articulo2 No existe en la orden")
+        self.assertIn(member=self.articulo1, container=self.orden_ordinaria.articulos(),
+                      msg="Articulo1 No existe en la orden")
+        self.assertIn(member=self.articulo2, container=self.orden_ordinaria.articulos(),
+                      msg="Articulo2 No existe en la orden")
 
     def test_reporte(self):
         almacen = Almacen.get_user(self.almacen)
@@ -80,9 +82,9 @@ class TestOrden(TestCase):
         self.assertTrue(self.orden_ordinaria.entregada())
 
     def test_rechazar(self):
-        self.assertFalse(self.orden_ordinaria.rechazada())
-        self.orden_ordinaria.rechazar()
-        self.assertTrue(self.orden_ordinaria.rechazada())
+        self.assertFalse(self.orden_ordinaria.cancelada())
+        self.orden_ordinaria.cancelar()
+        self.assertTrue(self.orden_ordinaria.cancelada())
 
     def test_entregar(self):
         # La orden no está marcada como entregada inicialmente
