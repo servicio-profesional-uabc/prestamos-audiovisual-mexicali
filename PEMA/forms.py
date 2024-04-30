@@ -3,6 +3,7 @@ from datetime import date, timedelta, datetime, time
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from phonenumber_field.formfields import PhoneNumberField
 
 from .models import Carrito, Materia, Perfil
 
@@ -18,9 +19,9 @@ class UpdateUserForm(forms.ModelForm):
 class ActualizarPerfil(forms.ModelForm):
     class Meta:
         model = Perfil
-        fields = ['telefono']
+        fields = ['numero_telefono']
 
-    telefono = forms.CharField(required=True)
+    numero_telefono = PhoneNumberField(region="MX")
 
 
 class UserLoginForm(AuthenticationForm):

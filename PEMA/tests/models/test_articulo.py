@@ -3,7 +3,7 @@ from datetime import datetime
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Articulo, Prestatario
+from PEMA.models import Articulo, Prestatario, EstadoOrden
 from PEMA.models import Categoria
 from PEMA.models import Materia
 from PEMA.models import Orden
@@ -25,10 +25,12 @@ class TestArticulo(TestCase):
         self.materia = Materia.objects.create(nombre="fotografia", year=2022, semestre=1)
 
         self.orden_antes = Orden.objects.create(prestatario=self.prestatario, materia=self.materia,
-            lugar="Prueba antes", inicio=self.generar_fechas(-1), final=self.generar_fechas(1))
+                                                lugar="Prueba antes", inicio=self.generar_fechas(-1),
+                                                final=self.generar_fechas(1))
 
         self.orden_despues = Orden.objects.create(prestatario=self.prestatario, materia=self.materia,
-            lugar="prueba despues", inicio=self.generar_fechas(0), final=self.generar_fechas(1))
+                                                  lugar="prueba despues", inicio=self.generar_fechas(0),
+                                                  final=self.generar_fechas(1))
 
         self.orden_antes.agregar_unidad(unidad=self.unidad)
         self.orden_despues.agregar_unidad(unidad=self.unidad)
@@ -52,17 +54,32 @@ class TestArticulo(TestCase):
         self.materia1.agregar_articulo(self.articulo2)
 
         self.orden1 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
-            lugar="orden 12:00 a 14:00", estado="PA", inicio=self.generar_fechas(0), final=self.generar_fechas(2))
+                                           lugar="orden 12:00 a 14:00", estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(0), final=self.generar_fechas(2))
+
         self.orden2 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
-            lugar="orden 11:00 a 14:00", estado="PC", inicio=self.generar_fechas(-1), final=self.generar_fechas(2))
+                                           lugar="orden 11:00 a 14:00", estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(-1),
+                                           final=self.generar_fechas(2))
+
         self.orden3 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
-            lugar="orden 15:00 a 17:00", estado="AP", inicio=self.generar_fechas(3), final=self.generar_fechas(5))
+                                           lugar="orden 15:00 a 17:00", estado=EstadoOrden.APROBADA,
+                                           inicio=self.generar_fechas(3),
+                                           final=self.generar_fechas(5))
+
         self.orden4 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
-            lugar="orden 16:00 a 18:00", estado="PA", inicio=self.generar_fechas(4), final=self.generar_fechas(6))
+                                           lugar="orden 16:00 a 18:00", estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(4), final=self.generar_fechas(6))
+
         self.orden5 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
-            lugar="orden 13:00 a 16:00", estado="PC", inicio=self.generar_fechas(1), final=self.generar_fechas(4))
+                                           lugar="orden 13:00 a 16:00", estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(1),
+                                           final=self.generar_fechas(4))
+
         self.orden6 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
-            lugar="orden 11:00 a 18:00", estado="AP", inicio=self.generar_fechas(-1), final=self.generar_fechas(6))
+                                           lugar="orden 11:00 a 18:00", estado=EstadoOrden.APROBADA,
+                                           inicio=self.generar_fechas(-1),
+                                           final=self.generar_fechas(6))
 
     def test_unidades(self):
         unidades = self.articulo.unidades()
