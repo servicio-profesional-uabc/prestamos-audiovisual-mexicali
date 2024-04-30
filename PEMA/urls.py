@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import AutorizacionSolitudView
+from .views import AutorizacionSolitudView, AgregarAlCarritoView
 from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
@@ -78,6 +78,11 @@ urlpatterns = [
         name='detalles_articulo'
     ),
 
+    path(
+        route='agregar_al_carrito/<int:articulo_id>/',
+        view=AgregarAlCarritoView.as_view(),
+        name='agregar_al_carrito'
+    ),
 
     path(
         route='cancelar_orden',
