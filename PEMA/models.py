@@ -106,7 +106,10 @@ class Prestatario(User):
 
         :return:  El carrito del prestatario o None si no existe.
         """
-        return Carrito.objects.filter(prestatario=self)
+        return Carrito.objects.get(prestatario=self)
+
+    def tiene_carrito(self) -> bool:
+        return Carrito.objects.filter(prestatario=self).exists()
 
     def suspendido(self) -> bool:
         """
@@ -797,6 +800,9 @@ class Carrito(models.Model):
 
     def articulos_carrito(self):
         return self._articulos.all()
+
+    def eliminar(self):
+        self.delete()
 
     def articulos(self):
         """

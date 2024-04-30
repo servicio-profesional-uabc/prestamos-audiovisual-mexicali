@@ -86,7 +86,7 @@ class TestPrestatario(TestCase):
         prestatario = Prestatario.get_user(self.user_prestatario)
 
         # carrito vacío
-        self.assertIsNone(prestatario.carrito(), msg="El usuario ya tiene un carrito")
+        self.assertFalse(prestatario.tiene_carrito(), msg="El usuario ya tiene un carrito")
 
         carrito = Carrito.objects.create(prestatario=self.user_prestatario, materia=self.materia,
                                          inicio=make_aware(datetime.now()), final=make_aware(datetime.now()))
