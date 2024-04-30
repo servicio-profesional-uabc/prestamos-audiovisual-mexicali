@@ -85,6 +85,13 @@ class CarritoView(View):
 
 class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
+
+        if carrito.exists():
+            # Si ya hay un carrito se borra
+            carrito.delete()
+
         return render(
             request=request,
             template_name="filtros.html",
@@ -94,12 +101,19 @@ class FiltrosView(View, LoginRequiredMixin):
         )
 
     def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        carrito_anterior = prestatario.carrito()
         form = FiltrosForm(request.POST)
 
+        if carrito_anterior.exists():
+            # si ya tenia un carrito se borra
+            carrito_anterior.delete()
+
         if form.is_valid():
-            carrito = form.save(commit=False)
-            carrito.prestatario = request.user
-            carrito.save()
+            # se crea un nuevo carrito
+            carrito_nuevo = form.save(commit=False)
+            carrito_nuevo.prestatario = request.user
+            carrito_nuevo.save()
             return redirect("catalogo")
 
         return render(
