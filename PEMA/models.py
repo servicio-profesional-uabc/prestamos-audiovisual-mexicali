@@ -99,19 +99,17 @@ class Prestatario(User):
         """
         return self.materia_set.all()
 
-    def carrito(self) -> Any | None:
+    def carrito(self) -> QuerySet['Carrito']:
         """
         Devuelve el carrito actual del prestatario, el usuario solo
         puede tener un carrito a la vez
 
         :return:  El carrito del prestatario o None si no existe.
         """
-        try:
-            carrito = Carrito.objects.get(prestatario=self)
-        except Carrito.DoesNotExist:
-            carrito = None
-        return carrito
+        return Carrito.objects.get(prestatario=self)
 
+    def tiene_carrito(self) -> bool:
+        return Carrito.objects.filter(prestatario=self).exists()
 
     def suspendido(self) -> bool:
         """
@@ -483,17 +481,16 @@ class Articulo(models.Model):
             _unidades__in=self.unidades()
         ).filter((
             # ordenes activas en el rango
-            Q(inicio=inicio) |
-            Q(final=final) |
-            Q(inicio__lt=inicio, final__gt=inicio) |
-            Q(inicio__lt=final, final__gt=final) |
-            Q(inicio__gt=inicio, final__lt=final)
+                Q(inicio=inicio) |
+                Q(final=final) |
+                Q(inicio__lt=inicio, final__gt=inicio) |
+                Q(inicio__lt=final, final__gt=final) |
+                Q(inicio__gt=inicio, final__lt=final)
         ))
 
         unidades_reservadas = Unidad.objects.filter(orden__in=ordenes_reservadas)
 
         return self.unidades().exclude(id__in=unidades_reservadas)
-
 
     def categorias(self) -> QuerySet['Categoria']:
         """Devuelve la lista de categorías en las que pertenece el artículo."""
@@ -775,7 +772,7 @@ class Carrito(models.Model):
     :ivar inicio: Fecha de inicio del préstamo.
     :ivar final: Fecha de devolución del préstamo.
     """
-
+    nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
@@ -803,6 +800,9 @@ class Carrito(models.Model):
 
     def articulos_carrito(self):
         return self._articulos.all()
+
+    def eliminar(self):
+        self.delete()
 
     def articulos(self):
         """

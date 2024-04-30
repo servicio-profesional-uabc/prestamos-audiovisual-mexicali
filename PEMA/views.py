@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta, time
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -8,7 +6,6 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.utils.timezone import make_aware
 from django.views import View
 
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
@@ -27,6 +24,7 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
     """
     Vista para registrar los datos faltantes del usuario
     """
+
     def get(self, request):
         return render(
             request=request,
@@ -88,6 +86,12 @@ class CarritoView(View):
 
 class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+
+        if prestatario.tiene_carrito():
+            # Si ya hay un carrito se borra
+            prestatario.carrito().eliminar()
+
         return render(
             request=request,
             template_name="filtros.html",
@@ -97,33 +101,18 @@ class FiltrosView(View, LoginRequiredMixin):
         )
 
     def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
+        if prestatario.tiene_carrito():
+            # Si ya hay un carrito se borra
+            prestatario.carrito().eliminar()
+
         if form.is_valid():
-            carrito = form.save(commit=False)
-            carrito.prestatario = request.user
-            # [x] Agregar fecha inicio agregarle su hora de inicio
-            # [x] Sumarle la duracion de horas a dicha fecha
-            # [X] Validar que sea elegido en fecha sea 3 dias de anticipacion
-            # [X] Validar que inicio sea entre semana (no importa que pase por fin eso se hace extra al hacer solicitud)
-            # [X] Guardar dicha fecha final en la variable final de carrito
-
-            # TODO: Hacer operaciones de métodos de Carrito y usar esas esto es temporal (WIP)
-            inicio = form.cleaned_data.get('inicio')
-            hora_inicio = form.cleaned_data.get('hora_inicio')
-            duracion = form.cleaned_data.get('duracion')
-
-            tiempo_duracion = int(duracion)
-
-            # Retorna str entonces convertir a objeto time
-            hora_inicio = datetime.strptime(hora_inicio, '%H:%M:%S').time()
-            fecha_inicio = datetime.combine(inicio, hora_inicio)
-
-            # Guardar fechas actualizadas
-            carrito.inicio = make_aware(fecha_inicio)
-            carrito.final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
-
-            carrito.save()
+            # se crea un nuevo carrito
+            carrito_nuevo = form.save(commit=False)
+            carrito_nuevo.prestatario = request.user
+            carrito_nuevo.save()
             return redirect("catalogo")
 
         return render(
@@ -212,6 +201,11 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class CatalogoView(View):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+
+        if not prestatario.tiene_carrito():
+            return redirect("filtros")
+
         return render(
             request=request,
             template_name="catalogo.html"
