@@ -2,12 +2,12 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1>{{ articulo.nombre }}</h1>
-    <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}" class="img-fluid">
-    <p>{{ articulo.descripcion }}</p>
-    
-    <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar al Carrito</a>
-    <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar al Catálogo</a>
-</div>
+    <div class="container mt-5">
+        <h1>{{ articulo.nombre }}</h1>
+        <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}" class="img-fluid">
+        <p>{{ articulo.descripcion }}</p>
+
+        <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar al Carrito</a>
+        <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar al Catálogo</a>
+    </div>
 {% endblock %}

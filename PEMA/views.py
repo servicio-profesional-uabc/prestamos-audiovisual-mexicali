@@ -7,9 +7,9 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.views import View
-from .models import Carrito, Articulo
 
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .models import Carrito, Articulo
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
@@ -215,8 +215,6 @@ class CatalogoView(View):
         )
 
 
-
-
 class DetallesArticuloView(View):
     def get(self, request, id):
         articulo = get_object_or_404(Articulo, id=id)
@@ -227,6 +225,7 @@ class DetallesArticuloView(View):
             context={"articulo": articulo},
         )
 
+
 class AgregarAlCarritoView(View):
     def get(self, request, articulo_id):
         carrito = get_object_or_404(Carrito, prestatario=request.user)
@@ -236,6 +235,7 @@ class AgregarAlCarritoView(View):
         carrito.save()
 
         return redirect("catalogo")
+
 
 class CancelarOrdenView(View):
     def get(self, request):
