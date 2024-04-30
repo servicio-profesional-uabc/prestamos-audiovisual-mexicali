@@ -3,39 +3,36 @@
 {% load static %}
 
 {% block content %}
-<head>
-    <title>Carrito</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
+    <head>
+        <title>Carrito</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    </head>
 
-<main>
-    <div class="container order-details-container">
-        <h2>Carrito</h2>
-        <hr class="hr"/>
-        <div class="order-items">
-            <h4>Artículos en el carrito</h4>
+    <main>
+        <div class="container order-details-container">
+            <h2>Carrito</h2>
+            <hr class="hr"/>
+            <div class="order-items">
+                <h4>Artículos en el carrito</h4>
+
             <ul>
-                <!--Si el carrito tiene articulos-->
-                {% if articulos %}
-                    <!--Por cada articulo en el carrito-->
-                    {% for articulo in articulos %}
-                        <li>
-                            <div class="order-item">
-                                <div class="order-item img">
-                                    <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}">
-                                </div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                <!--Si el carrito está vacío-->
-                {% else %}
-                    <p>No hay artículos en el carrito</p>
-                {% endif %}  
+               {% for articuloCarrito in articulos_carrito %}
+                   <li>
+                   ({{ articuloCarrito.unidades }}) {{ articuloCarrito.articulo.nombre }}
+                   </li>
+                {% endfor %}
             </ul>
+
+
+            </div>
+            <div class="buttons">
+                <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar</a>
+            </div>
         </div>
-        <div class="buttons">
-            <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar</a>
-        </div>
-    </div>
+
+        {% if carrito.vacio %}
+
+        {% endif %}
+
 
 {% endblock %}
