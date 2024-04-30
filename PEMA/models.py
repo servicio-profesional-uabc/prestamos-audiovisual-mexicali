@@ -793,11 +793,14 @@ class Carrito(models.Model):
         data.unidades = unidades
         data.save()
 
-    def articulos_carrito(self):
-        return self._articulos.all()
+    def articulos_carrito(self) -> QuerySet['ArticuloCarrito']:
+        return ArticuloCarrito.objects.filter(propietario=self)
 
     def eliminar(self):
         self.delete()
+
+    def vacio(self):
+        return self.articulos().count() == 0
 
     def articulos(self):
         """
