@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import AutorizacionSolitudView
+from .views import AutorizacionSolitudView, AgregarAlCarritoView
 from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
@@ -73,9 +73,15 @@ urlpatterns = [
     ),
 
     path(
-        route='detalles_articulo',
+        route='detalles_articulo/<int:id>/',
         view=DetallesArticuloView.as_view(),
         name='detalles_articulo'
+    ),
+
+    path(
+        route='agregar_al_carrito/<int:articulo_id>/',
+        view=AgregarAlCarritoView.as_view(),
+        name='agregar_al_carrito'
     ),
 
     path(
@@ -99,4 +105,5 @@ urlpatterns = [
 
 # https://github.com/fabiocaccamo/django-admin-interface/issues/4
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

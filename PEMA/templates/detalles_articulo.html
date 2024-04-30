@@ -1,57 +1,13 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-    <head>
-        <title>Detalles Articulo</title>
-    </head>
-    <div class="container text-center mt-5">
-        <!--Palabras de inicio-->
-        <h1>PEMA - Detalles Articulo</h1>
-        
+    <div class="container mt-5">
+        <h1>{{ articulo.nombre }}</h1>
+        <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}" class="img-fluid">
+        <p>{{ articulo.descripcion }}</p>
+
+        <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar al Carrito</a>
+        <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar al Catálogo</a>
     </div>
 {% endblock %}
-    <!-- Modal -->
-{#    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">#}
-{#      <div class="modal-dialog ">#}
-{#        <div class="modal-content">#}
-{##}
-{#          <div class="modal-header">#}
-{#             <!--Reglamento-->#}
-{#            <h5 class="modal-title" id="exampleModalLabel">Reglamento</h5>#}
-{#            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>#}
-{#          </div>#}
-{##}
-{#          <div class="modal-body">#}
-{##}
-{#            <!--Para mostrar el reglamento en cerrarPDF-->#}
-{#            <embed id="pdfViewer" src="{% static 'img/Meta.pdf' %}" type="application/pdf" width="100%" height="600px">#}
-{##}
-{#            <!--Crea un checkbox para cerrar el reglamento-->#}
-{#            <input type="checkbox" id="cerrarPDF">#}
-{##}
-{#            <!--Etiqueta del checkbox y texto del mismo checkbox-->#}
-{#            <label for="cerrarPDF">He leído términos y condiciones</label><br><br>#}
-{##}
-{#            <!--Boton para continuar una hez que haya aceptado los terminos y condiciones-->#}
-{#            <button id="botonContinuar" class="btn btn-primary my-3" data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-family: 'Minion Pro', sans-serif;" disabled>Continuar</button>#}
-{##}
-{#            <script>#}
-{#              <!-- Toma la referencia del checkbox "cerrarPDF"-->#}
-{#              var checkbox = document.getElementById('cerrarPDF');#}
-{##}
-{#              var botonContinuar = document.getElementById('botonContinuar');#}
-{##}
-{#              checkbox.addEventListener('change', function() {#}
-{#                  if (this.checked) {#}
-{#                      botonContinuar.disabled = false;#}
-{#                  } else {#}
-{#                      botonContinuar.disabled = true;#}
-{#                  }#}
-{#              });#}
-{#            </script>#}
-{#              <!-- Redirigir se realiza en views.py -->#}
-{#          </div>#}
-{#        </div>#}
-{#      </div>#}
-{#    </div>#}

@@ -9,6 +9,7 @@ from django.shortcuts import render
 from django.views import View
 
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .models import Carrito, Articulo
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
@@ -202,22 +203,38 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 class CatalogoView(View):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
+        articulos = Articulo.objects.all()
 
         if not prestatario.tiene_carrito():
             return redirect("filtros")
 
         return render(
             request=request,
-            template_name="catalogo.html"
+            template_name="catalogo.html",
+            context={"articulos": articulos},
         )
 
 
 class DetallesArticuloView(View):
-    def get(self, request):
+    def get(self, request, id):
+        articulo = get_object_or_404(Articulo, id=id)
+
         return render(
             request=request,
-            template_name="detalles_articulo.html"
+            template_name="detalles_articulo.html",
+            context={"articulo": articulo},
         )
+
+
+class AgregarAlCarritoView(View):
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.agregar(articulo, 1)
+        carrito.save()
+
+        return redirect("catalogo")
 
 
 class CancelarOrdenView(View):
