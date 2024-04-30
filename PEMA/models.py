@@ -468,9 +468,8 @@ class Articulo(models.Model):
         ordenes_reservadas = Orden.objects.filter(
             # filtrar si ya está resevado o entregado el artículo
             estado__in=[
+                EstadoOrden.RESERVADA,
                 EstadoOrden.APROBADA,
-                EstadoOrden.PENDIENTE_AP,
-                EstadoOrden.PENDIENTE_CR,
                 EstadoOrden.ENTREGADA
             ],
 
@@ -549,28 +548,24 @@ class Unidad(models.Model):
 
 
 class TipoOrden(models.TextChoices):
-    """Opciones para el tipo de orden."""
+    """
+    Opciones para el tipo de orden.
+    """
     ORDINARIA = "OR", _("Ordinaria")
     EXTRAORDINARIA = "EX", _("Extraordinaria")
 
 
 class EstadoOrden(models.TextChoices):
     """
-     * `PENDIENTE_CR`: Esperando confirmación de los corresponsables.
-     * `PENDIENTE_AP`: Esperando aprobación del maestro o coordinador
-     * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
-     * `APROBADA`: Orden aprobada por el maestro o coordinador.
-     * `CANCELADA`: Orden cancelado por el prestatario.
-     * `ENTREGADA`: Orden entregada al prestatario.
-     * `DEVUELTA`: Orden devuelta al Almacén.`
+    Define los posibles estados de una orden en el sistema.
+    Los estados son utilizados para seguir el progreso de una orden y determinar las acciones
+    disponibles para los usuarios y el personal del sistema.
     """
-    APROBADA = "AP", _("Listo para iniciar")
-    PENDIENTE_CR = "PC", _("Esperando corresponsables")
-    PENDIENTE_AP = "PA", _("Esperando autorización")
-    RECHAZADA = "RE", _("Rechazada")
-    CANCELADA = "CN", _("Cancelada")
-    ENTREGADA = "EN", _("Activa")
-    DEVUELTA = "DE", _("Terminado")
+    RESERVADA = "RS", _("Pendiente")  #: La orden ha sido creada, pero aún no ha sido procesada.
+    ENTREGADA = "EN", _("Entregada")  #: La orden ha sido completada y los productos solicitados han sido entregados.
+    CANCELADA = "CN", _("Cancelada")  #: La orden ha sido cancelada por el usuario o el administrador.
+    APROBADA = "AP", _("Listo para iniciar")  #: La orden ha sido aprobada y está lista para ser procesada.
+    DEVUELTA = "DE", _("Devuelta")  #: Los productos solicitados en la orden han sido devueltos al almacén.
 
 
 class Orden(models.Model):
@@ -612,7 +607,7 @@ class Orden(models.Model):
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
                              verbose_name='Lugar de la Producción')
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Especifico')
-    estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
+    estado = models.CharField(default=EstadoOrden.RESERVADA, choices=EstadoOrden.choices, max_length=2)
 
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
@@ -627,13 +622,13 @@ class Orden(models.Model):
     # automático
     emision = models.DateTimeField(auto_now_add=True)
 
-    def rechazar(self):
-        self.estado = EstadoOrden.RECHAZADA
+    def cancelar(self):
+        self.estado = EstadoOrden.CANCELADA
 
-    def rechazada(self):
-        return self.estado == EstadoOrden.RECHAZADA
+    def cancelada(self):
+        return self.estado == EstadoOrden.CANCELADA
 
-    def autorizar(self):
+    def aprobar(self):
         self.estado = EstadoOrden.APROBADA
 
     def entregada(self) -> bool:
@@ -645,10 +640,10 @@ class Orden(models.Model):
 
     def entregar(self, entregador):
         """
-        Actualiza el estado de la orden para indicar que se le entregó
+        Actualiza el estado de la orden para indicar que se le entregók
         el equipo al Prestatario.
         """
-        if self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.RECHAZADA or self.estado == EstadoOrden.DEVUELTA:
+        if self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.DEVUELTA:
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
