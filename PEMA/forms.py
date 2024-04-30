@@ -51,7 +51,7 @@ class FiltrosForm(forms.ModelForm):
 
     class Meta:
         model = Carrito
-        fields = ['inicio', 'materia']
+        fields = ['inicio', 'materia', 'nombre']
 
     nombre = forms.CharField(required=True, max_length=250,
                              validators=[MaxLengthValidator(
