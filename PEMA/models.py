@@ -772,7 +772,7 @@ class Carrito(models.Model):
     :ivar inicio: Fecha de inicio del préstamo.
     :ivar final: Fecha de devolución del préstamo.
     """
-
+    nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
