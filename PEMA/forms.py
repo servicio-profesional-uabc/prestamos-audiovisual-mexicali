@@ -3,6 +3,7 @@ from datetime import date, timedelta, datetime, time
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.core.validators import MaxLengthValidator
 from phonenumber_field.formfields import PhoneNumberField
 
 from .models import Carrito, Materia, Perfil
@@ -52,7 +53,13 @@ class FiltrosForm(forms.ModelForm):
         model = Carrito
         fields = ['inicio', 'materia']
 
-    materia = forms.ModelChoiceField(required=True, queryset=Materia.objects.all())
+    nombre = forms.CharField(required=True, max_length=250,
+                             validators=[MaxLengthValidator(
+                                limit_value=250,
+                                message='El nombre de la práctica o producción es mayor a 250 caracteres. Intente de nuevo.')]
+                            )
+
+    materia = forms.ModelChoiceField(required=True, queryset=None)
 
     duracion = forms.ChoiceField(required=True, choices=(
         (1, "1 hora"),
@@ -91,7 +98,6 @@ class FiltrosForm(forms.ModelForm):
         (time(hour=19, minute=30, second=0), '7:30 PM'),
         (time(hour=20, minute=0, second=0), '8:00 PM'),
     ))
-
 
     def clean_hora_inicio(self):
         hora_inicio = self.cleaned_data.get('hora_inicio')

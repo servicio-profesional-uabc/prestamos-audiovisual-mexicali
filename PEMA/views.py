@@ -92,11 +92,14 @@ class FiltrosView(View, LoginRequiredMixin):
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
+        # TODO: Pasar materias por context
+
         return render(
             request=request,
             template_name="filtros.html",
             context={
-                'form': FiltrosForm()
+                'form': FiltrosForm(),
+                'materias': prestatario.materias(),
             },
         )
 
