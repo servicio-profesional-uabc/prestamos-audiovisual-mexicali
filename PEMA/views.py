@@ -1,5 +1,3 @@
-from datetime import timedelta, datetime, date
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -8,7 +6,6 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.utils.timezone import make_aware
 from django.views import View
 
 from .forms import FiltrosForm
@@ -19,6 +16,9 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.db import IntegrityError
+from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .models import Carrito, Articulo
+from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
 class IndexView(View):
@@ -29,13 +29,56 @@ class IndexView(View):
         )
 
 
-class MenuView(View):
+class ActualizarPerfilView(LoginRequiredMixin, View):
+    """
+    Vista para registrar los datos faltantes del usuario
+    """
+
     def get(self, request):
-        matricula = request.user.username
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': ActualizarPerfil(),
+                'form_actualizar_usuario': UpdateUserForm(),
+            }
+        )
+
+    def post(self, request):
+        perfil = Perfil.user_data(user=request.user)
+
+        perfil_form = ActualizarPerfil(request.POST, instance=perfil)
+        usuario = UpdateUserForm(request.POST, instance=request.user)
+
+        if perfil_form.is_valid() and usuario.is_valid():
+            perfil_form.save()
+            usuario.save()
+            return redirect('menu')
+
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': perfil_form,
+                'form_actualizar_usuario': usuario,
+            }
+        )
+
+
+class MenuView(View, LoginRequiredMixin):
+    def get(self, request):
+        # Todos los usaurios deben tener perfil
+        # TODO: pantalla de error si no existe el Pefil
+        datos_usuario = Perfil.user_data(user=request.user)
+
+        if datos_usuario.incompleto():
+            # el usuario tiene datos incompletos
+            return redirect('actualizar_perfil')
+
         return render(
             request=request,
             template_name="menu.html",
-            context={'matricula': matricula}
+            context={'matricula': request.user.username, 'user': request.user}
         )
 
     def post(self, request):
@@ -43,24 +86,47 @@ class MenuView(View):
 
 
 class CarritoView(View):
-    def get(self, request):
+    def get(self, request, accion=None):
+        # TODO: falta verificar si el usuario tiene carrito
+        prestatario = Prestatario.get_user(request.user)
+
+        if not prestatario.tiene_carrito():
+            # TODO: solucion rapida
+            return HttpResponse("No tiene carrito")
+
+        carrito = prestatario.carrito()
+
+        if accion == 'ordenar':
+            carrito.ordenar()
+            return render(
+                request=request,
+                template_name="carrito.html",
+                context={}
+            )
+
         return render(
             request=request,
-            template_name="carrito.html"
+            template_name="carrito.html",
+            context={
+                "articulos_carrito": carrito.articulos_carrito(),
+                "carrito": carrito
+            }
         )
 
 
 class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
-        form = FiltrosForm()
+
+        if prestatario.tiene_carrito():
+            # Si ya hay un carrito se borra
+            prestatario.carrito().eliminar()
 
         return render(
             request=request,
             template_name="filtros.html",
             context={
-                'prestatario': prestatario,
-                'form': form
+                'form': FiltrosForm()
             },
         )
 
@@ -68,15 +134,20 @@ class FiltrosView(View, LoginRequiredMixin):
         prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
+        if prestatario.tiene_carrito():
+            # Si ya hay un carrito se borra
+            prestatario.carrito().eliminar()
+
         if form.is_valid():
-            carrito = form.save(commit=False)
-            carrito.prestatario = prestatario
-            carrito.save()
-            messages.success(request, 'El filtro para tu orden se ha creado exitosamente.')
+            # se crea un nuevo carrito
+            carrito_nuevo = form.save(commit=False)
+            carrito_nuevo.prestatario = request.user
+            carrito_nuevo.save()
+            return redirect("catalogo")
 
         return render(
             request=request,
-            context={'prestatario': prestatario, 'form': form},
+            context={'form': form},
             template_name="filtros.html",
         )
 
@@ -86,33 +157,6 @@ class SolicitudView(View):
         return render(
             request=request,
             template_name="solicitud.html"
-        )
-
-
-class Permisos(View):
-    def get(self, request):
-        if request.user.is_authenticated:
-            nombre_grupo_perteneciente = request.user.groups.first().name
-            if nombre_grupo_perteneciente:
-                if nombre_grupo_perteneciente == "prestatario":
-                    prestatario_group = Group.objects.get(name='prestatarios')
-                    permisos = prestatario_group.permissions.all()
-                elif nombre_grupo_perteneciente == "maestro":
-                    maestro_group = Group.objects.get(name='maestro')
-                    permisos = maestro_group.permissions.all()
-                elif nombre_grupo_perteneciente == "coordinador":
-                    coordinador_group = Group.objects.get(name='coordinador')
-                    permisos = coordinador_group.permissions.all()
-                elif nombre_grupo_perteneciente == "almacen":
-                    almacen_group = Group.objects.get(name='almacen')
-                    permisos = almacen_group.permissions.all()
-
-        return render(
-            request=request,
-            template_name="menu.html",
-            context={
-                'grupo': nombre_grupo_perteneciente
-            }
         )
 
 
@@ -198,29 +242,32 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         return prestatario == carrito.prestatario
 
     def get(self, request):
-        prestatario = Prestatario.get_user(request.user)
-        categorias = Categoria.objects.all()
-        
-        articulos = Articulo.objects.filter(materia__in=Prestatario.materias(prestatario))
-        unidades_disponibles = []
-        for articulo in articulos:
-            unidades_disponibles.append(articulo.disponible(make_aware(datetime(2024, 10, 5, 12)), make_aware(datetime(2024, 10, 5, 14))))
-                
         return render(
             request=request,
-            template_name="catalogo.html",
-            context={'unidades_disponibles' : unidades_disponibles,
-                     'categorias' : categorias,
-                     }
+            template_name="catalogo.html"
         )
 
 
 class DetallesArticuloView(View):
-    def get(self, request):
+    def get(self, request, id):
+        articulo = get_object_or_404(Articulo, id=id)
+
         return render(
             request=request,
-            template_name="detalles_articulo.html"
+            template_name="detalles_articulo.html",
+            context={"articulo": articulo},
         )
+
+
+class AgregarAlCarritoView(View):
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.agregar(articulo, 1)
+        carrito.save()
+
+        return redirect("catalogo")
 
 
 class CancelarOrdenView(View):

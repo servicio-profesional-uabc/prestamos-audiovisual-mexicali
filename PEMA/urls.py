@@ -1,10 +1,19 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.template.defaulttags import url
-from django.urls import path, include
-from . import views
-from .forms import UserLoginForm
 from django.contrib.auth.views import LoginView, LogoutView
+from django.urls import path
+
+from .forms import UserLoginForm
+from .views import AutorizacionSolitudView, AgregarAlCarritoView
+from .views import CancelarOrdenView
+from .views import CarritoView
+from .views import CatalogoView
+from .views import DetallesArticuloView
+from .views import DetallesOrdenView
+from .views import FiltrosView
+from .views import HistorialSolicitudesView
+from .views import MenuView, ActualizarPerfilView
+from .views import SolicitudView
 
 urlpatterns = [
     # login
@@ -26,61 +35,85 @@ urlpatterns = [
 
     path(
         route='menu',
-        view=views.Permisos.as_view(),
+        view=MenuView.as_view(),
         name='menu'
     ),
 
     path(
         route='carrito',
-        view=views.CarritoView.as_view(),
+        view=CarritoView.as_view(),
         name='carrito'
     ),
+
+    path(
+        route='carrito/<str:action>',
+        view=CarritoView.as_view(),
+        name='carrito_accion'
+    ),
+
+
     path(
         route='filtros',
-        view=views.FiltrosView.as_view(),
+        view=FiltrosView.as_view(),
         name='filtros'
     ),
 
     path(
         route='solicitud',
-        view=views.SolicitudView.as_view(),
+        view=SolicitudView.as_view(),
         name='solicitud'
     ),
 
     path(
         route='catalogo',
-        view=views.CatalogoView.as_view(),
+        view=CatalogoView.as_view(),
         name='catalogo'
     ),
+
     path(
         route="historial_solicitudes",
-        view=views.HistorialSolicitudesView.as_view(),
+        view=HistorialSolicitudesView.as_view(),
         name='historial_solicitudes'
     ),
+
     path(
         route="detalles_orden/<int:id>",
-        view=views.DetallesOrdenView.as_view(),
+        view=DetallesOrdenView.as_view(),
         name='detalles_orden'
     ),
 
     path(
-        route='detalles_articulo',
-        view=views.DetallesArticuloView.as_view(),
+        route='detalles_articulo/<int:id>/',
+        view=DetallesArticuloView.as_view(),
         name='detalles_articulo'
     ),
 
     path(
+        route='agregar_al_carrito/<int:articulo_id>/',
+        view=AgregarAlCarritoView.as_view(),
+        name='agregar_al_carrito'
+    ),
+
+    path(
         route='cancelar_orden',
-        view=views.CancelarOrdenView.as_view(),
+        view=CancelarOrdenView.as_view(),
         name='cancelar_orden'
     ),
+
     path(
         route='autorizacion_solicitudes',
-        view=views.AutorizacionSolitudView.as_view(),
+        view=AutorizacionSolitudView.as_view(),
         name='autorizacion_solicitudes'
     ),
+
+    path(
+        route='actualizar_perfil',
+        name='actualizar_perfil',
+        view=ActualizarPerfilView.as_view()
+    )
 ]
 
 # https://github.com/fabiocaccamo/django-admin-interface/issues/4
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

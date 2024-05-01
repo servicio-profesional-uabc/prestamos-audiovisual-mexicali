@@ -12,7 +12,6 @@
         <title>Vista de prueba</title>
     </head>
 
-
     <div class="text-center mt-5">
         <h4>Filtro para el catálogo de equipo</h4><br/>
         <p>Para continuar al catálogo es necesario que captures los siguientes datos.
@@ -21,8 +20,8 @@
     <hr class="hr"/>
 
 
-    <div class="container text-center mt-3 justify-content-center">
-        <form method="POST" action=".">
+        <div class="container text-center mt-3 justify-content-center">
+        <form method="POST" action="{% url 'filtros' %}">
             {% csrf_token %}
 
             {% if form.errors %}
@@ -52,10 +51,10 @@
                 {% render_field form.hora_inicio class="form-select" %}
             </div>
 
-        <div class="row mb-4 mt-2">
-            <h5>Selecciona la fecha</h5>
-            {% render_field form.inicio type="date" class="form-control" placeholder="selecciona una fecha de inicio" %}
-        </div>
+            <div class="row mb-4 mt-2">
+                <h5>Selecciona la fecha</h5>
+                {% render_field form.inicio type="date" class="form-control" placeholder="selecciona una fecha de inicio" %}
+            </div>
 
             <div class="row">
                 <div class="col text-center">
@@ -79,8 +78,6 @@
                                 </div>
 
                                 <div class="modal-footer">
-                                    {#                                <input type="hidden" id="time-input" name="time">#}
-                                    {#                                <input type="hidden" id="materia-input" name="materia">#}
                                     <button type="submit" class="btn btn-danger">Continuar</button>
                                 </div>
                             </div>
@@ -90,15 +87,17 @@
             </div>
         </form>
 
-        {#    <script>#}
-        {#        function setTime(time) {#}
-        {#            document.getElementById("time-input").value = time;#}
-        {#        }#}
-        {##}
-        {#        function setMateria() {#}
-        {#            var selectedMateria = document.getElementById("materia").value;#}
-        {#            document.getElementById("materia-input").value = selectedMateria;#}
-        {#        }#}
-        {#    </script>#}
-    </div>
+
+{#    <script>#}
+{#        function setTime(time) {#}
+{#            document.getElementById("time-input").value = time;#}
+{#        }#}
+{##}
+{#        function setMateria() {#}
+{#            var selectedMateria = document.getElementById("materia").value;#}
+{#            document.getElementById("materia-input").value = selectedMateria;#}
+{#        }#}
+{#    </script>#}
+
+</div>
 {% endblock %}
