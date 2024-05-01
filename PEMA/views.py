@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.views import View
 
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Carrito, Articulo, ArticuloCarrito
+from .models import Carrito, Articulo
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
@@ -78,7 +78,7 @@ class MenuView(View, LoginRequiredMixin):
 
 
 class CarritoView(View):
-    def get(self, request):
+    def get(self, request, accion=None):
         # TODO: falta verificar si el usuario tiene carrito
         prestatario = Prestatario.get_user(request.user)
 
@@ -87,6 +87,14 @@ class CarritoView(View):
             return HttpResponse("No tiene carrito")
 
         carrito = prestatario.carrito()
+
+        if accion == 'ordenar':
+            carrito.ordenar()
+            return render(
+                request=request,
+                template_name="carrito.html",
+                context={}
+            )
 
         return render(
             request=request,

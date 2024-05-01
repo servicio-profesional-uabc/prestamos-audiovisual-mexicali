@@ -8,31 +8,23 @@
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
     </head>
 
-    <main>
-        <div class="container order-details-container">
-            <h2>Carrito</h2>
-            <hr class="hr"/>
-            <div class="order-items">
-                <h4>Artículos en el carrito</h4>
+    <div class="container order-details-container">
+        <h2>Carrito</h2>
+        <hr class="hr"/>
+        <div class="order-items">
+            <h4>Artículos en el carrito</h4>
 
             <ul>
-               {% for articuloCarrito in articulos_carrito %}
-                   <li>
-                   ({{ articuloCarrito.unidades }}) {{ articuloCarrito.articulo.nombre }}
-                   </li>
+                {% for articuloCarrito in articulos_carrito %}
+                    <li>
+                        ({{ articuloCarrito.unidades }}) {{ articuloCarrito.articulo.nombre }}
+                    </li>
                 {% endfor %}
             </ul>
 
-
-            </div>
-            <div class="buttons">
-                <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar</a>
-            </div>
         </div>
-
-        {% if carrito.vacio %}
-
-        {% endif %}
-
+        <a href="{% url 'catalogo' %}" class="btn btn-secondary buttons">Regresar</a>
+        <a href="{% url 'carrito_accion' 'ordenar' %}" class="btn btn-secondary buttons">Ordenar</a>
+    </div>
 
 {% endblock %}
