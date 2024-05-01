@@ -480,11 +480,11 @@ class Articulo(models.Model):
             _unidades__in=self.unidades()
         ).filter((
             # ordenes activas en el rango
-                Q(inicio=inicio) |
-                Q(final=final) |
-                Q(inicio__lt=inicio, final__gt=inicio) |
-                Q(inicio__lt=final, final__gt=final) |
-                Q(inicio__gt=inicio, final__lt=final)
+            Q(inicio=inicio) |
+            Q(final=final) |
+            Q(inicio__lt=inicio, final__gt=inicio) |
+            Q(inicio__lt=final, final__gt=final) |
+            Q(inicio__gt=inicio, final__lt=final)
         ))
 
         unidades_reservadas = Unidad.objects.filter(orden__in=ordenes_reservadas)
@@ -793,11 +793,14 @@ class Carrito(models.Model):
         data.unidades = unidades
         data.save()
 
-    def articulos_carrito(self):
-        return self._articulos.all()
+    def articulos_carrito(self) -> QuerySet['ArticuloCarrito']:
+        return ArticuloCarrito.objects.filter(propietario=self)
 
     def eliminar(self):
         self.delete()
+
+    def vacio(self):
+        return self.articulos().count() == 0
 
     def articulos(self):
         """
@@ -831,7 +834,7 @@ class Carrito(models.Model):
                         raise Exception("No hay suficientes unidades disponibles")
 
                     # elige la cantidad de elementos al azar
-                    shuffle(unidades)
+                    unidades.order_by('?')
                     for i in range(0, len_unidades):
                         orden.agregar_unidad(unidades[i])
 
