@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
 from phonenumber_field.formfields import PhoneNumberField
 
-from .models import Carrito, Materia, Perfil
+from .models import Carrito, Materia, Perfil, Prestatario
 
 
 class UpdateUserForm(forms.ModelForm):
@@ -34,10 +34,6 @@ class UserLoginForm(AuthenticationForm):
 
 
 # Forms para Filtros/Carrito
-class DateInput(forms.DateInput):
-    input_type = 'date'
-
-
 class FiltrosForm(forms.ModelForm):
     """
     Form para filtrar catalogo/carrito
@@ -51,15 +47,13 @@ class FiltrosForm(forms.ModelForm):
 
     class Meta:
         model = Carrito
-        fields = ['inicio', 'materia', 'nombre']
+        fields = ['inicio', 'nombre', 'materia']
 
     nombre = forms.CharField(required=True, max_length=250,
                              validators=[MaxLengthValidator(
                                 limit_value=250,
                                 message='El nombre de la práctica o producción es mayor a 250 caracteres. Intente de nuevo.')]
                             )
-
-    materia = forms.ModelChoiceField(required=True, queryset=None)
 
     duracion = forms.ChoiceField(required=True, choices=(
         (1, "1 hora"),
@@ -72,6 +66,8 @@ class FiltrosForm(forms.ModelForm):
         (72, "3 días (72h)"),
         (96, "4 dias (96h)"),
     ))
+
+    #materia = forms.ModelChoiceField(queryset=Materia.objects.none(), required=True, empty_label='--------------------')
 
     hora_inicio = forms.ChoiceField(required=True, choices=(
         (time(hour=9, minute=0, second=0), '9:00 AM'),
@@ -100,9 +96,13 @@ class FiltrosForm(forms.ModelForm):
     ))
 
     def clean_hora_inicio(self):
+        """
+        El form capturado por usuario regresa str entonces convierte a objeto time
+        :return: Objeto time de datetime
+        """
         hora_inicio = self.cleaned_data.get('hora_inicio')
-        print(f'clean hora inicio {hora_inicio}')
-        return hora_inicio
+        # print(f'clean hora inicio {hora_inicio}')
+        return datetime.strptime(hora_inicio, '%H:%M:%S').time()
 
     def clean_inicio(self):
         inicio = self.cleaned_data.get('inicio')
@@ -112,5 +112,5 @@ class FiltrosForm(forms.ModelForm):
         if inicio.date() < (date.today() + timedelta(days=3)):
             raise forms.ValidationError("Por favor elija una fecha tres días a partir de hoy.")
 
-        print(f'clean inicio {inicio}')
+        # print(f'clean inicio {inicio}')
         return inicio

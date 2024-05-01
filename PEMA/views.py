@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
@@ -6,6 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.utils.timezone import make_aware
 from django.views import View
 
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
@@ -92,8 +95,6 @@ class FiltrosView(View, LoginRequiredMixin):
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
-        # TODO: Pasar materias por context
-
         return render(
             request=request,
             template_name="filtros.html",
@@ -107,20 +108,40 @@ class FiltrosView(View, LoginRequiredMixin):
         prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
+        print(request.POST)
+        print(form.errors)
+
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
         if form.is_valid():
+            inicio = form.cleaned_data.get('inicio')
+            hora_inicio = form.cleaned_data.get('hora_inicio')
+            duracion = form.cleaned_data.get('duracion')
+
             # se crea un nuevo carrito
             carrito_nuevo = form.save(commit=False)
             carrito_nuevo.prestatario = request.user
+
+            # TODO: Enhancement - Realizar estas operaciones en sus propios métodos de Carrito
+            tiempo_duracion = int(duracion)
+
+            fecha_inicio = datetime.combine(inicio, hora_inicio)
+
+            # Guardar fechas actualizadas
+            carrito_nuevo.inicio = make_aware(fecha_inicio)
+            carrito_nuevo.final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
+
             carrito_nuevo.save()
             return redirect("catalogo")
 
+        # form = FiltrosForm()
+        # form.fields['materia'].choices = [(materia.pk, materia.nombre) for materia in prestatario.materias()]
         return render(
             request=request,
-            context={'form': form},
+            context={'form': FiltrosForm(),
+                     'materias': prestatario.materias()},
             template_name="filtros.html",
         )
 
