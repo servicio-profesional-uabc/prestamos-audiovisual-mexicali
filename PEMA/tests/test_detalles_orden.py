@@ -19,7 +19,7 @@ class DetallesOrdenViewTestCase(TestCase):
 
         self.orden = Orden.objects.create(prestatario=self.user, nombre="Lorem ipsum dolor sit amet",
                                           lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
-                                          final=make_aware(datetime(2024, 10, 5)), estado=EstadoOrden.PENDIENTE_AP,
+                                          final=make_aware(datetime(2024, 10, 5)),
                                           materia=self.materia, )
 
     def test_get_detalles_orden(self):

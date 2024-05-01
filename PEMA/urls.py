@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import AutorizacionSolitudView
+from .views import AutorizacionSolitudView, AgregarAlCarritoView
 from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
@@ -44,6 +44,14 @@ urlpatterns = [
         view=CarritoView.as_view(),
         name='carrito'
     ),
+
+    path(
+        route='carrito/<str:action>',
+        view=CarritoView.as_view(),
+        name='carrito_accion'
+    ),
+
+
     path(
         route='filtros',
         view=FiltrosView.as_view(),
@@ -61,11 +69,13 @@ urlpatterns = [
         view=CatalogoView.as_view(),
         name='catalogo'
     ),
+
     path(
         route="historial_solicitudes",
         view=HistorialSolicitudesView.as_view(),
         name='historial_solicitudes'
     ),
+
     path(
         route="detalles_orden/<int:id>",
         view=DetallesOrdenView.as_view(),
@@ -78,6 +88,11 @@ urlpatterns = [
         name='detalles_articulo'
     ),
 
+    path(
+        route='agregar_al_carrito/<int:articulo_id>/',
+        view=AgregarAlCarritoView.as_view(),
+        name='agregar_al_carrito'
+    ),
 
     path(
         route='cancelar_orden',
