@@ -44,6 +44,14 @@ urlpatterns = [
         view=CarritoView.as_view(),
         name='carrito'
     ),
+
+    path(
+        route='carrito/<str:action>',
+        view=CarritoView.as_view(),
+        name='carrito_accion'
+    ),
+
+
     path(
         route='filtros',
         view=FiltrosView.as_view(),
@@ -61,11 +69,13 @@ urlpatterns = [
         view=CatalogoView.as_view(),
         name='catalogo'
     ),
+
     path(
         route="historial_solicitudes",
         view=HistorialSolicitudesView.as_view(),
         name='historial_solicitudes'
     ),
+
     path(
         route="detalles_orden/<int:id>",
         view=DetallesOrdenView.as_view(),
