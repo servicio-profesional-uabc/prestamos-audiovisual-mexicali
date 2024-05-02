@@ -242,9 +242,16 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         return prestatario == carrito.prestatario
 
     def get(self, request):
+        prestatario = Prestatario.get_user(self.request.user)
+        if not prestatario.tiene_carrito():
+            # TODO: solucion rapida
+            return HttpResponse("No tiene carrito")
+
+        carrito = prestatario.carrito()
         return render(
             request=request,
-            template_name="catalogo.html"
+            template_name="catalogo.html",
+            context={"carrito": carrito}
         )
 
 

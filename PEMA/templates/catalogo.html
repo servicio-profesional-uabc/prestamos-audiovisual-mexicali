@@ -48,6 +48,13 @@
 
     <div class="container mt-5">
         <h4>Categorias</h4>
+        {% if carrito %}
+            {% for articulo in carrito.materia.articulos %}
+                <h5>Articulos: {{articulo.nombre}}
+            {% endfor %}
+        {% endif %}
+
+        <!--
         {% if categorias %}
             {% for categoria in categorias %}
                 <h3>Nombre: {{categoria.nombre }} </h3>
@@ -63,6 +70,8 @@
                 {% endfor %}
             {% endfor %}
         {% endif %}
+        -->
+        
     </section>
 
         <!-- Botones para regresar o continuar -->
