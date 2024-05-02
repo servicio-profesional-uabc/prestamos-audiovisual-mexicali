@@ -137,3 +137,27 @@ footer p {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
 }
+
+.container-sm {
+    max-width: 700px; 
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #00723F;
+}
+
+
+.green-separator {
+    border-color: #00723F; 
+    border-width: 1px;
+    border-style: solid;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+}
+
+.list-group-item {
+    border: 1px solid #00723F; 
+    border-radius: 0;
+
+}
+
