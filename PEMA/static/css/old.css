@@ -1,0 +1,90 @@
+
+body.custom-background-color {
+    background-color: #f9f9f9;
+}
+
+.navbar.custom-navbar-bg {
+    background-color: #f9f9f9;
+}
+
+/* Estilos para el formulario */
+
+/* Estilos para los campos de entrada */
+
+/* Estilos para el botón de confirmar */
+button[type="submit"] {
+    background-color: #00723F;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #012616;
+    /* Cambio de color de fondo al pasar el mouse */
+}
+
+/* Estilos para el botón de regresar */
+a.btn {
+    background-color: #DD971A;
+    color: #fff;
+}
+
+a.btn:hover {
+    background-color: #b38600;
+    /* Cambio de color de fondo al pasar el mouse */
+}
+
+
+/**Estilos para detalles de orden*/
+
+.form-container {
+}
+
+.order-details-container {
+    background-color: #f9f9f9;
+}
+
+.order-items ul {
+    list-style-type: none;
+}
+
+.buttons .btn-danger {
+    background-color: #00723F;
+    color: #fff;
+}
+
+.buttons .btn-danger:hover {
+    background-color: #012616;
+}
+
+/**footer**/
+footer {
+    background-color: #00723F;
+    color: #fff;
+    text-align: center;
+}
+
+.list-group-item {
+    background-color: #00723F;
+    color: white;
+}
+
+.container-prestamos {
+    background-color: #f9f9f9;
+}
+
+.container-sm {
+    border-radius: 10px;
+}
+
+
+.green-separator {
+    border-color: #00723F;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.list-group-item {
+    border: 1px solid #00723F;
+}

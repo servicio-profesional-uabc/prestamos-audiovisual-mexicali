@@ -2,51 +2,46 @@
 {% load static %}
 {% load widget_tweaks %}
 
+{% block head %}
+    <title>Vista de prueba</title>
+{% endblock %}
+
 {% block content %}
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <div class="container col-12 col-md-6">
 
-        <link rel="stylesheet" href="{% static 'css/style.css' %}">
-        <title>Vista de prueba</title>
-    </head>
+        <div class="text-center mt-5">
+            <h4>Detalles de la Producción</h4>
+            <p>Para continuar al catálogo es necesario que captures los siguientes datos.
+                <br/>Esto sirve para mostrar el equipo del catálogo que está disponible.</p>
+        </div>
 
-    <div class="text-center mt-5">
-        <h4>Filtro para el catálogo de equipo</h4><br/>
-        <p>Para continuar al catálogo es necesario que captures los siguientes datos.
-            <br/>Esto sirve para mostrar el equipo del catálogo que está disponible.</p>
-    </div>
-    <hr class="hr"/>
+        <hr class="hr"/>
 
+        <div class="container text-center mt-3 justify-content-center pt-3 pb-5">
+            <form class="form" method="POST" action="{% url 'filtros' %}">
+                {% csrf_token %}
 
-    <div class="container text-center mt-3 justify-content-center">
-        <form class="form" method="POST" action="{% url 'filtros' %}">
-            {% csrf_token %}
-
-            {% if form.errors %}
-                <div class="errors">
-                    <ul>
-                        {% for field, error_list in form.errors.items %}
-                            {% for error in error_list %}
-                                <li>{{ field }}: {{ error }}</li>
+                {% if form.errors %}
+                    <div class="errors">
+                        <ul>
+                            {% for field, error_list in form.errors.items %}
+                                {% for error in error_list %}
+                                    <li>{{ field }}: {{ error }}</li>
+                                {% endfor %}
                             {% endfor %}
-                        {% endfor %}
-                    </ul>
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Nombre</span>
+                    {% render_field form.nombre class="form-control" %}
                 </div>
-            {% endif %}
 
-            <div class="row mb-4 mt-2">
-                <h5>Nombre de la práctica o producción</h5>
-                {#                <label for="nombre" class="col-sm-2 col-form-label">Nombre de la práctica</label>#}
-                {% render_field form.nombre class="form-control"%}
-            </div>
-
-            <h5 class="mt-2">Seleccionar materia y duración del préstamo</h5>
-            <div class="row mb-4 mt-2">
-                <div class="col me-3">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Materia</span>
                     <select id="materia" name="materia" class="dropdown form-select" required>
-                        <option class="dropdown-item">--------------</option>
                         {% if materias %}
                             {% for materia in materias %}
                                 <option class="dropdown-item" value="{{ materia.pk }}">{{ materia }}</option>
@@ -54,50 +49,51 @@
                         {% endif %}
                     </select>
                 </div>
-                <div class="col">
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Fecha de inicio</span>
+                    {% render_field form.inicio type="date" class="form-control" placeholder="selecciona una fecha de inicio" %}
+                    <span class="input-group-text">Hora de inicio</span>
+                    {% render_field form.hora_inicio class="form-select" %}
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Duración</span>
                     {% render_field form.duracion class="form-select" %}
                 </div>
-            </div>
 
-            <div class="row mb-5">
-                <h5>Selecciona la hora</h5>
-                {% render_field form.hora_inicio class="form-select" %}
-            </div>
 
-            <div class="row mb-4 mt-2">
-                <h5>Selecciona la fecha</h5>
-                {% render_field form.inicio type="date" class="form-control" placeholder="selecciona una fecha de inicio" %}
-            </div>
+                <div class="row">
+                    <div class="col text-center">
+                        <a href="menu" class="btn btn-secondary me-5">Regresar</a>
+                        <button id="boton_aceptar" type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#modalContinuar">Aceptar filtro
+                        </button>
 
-            <div class="row">
-                <div class="col text-center">
-                    <a href="menu" class="btn btn-secondary me-5">Regresar</a>
-                    <button id="boton_aceptar" type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#modalContinuar">Aceptar filtro
-                    </button>
+                        <div class="modal fade" id="modalContinuar" tabindex="-1" aria-labelledby="continuarModalLabel"
+                             aria-hidden="true">
+                            <div class="modal-dialog ">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="continuarModalLabel">Confirmar filtro</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                    </div>
 
-                    <div class="modal fade" id="modalContinuar" tabindex="-1" aria-labelledby="continuarModalLabel"
-                         aria-hidden="true">
-                        <div class="modal-dialog ">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="continuarModalLabel">Confirmar filtro</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                </div>
+                                    <div class="modal-body">
+                                        ¿Desea continuar al catálogo?
+                                    </div>
 
-                                <div class="modal-body">
-                                    ¿Desea continuar al catálogo?
-                                </div>
-
-                                <div class="modal-footer">
-                                    <button type="submit" class="btn btn-danger">Continuar</button>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-danger">Continuar</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
+
 {% endblock %}
