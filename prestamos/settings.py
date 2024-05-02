@@ -103,15 +103,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Login
+LOGIN_REDIRECT_URL = 'menu'
+LOGOUT_REDIRECT_URL = ''
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'es-mx'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -119,9 +120,6 @@ USE_TZ = True
 
 STATIC_ROOT = 'static/'
 STATIC_URL = 'static/'
-
-LOGIN_REDIRECT_URL = 'menu'
-LOGOUT_REDIRECT_URL = ''
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

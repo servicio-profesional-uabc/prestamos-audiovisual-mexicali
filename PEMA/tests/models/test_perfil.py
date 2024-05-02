@@ -27,11 +27,12 @@ class TestPerfil(TestCase):
         )
 
     def test_crear_perfil(self):
-        perfil, creado = Perfil.user_data(self.prestatario)
-        self.assertFalse(creado, msg="El Usuario No tiene perfil")
+        # TODO: que pasa si un usuario no tiene perfil
+        perfil = Perfil.user_data(self.prestatario)
+        self.assertIsNotNone(perfil)
 
     def test_obtener_informacion(self):
-        perfil, creado = Perfil.user_data(self.prestatario)
+        perfil = Perfil.user_data(self.prestatario)
 
         self.assertEqual(perfil.nombre(), self.first_name)
         self.assertEqual(perfil.apellido(), self.last_name)

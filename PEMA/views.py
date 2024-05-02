@@ -1,21 +1,20 @@
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect, get_object_or_404
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseNotAllowed
-from django.http import HttpResponse
-from django.http import HttpResponseBadRequest
-from django.http import HttpResponseRedirect
-from django.views import View
-from django.core.mail import send_mail
+from datetime import datetime, timedelta
+
 from django.conf import settings
-from django.http import HttpResponse
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
-from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, Reporte
-from django.urls import reverse
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
-from django.utils import timezone
-from django.db import IntegrityError
+from django.shortcuts import render
+from django.utils.timezone import make_aware
+from django.views import View
+
+from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .models import Carrito, Articulo
+from .models import Orden, Prestatario, EstadoOrden, Perfil
+
 
 class IndexView(View):
     def get(self, request):
@@ -24,13 +23,57 @@ class IndexView(View):
             template_name="index.html"
         )
 
-class MenuView(View):
+
+class ActualizarPerfilView(LoginRequiredMixin, View):
+    """
+    Vista para registrar los datos faltantes del usuario
+    """
+
     def get(self, request):
-        matricula = request.user.username
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': ActualizarPerfil(),
+                'form_actualizar_usuario': UpdateUserForm(),
+            }
+        )
+
+    def post(self, request):
+        perfil = Perfil.user_data(user=request.user)
+
+        perfil_form = ActualizarPerfil(request.POST, instance=perfil)
+        usuario = UpdateUserForm(request.POST, instance=request.user)
+
+        if perfil_form.is_valid() and usuario.is_valid():
+            perfil_form.save()
+            usuario.save()
+            return redirect('menu')
+
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': perfil_form,
+                'form_actualizar_usuario': usuario,
+            }
+        )
+
+
+class MenuView(View, LoginRequiredMixin):
+    def get(self, request):
+        # Todos los usaurios deben tener perfil
+        # TODO: pantalla de error si no existe el Pefil
+        datos_usuario = Perfil.user_data(user=request.user)
+
+        if datos_usuario.incompleto():
+            # el usuario tiene datos incompletos
+            return redirect('actualizar_perfil')
+
         return render(
             request=request,
             template_name="menu.html",
-            context={'matricula':matricula}
+            context={'matricula': request.user.username, 'user': request.user}
         )
 
     def post(self, request):
@@ -38,18 +81,92 @@ class MenuView(View):
 
 
 class CarritoView(View):
-    def get(self, request):
+    def get(self, request, accion=None):
+        # TODO: falta verificar si el usuario tiene carrito
+        prestatario = Prestatario.get_user(request.user)
+
+        if not prestatario.tiene_carrito():
+            # TODO: solucion rapida
+            return HttpResponse("No tiene carrito")
+
+        carrito = prestatario.carrito()
+
+        if accion == 'ordenar':
+            carrito.ordenar()
+            return render(
+                request=request,
+                template_name="carrito.html",
+                context={}
+            )
+
         return render(
             request=request,
-            template_name="carrito.html"
+            template_name="carrito.html",
+            context={
+                "articulos_carrito": carrito.articulos_carrito(),
+                "carrito": carrito
+            }
         )
 
-class FiltrosView(View):
+
+class FiltrosView(View, LoginRequiredMixin):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+
+        if prestatario.tiene_carrito():
+            # Si ya hay un carrito se borra
+            prestatario.carrito().eliminar()
+
         return render(
             request=request,
-            template_name="filtros.html"
+            template_name="filtros.html",
+            context={
+                'form': FiltrosForm(),
+                'materias': prestatario.materias(),
+            },
         )
+
+    def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        form = FiltrosForm(request.POST)
+
+        print(request.POST)
+        print(form.errors)
+
+        if prestatario.tiene_carrito():
+            # Si ya hay un carrito se borra
+            prestatario.carrito().eliminar()
+
+        if form.is_valid():
+            inicio = form.cleaned_data.get('inicio')
+            hora_inicio = form.cleaned_data.get('hora_inicio')
+            duracion = form.cleaned_data.get('duracion')
+
+            # se crea un nuevo carrito
+            carrito_nuevo = form.save(commit=False)
+            carrito_nuevo.prestatario = request.user
+
+            # TODO: Enhancement - Realizar estas operaciones en sus propios métodos de Carrito
+            tiempo_duracion = int(duracion)
+
+            fecha_inicio = datetime.combine(inicio, hora_inicio)
+
+            # Guardar fechas actualizadas
+            carrito_nuevo.inicio = make_aware(fecha_inicio)
+            carrito_nuevo.final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
+
+            carrito_nuevo.save()
+            return redirect("catalogo")
+
+        # form = FiltrosForm()
+        # form.fields['materia'].choices = [(materia.pk, materia.nombre) for materia in prestatario.materias()]
+        return render(
+            request=request,
+            context={'form': FiltrosForm(),
+                     'materias': prestatario.materias()},
+            template_name="filtros.html",
+        )
+
 
 class SolicitudView(View):
     def get(self, request):
@@ -58,31 +175,6 @@ class SolicitudView(View):
             template_name="solicitud.html"
         )
 
-
-class Permisos(View):
-    def get(self, request):
-        if request.user.is_authenticated:
-            nombre_grupo_perteneciente = request.user.groups.first().name
-            if nombre_grupo_perteneciente:
-                if nombre_grupo_perteneciente == "prestatario":
-                    prestatario_group = Group.objects.get(name='prestatarios')
-                    permisos = prestatario_group.permissions.all()
-                elif nombre_grupo_perteneciente == "maestro":
-                    maestro_group = Group.objects.get(name='maestro')
-                    permisos = maestro_group.permissions.all()
-                elif nombre_grupo_perteneciente == "coordinador":
-                    coordinador_group = Group.objects.get(name='coordinador')
-                    permisos = coordinador_group.permissions.all()
-                elif nombre_grupo_perteneciente == "almacen":
-                    almacen_group = Group.objects.get(name='almacen')
-                    permisos = almacen_group.permissions.all()
-
-
-        return render(
-            request=request,
-            template_name="menu.html",
-            context={'grupo': nombre_grupo_perteneciente}
-        )
 
 class HistorialSolicitudesView(View):
     def get(self, request):
@@ -97,7 +189,6 @@ class HistorialSolicitudesView(View):
         try:
             solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_CR)
             solicitudes_pendientes_cr.order_by('emision')
-            #print(solicitudes_pendientes_cr.get(lugar=Orden.Ubicacion.EXTERNO))
         except:
             solicitudes_pendientes_cr = None
 
@@ -119,12 +210,11 @@ class HistorialSolicitudesView(View):
         except:
             solicitudes_canceladas = None
 
-
-        context = {'solicitudes_pendientes_ap' : solicitudes_pendientes_ap,
-                   'solicitudes_pendientes_cr' : solicitudes_pendientes_cr,
-                   'solicitudes_aprobadas' : solicitudes_aprobadas,
-                   'solicitudes_rechazadas' : solicitudes_rechazadas,
-                   'solicitudes_canceladas' : solicitudes_canceladas,}
+        context = {'solicitudes_pendientes_ap': solicitudes_pendientes_ap,
+                   'solicitudes_pendientes_cr': solicitudes_pendientes_cr,
+                   'solicitudes_aprobadas': solicitudes_aprobadas,
+                   'solicitudes_rechazadas': solicitudes_rechazadas,
+                   'solicitudes_canceladas': solicitudes_canceladas, }
 
         return render(
             request=request,
@@ -133,11 +223,10 @@ class HistorialSolicitudesView(View):
         )
 
 
-
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         prestatario = Prestatario.get_user(self.request.user)
-        orden = Orden.objects.get(id=self.kwargs['id'])
+        orden = get_object_or_404(Orden, id=self.kwargs['id'])
         return prestatario == orden.prestatario
 
     def get(self, request, id):
@@ -148,21 +237,49 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
             context={"orden": orden}
         )
 
+    def post(self, request, id):
+        orden = get_object_or_404(Orden, id=id)
+        orden.estado = EstadoOrden.CANCELADA
+        orden.save()
+        messages.success(request, "Haz cancelado tu orden exitosamente.")
+        return redirect("historial_solicitudes")
+
 
 class CatalogoView(View):
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        articulos = Articulo.objects.all()
+
+        if not prestatario.tiene_carrito():
+            return redirect("filtros")
+
         return render(
             request=request,
-            template_name="catalogo.html"
+            template_name="catalogo.html",
+            context={"articulos": articulos},
         )
 
 
 class DetallesArticuloView(View):
-    def get(self, request):
+    def get(self, request, id):
+        articulo = get_object_or_404(Articulo, id=id)
+
         return render(
             request=request,
-            template_name="detalles_articulo.html"
+            template_name="detalles_articulo.html",
+            context={"articulo": articulo},
         )
+
+
+class AgregarAlCarritoView(View):
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.agregar(articulo, 1)
+        carrito.save()
+
+        return redirect("catalogo")
 
 
 class CancelarOrdenView(View):
@@ -170,6 +287,14 @@ class CancelarOrdenView(View):
         return render(
             request=request,
             template_name="cancelar_orden.html"
+        )
+
+
+class AutorizacionSolitudView(View):
+    def get(self, request):
+        return render(
+            request=request,
+            template_name="autorizacion_solicitudes.html"
         )
 
 
@@ -186,247 +311,3 @@ def test(request):
     )
 
     return HttpResponse("OK")
-
-
-class RecuperarContrasenaView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="recuperar_contrasena.html"
-        )
-
-
-
-###################ADMINISTRADOR##########################
-class InventarioView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="administrador_permisos/inventario.html"
-        )
-
-class UsuariosMateriasView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="administrador_permisos/usuarios_y_materias.html"
-        )
-
-
-######################ALMACEN###############################
-
-#######################VISTA PRINCIPAL#########################
-class PrincipalAlmacenView(View):
-    def get(self, request):
-        ordenes_aprobadas = Orden.objects.filter(estado=EstadoOrden.APROBADA)
-
-        print("ESTOOO",ordenes_aprobadas)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/principal.html",
-            context={"ordenes": ordenes_aprobadas}
-        )
-
-
-#########ORDENES AUTORIZADAS#############
-
-
-class DetallesOrdenAutorizadaView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.APROBADA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_autorizada.html",
-            context={"orden": orden}
-        )
-
-
-
-#############ORDENES PRESTADAS#######################
-class OrdenesPrestadasView(View):
-    def get(self, request):
-        ordenes_prestadas = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
-
-        # AQUI SIN RPEORTESSS
-        ordenes_sin_reporte_activo = []
-
-        for orden in ordenes_prestadas:
-            if not orden.reporte() or orden.reporte().estado != Reporte.Estado.ACTIVO:
-                ordenes_sin_reporte_activo.append(orden)
-
-        print("ESTOOO 2", ordenes_sin_reporte_activo)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_prestadas.html",
-            context={'ordenes': ordenes_sin_reporte_activo}
-        )
-
-
-
-
-class DetallesOrdenPrestadaView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.ENTREGADA)
-
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_prestada.html",
-            context={"orden": orden}
-        )
-
-
-
-##################ORDENES REPORTADAS#########################
-class OrdenesReportadasView(View):
-    def get(self, request):
-        ordenes_activas = Orden.objects.filter(reportes__estado=Reporte.Estado.ACTIVO)
-        print("ESTOOO 6", ordenes_activas)  # Comprueba si obtienes resultados aquí
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_reportadas.html",
-            context={'ordenes': ordenes_activas}
-        )
-
-
-
-class ReportarOrdenView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id)
-        return render(
-            request=request,
-            template_name="almacen_permisos/reportar_orden.html",
-            context={"orden":orden},
-        )
-
-
-class DetallesOrdenReportadaView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id)
-
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_reportada.html",
-            context={"orden": orden}
-        )
-
-
-#devolucion = recibir
-#prestar = entregar
-
-####################ORDENES DEVUELTAS#######################################
-class OrdenesDevueltasView(View):
-    def get(self, request):
-        ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.DEVUELTA)
-        print("EST 33",ordenes_devueltas)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_devueltas.html",
-            context={'ordenes': ordenes_devueltas}
-        )
-
-class DetallesOrdenDevueltaView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.DEVUELTA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_devuelta.html",
-            context={"orden": orden}
-        )
-
-
-
-
-
-
-
-#########################CORDINADOR########################
-class OrdenesReportadasCordinadorView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
-        )
-
-class DesactivarReportadasView(View):
-    def get(self, request, id):
-
-
-        return render(
-            request=request,
-            template_name="coordinador_permisos/desactivar_reportadas.html"
-        )
-
-
-##################################3
-def cambiar_estado_ENTREGADO(request, orden_id, estado):
-    if request.method == 'POST':
-        orden_id = request.POST.get('orden_id')
-        try:
-            orden = Orden.objects.get(id=orden_id)
-            orden.estado = EstadoOrden.ENTREGADA
-            orden.save()
-            return redirect('ordenes_prestadas')
-        except Orden.DoesNotExist:
-            return render(request, 'error.html', {'mensaje': 'La orden no existe'})
-    else:
-        return render(request, 'error.html', {'mensaje': 'Método no permitido'})
-
-def cambiar_estado_DEVUELTO(request, orden_id, estado):
-    if request.method == 'POST':
-        orden_id = request.POST.get('orden_id')
-        try:
-            orden = Orden.objects.get(id=orden_id)
-            orden.estado = EstadoOrden.DEVUELTA
-            orden.save()
-            return redirect('ordenes_devueltas')
-        except Orden.DoesNotExist:
-            return render(request, 'error.html', {'mensaje': 'La orden no existe'})
-    else:
-        return render(request, 'error.html', {'mensaje': 'Método no permitido'})
-
-
-class ReporteOrdenActivada(View):
-    def get(self, request, orden_id):
-        # Obtener la orden
-        orden = get_object_or_404(Orden, id=orden_id)
-        # Renderizar la plantilla para el formulario
-        return render(
-            request=request,
-            template_name="almacen_permisos/tramite_orden_reportada.html",
-            context={'orden': orden}
-        )
-
-    def post(self, request, orden_id):
-        # Obtener la orden
-        orden = get_object_or_404(Orden, id=orden_id)
-
-        # Obtener el valor del campo "reporte" del formulario
-        reporte = request.POST.get('reporte')
-
-        # Verificar si la orden ya tiene un reporte
-        reporte_obj = orden.reporte()
-
-        if reporte_obj:
-            # Actualizar el reporte existente
-            reporte_obj.descripcion = reporte
-            reporte_obj.estado = Reporte.Estado.ACTIVO
-            reporte_obj.save()
-        else:
-            # Crear un nuevo reporte
-            Reporte.objects.create(
-                emisor=request.user,
-                orden=orden,
-                descripcion=reporte,
-                estado=Reporte.Estado.ACTIVO
-            )
-
-        # Redirigir a la página de detalles de la orden
-        return redirect('ordenes_reportadas')

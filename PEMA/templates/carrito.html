@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block content %}
@@ -8,34 +7,33 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
-<main>
-    <div class="container order-details-container">
-        <h2>Carrito</h2>
-        <hr class="hr"/>
-        <div class="order-items">
-            <h4>Artículos en el carrito</h4>
-            <ul>
-                <!--Si el carrito tiene articulos-->
-                {% if articulos %}
-                    <!--Por cada articulo en el carrito-->
-                    {% for articulo in articulos %}
-                        <li>
-                            <div class="order-item">
-                                <div class="order-item img">
-                                    <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}">
-                                </div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                <!--Si el carrito está vacío-->
-                {% else %}
-                    <p>No hay artículos en el carrito</p>
-                {% endif %}  
-            </ul>
-        </div>
-        <div class="buttons">
-            <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar</a>
-        </div>
+<div class="container-sm order-details-container ">
+    <h2>Carrito</h2>
+    <hr class="hr green-separator" />
+    <div class="order-items">
+        <h4>Artículos en el carrito</h4>
+
+        <ul class="list-group">
+            {% for articuloCarrito in articulos_carrito %}
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                style="background-color: #f9f9f9;">
+                <div class="d-flex align-items-center">
+                    <img src="{{ articuloCarrito.articulo.imagen.url }}"
+                         alt="{{ articuloCarrito.articulo.nombre }}"
+                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
+                         class="me-3">
+                    <span class="text-dark">{{ articuloCarrito.articulo.nombre }}</span>
+                </div>
+                <span class="badge bg-primary rounded-pill">{{ articuloCarrito.unidades }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+
     </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'catalogo' %}" class="btn btn-secondary me-3" style="background-color: #00723F;">Regresar</a>
+        <a href="{% url 'carrito_accion' 'ordenar' %}" class="btn btn-primary">Ordenar</a>
+    </div>
+</div>
 
 {% endblock %}

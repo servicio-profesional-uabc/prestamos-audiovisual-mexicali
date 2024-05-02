@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Actualizar Perfil</h2>
+
+    <div class="card shadow-lg" style="max-width: 600px; margin: 0 auto; border-color: green;">
+        <div class="card-body">
+            <form method="POST" action="{% url 'actualizar_perfil' %}">
+                {% csrf_token %}
+
+                {% if form_actualizar_perfil.errors or form_actualizar_usuario.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for error_list in form_actualizar_perfil.errors.values %}
+                                {% for error in error_list %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error_list in form_actualizar_usuario.errors.values %}
+                                {% for error in error_list %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    {% render_field form_actualizar_perfil.numero_telefono class="form-control" placeholder="Número de teléfono" %}
+                </div>
+
+                <div class="mb-3">
+                    {% render_field form_actualizar_usuario.email class="form-control" placeholder="Correo electrónico" %}
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

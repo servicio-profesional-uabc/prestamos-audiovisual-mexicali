@@ -99,19 +99,17 @@ class Prestatario(User):
         """
         return self.materia_set.all()
 
-    def carrito(self) -> Any | None:
+    def carrito(self) -> QuerySet['Carrito']:
         """
         Devuelve el carrito actual del prestatario, el usuario solo
         puede tener un carrito a la vez
 
         :return:  El carrito del prestatario o None si no existe.
         """
-        try:
-            carrito = Carrito.objects.get(prestatario=self)
-        except Carrito.DoesNotExist:
-            carrito = None
-        return carrito
+        return Carrito.objects.get(prestatario=self)
 
+    def tiene_carrito(self) -> bool:
+        return Carrito.objects.filter(prestatario=self).exists()
 
     def suspendido(self) -> bool:
         """
@@ -307,26 +305,33 @@ class Perfil(models.Model):
     están incluidos mediante métodos específicos.
 
     :ivar usuario: Usuario del perfil.
-    :ivar telefono: Número de teléfono.
+    :ivar numero_telefono: Número de teléfono.
     """
 
     usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
-    telefono = PhoneNumberField(null=True)
+    numero_telefono = PhoneNumberField(blank=True, null=False, region='MX')
 
     @classmethod
-    def user_data(cls, user: User) -> tuple['Perfil', bool]:
+    def user_data(cls, user: User) -> 'Perfil':
         """
         :param user: El usuario del cual se desea obtener el perfil.
         :returns: El perfil asociado al usuario.
         """
+        return Perfil.objects.get(usuario=user)
 
-        return Perfil.objects.get_or_create(usuario=user)
+    def incompleto(self):
+        # TODO: pruebas pendientes
+        return self.email().strip() == "" or self.telefono().strip() == ""
+
+    def telefono(self):
+        perfil = Perfil.user_data(user=self.usuario)
+        return str(perfil.numero_telefono)
 
     def email(self) -> str:
         """
         :return: Obtener el email del perfil
         """
-        return self.usuario.email
+        return str(self.usuario.email)
 
     def apellido(self) -> str:
         """
@@ -463,9 +468,8 @@ class Articulo(models.Model):
         ordenes_reservadas = Orden.objects.filter(
             # filtrar si ya está resevado o entregado el artículo
             estado__in=[
+                EstadoOrden.RESERVADA,
                 EstadoOrden.APROBADA,
-                EstadoOrden.PENDIENTE_AP,
-                EstadoOrden.PENDIENTE_CR,
                 EstadoOrden.ENTREGADA
             ],
 
@@ -486,7 +490,6 @@ class Articulo(models.Model):
         unidades_reservadas = Unidad.objects.filter(orden__in=ordenes_reservadas)
 
         return self.unidades().exclude(id__in=unidades_reservadas)
-
 
     def categorias(self) -> QuerySet['Categoria']:
         """Devuelve la lista de categorías en las que pertenece el artículo."""
@@ -545,28 +548,24 @@ class Unidad(models.Model):
 
 
 class TipoOrden(models.TextChoices):
-    """Opciones para el tipo de orden."""
+    """
+    Opciones para el tipo de orden.
+    """
     ORDINARIA = "OR", _("Ordinaria")
     EXTRAORDINARIA = "EX", _("Extraordinaria")
 
 
 class EstadoOrden(models.TextChoices):
     """
-     * `PENDIENTE_CR`: Esperando confirmación de los corresponsables.
-     * `PENDIENTE_AP`: Esperando aprobación del maestro o coordinador
-     * `RECHAZADA`: Orden rechazada por el maestro o coordinador.
-     * `APROBADA`: Orden aprobada por el maestro o coordinador.
-     * `CANCELADA`: Orden cancelado por el prestatario.
-     * `ENTREGADA`: Orden entregada al prestatario.
-     * `DEVUELTA`: Orden devuelta al Almacén.`
+    Define los posibles estados de una orden en el sistema.
+    Los estados son utilizados para seguir el progreso de una orden y determinar las acciones
+    disponibles para los usuarios y el personal del sistema.
     """
-    APROBADA = "AP", _("Listo para iniciar")
-    PENDIENTE_CR = "PC", _("Esperando corresponsables")
-    PENDIENTE_AP = "PA", _("Esperando autorización")
-    RECHAZADA = "RE", _("Rechazada")
-    CANCELADA = "CN", _("Cancelada")
-    ENTREGADA = "EN", _("Activa")
-    DEVUELTA = "DE", _("Terminado")
+    RESERVADA = "RS", _("Pendiente")  #: La orden ha sido creada, pero aún no ha sido procesada.
+    ENTREGADA = "EN", _("Entregada")  #: La orden ha sido completada y los productos solicitados han sido entregados.
+    CANCELADA = "CN", _("Cancelada")  #: La orden ha sido cancelada por el usuario o el administrador.
+    APROBADA = "AP", _("Listo para iniciar")  #: La orden ha sido aprobada y está lista para ser procesada.
+    DEVUELTA = "DE", _("Devuelta")  #: Los productos solicitados en la orden han sido devueltos al almacén.
 
 
 class Orden(models.Model):
@@ -608,7 +607,7 @@ class Orden(models.Model):
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
                              verbose_name='Lugar de la Producción')
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Especifico')
-    estado = models.CharField(default=EstadoOrden.PENDIENTE_CR, choices=EstadoOrden.choices, max_length=2)
+    estado = models.CharField(default=EstadoOrden.RESERVADA, choices=EstadoOrden.choices, max_length=2)
 
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
@@ -623,13 +622,13 @@ class Orden(models.Model):
     # automático
     emision = models.DateTimeField(auto_now_add=True)
 
-    def rechazar(self):
-        self.estado = EstadoOrden.RECHAZADA
+    def cancelar(self):
+        self.estado = EstadoOrden.CANCELADA
 
-    def rechazada(self):
-        return self.estado == EstadoOrden.RECHAZADA
+    def cancelada(self):
+        return self.estado == EstadoOrden.CANCELADA
 
-    def autorizar(self):
+    def aprobar(self):
         self.estado = EstadoOrden.APROBADA
 
     def entregada(self) -> bool:
@@ -641,10 +640,10 @@ class Orden(models.Model):
 
     def entregar(self, entregador):
         """
-        Actualiza el estado de la orden para indicar que se le entregó
+        Actualiza el estado de la orden para indicar que se le entregók
         el equipo al Prestatario.
         """
-        if self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.RECHAZADA or self.estado == EstadoOrden.DEVUELTA:
+        if self.estado == EstadoOrden.CANCELADA or self.estado == EstadoOrden.DEVUELTA:
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
@@ -768,8 +767,8 @@ class Carrito(models.Model):
     :ivar inicio: Fecha de inicio del préstamo.
     :ivar final: Fecha de devolución del préstamo.
     """
-
-    prestatario = models.OneToOneField(to=Prestatario, on_delete=models.CASCADE)
+    nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
+    prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
@@ -794,8 +793,14 @@ class Carrito(models.Model):
         data.unidades = unidades
         data.save()
 
-    def articulos_carrito(self):
-        return self._articulos.all()
+    def articulos_carrito(self) -> QuerySet['ArticuloCarrito']:
+        return ArticuloCarrito.objects.filter(propietario=self)
+
+    def eliminar(self):
+        self.delete()
+
+    def vacio(self):
+        return self.articulos().count() == 0
 
     def articulos(self):
         """
@@ -829,7 +834,7 @@ class Carrito(models.Model):
                         raise Exception("No hay suficientes unidades disponibles")
 
                     # elige la cantidad de elementos al azar
-                    shuffle(unidades)
+                    unidades.order_by('?')
                     for i in range(0, len_unidades):
                         orden.agregar_unidad(unidades[i])
 
