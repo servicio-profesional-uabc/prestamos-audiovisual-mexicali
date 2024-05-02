@@ -35,10 +35,8 @@ class Prestatario(User):
     def get_user(user: User) -> Any | None:
         """
         Obtiene el usuario prestatario
-
-        :param user: Usuario del que se quiere obtener el prestatario
-        :returns: Prestatario o None si no es Prestatario
         """
+
         try:
             user = Prestatario.objects.get(pk=user.pk)
         except Prestatario.DoesNotExist:
@@ -49,8 +47,6 @@ class Prestatario(User):
     def crear_usuario(*args, **kwargs) -> 'Prestatario':
         """
         Crea un usuario de tipo prestatario, util para hacer pruebas unitarias
-
-        :returns: usuario en el grupo de Prestatarios
         """
 
         grupo, _ = Prestatario.crear_grupo()

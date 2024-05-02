@@ -46,7 +46,7 @@ urlpatterns = [
     ),
 
     path(
-        route='carrito/<str:action>',
+        route='carrito/<str:accion>',
         view=CarritoView.as_view(),
         name='carrito_accion'
     ),

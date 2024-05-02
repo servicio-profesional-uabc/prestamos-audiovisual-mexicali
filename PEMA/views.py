@@ -96,7 +96,10 @@ class CarritoView(View):
             return render(
                 request=request,
                 template_name="carrito.html",
-                context={}
+                context={
+                    "articulos_carrito": carrito.articulos_carrito(),
+                    "carrito": carrito
+                }
             )
 
         return render(
