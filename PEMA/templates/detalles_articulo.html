@@ -1,13 +1,23 @@
 {% extends 'base.html' %}
 {% load static %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
 
 {% block content %}
-    <div class="container mt-5">
-        <h1>{{ articulo.nombre }}</h1>
-        <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}" class="img-fluid">
-        <p>{{ articulo.descripcion }}</p>
-
-        <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar al Carrito</a>
-        <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar al Catálogo</a>
+<div class="container mt-4">
+    <div class="card" style="box-shadow: 0 0 10px rgba(0, 114, 63, 0.5); border-radius: 10px;">
+        <div class="card-body">
+            <h1 class="text-center">{{ articulo.nombre }}</h1>
+            <div class="text-center">
+                <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}"
+                     class="img-fluid" style="width: 150px; height: 150px; object-fit: cover; border-radius: 5px;">
+            </div>
+            <p class="text-left mt-4">{{ articulo.descripcion }}</p>
+            <div class="text-center mt-5">
+                <a href="{% url 'catalogo' %}" class="btn btn-secondary" style="background-color: #DD971A">Regresar</a>
+                <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar</a>
+            </div>
+        </div>
     </div>
+</div>
 {% endblock %}

@@ -20,8 +20,8 @@
     <hr class="hr"/>
 
 
-        <div class="container text-center mt-3 justify-content-center">
-        <form method="POST" action="{% url 'filtros' %}">
+    <div class="container text-center mt-3 justify-content-center">
+        <form class="form" method="POST" action="{% url 'filtros' %}">
             {% csrf_token %}
 
             {% if form.errors %}
@@ -36,10 +36,23 @@
                 </div>
             {% endif %}
 
+            <div class="row mb-4 mt-2">
+                <h5>Nombre de la práctica o producción</h5>
+                {#                <label for="nombre" class="col-sm-2 col-form-label">Nombre de la práctica</label>#}
+                {% render_field form.nombre class="form-control"%}
+            </div>
+
             <h5 class="mt-2">Seleccionar materia y duración del préstamo</h5>
             <div class="row mb-4 mt-2">
                 <div class="col me-3">
-                    {% render_field form.materia class="form-select" %}
+                    <select id="materia" name="materia" class="dropdown form-select" required>
+                        <option class="dropdown-item">--------------</option>
+                        {% if materias %}
+                            {% for materia in materias %}
+                                <option class="dropdown-item" value="{{ materia.pk }}">{{ materia }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
                 </div>
                 <div class="col">
                     {% render_field form.duracion class="form-select" %}
@@ -86,18 +99,5 @@
                 </div>
             </div>
         </form>
-
-
-{#    <script>#}
-{#        function setTime(time) {#}
-{#            document.getElementById("time-input").value = time;#}
-{#        }#}
-{##}
-{#        function setMateria() {#}
-{#            var selectedMateria = document.getElementById("materia").value;#}
-{#            document.getElementById("materia-input").value = selectedMateria;#}
-{#        }#}
-{#    </script>#}
-
-</div>
+    </div>
 {% endblock %}

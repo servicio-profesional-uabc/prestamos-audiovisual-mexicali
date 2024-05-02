@@ -2,45 +2,47 @@
 {% load static %}
 
 {% block content %}
+<head>
+    <title>Catálogo de Material Disponible</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
 
-    <head>
-        <title>Catálogo de Material Disponible</title>
-        <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    </head>
+<div class="container text-center mt-3">
+    <h3>Catálogo de Material Disponible</h3>
+    <section class="py-5">
+        <div class="container px-4 px-lg-5 mt-3">
+            <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                {% for articulo in articulos %}
+                <div class="col mb-5">
+                    <div class="card h-100 d-flex flex-column">
 
-    <div class="container text-center mt-5">
-        <h1>Catálogo de Material Disponible</h1>
-        <section class="py-5">
-            <div class="container px-4 px-lg-5 mt-5">
-                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-                    <!-- Iterar sobre los artículos disponibles -->
-                    {% for articulo in articulos %}
-                        <div class="col mb-5">
-                            <div class="card h-100 d-flex flex-column">
-                                <!-- Imagen del artículo -->
-                                <img class="card-img-top img-fluid"
-                                     src="{{ articulo.imagen.url }}"
-                                     alt="{{ articulo.nombre }}"
-                                     style="height: 150px; object-fit: cover;">
-                                <div class="card-body flex-grow-1">
-                                    <div class="text-center">
-                                        <!-- Nombre del artículo -->
-                                        <h5 class="fw-bolder">{{ articulo.nombre }}</h5>
-                                        <!-- Descripción corta -->
-                                        <p>{{ articulo.descripcion }}</p>
-                                    </div>
-                                </div>
-                                <!-- Enlace a los detalles del artículo -->
-                                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                    <div class="text-center">
-                                        <a class="btn btn-outline-dark mt-auto"
-                                           href="{% url 'detalles_articulo' articulo.id %}">
-                                            Ver Detalles
-                                        </a>
-                                    </div>
-                                </div>
+                        <!-- Imagen del artículo -->
+                        <a href="{% url 'detalles_articulo' articulo.id %}">
+                            <img class="card-img-top img-fluid" src="{{ articulo.imagen.url }}"
+                                 alt="{{ articulo.nombre }}" style="height: 150px; object-fit: cover;">
+                        </a>
+
+                        <div class="card-body flex-grow-1">
+                            <div class="text-center">
+                                <!-- Nombre del artículo -->
+                                <h5 class="fw-bolder">{{ articulo.nombre }}</h5>
                             </div>
                         </div>
+
+                        <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                            <div class="text-center">
+                                <!-- Botón para agregar al carrito -->
+                                <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar al
+                                    Carrito</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
                     {% endfor %}
                 </div>
             </div>
@@ -74,15 +76,16 @@
         
     </section>
 
-        <!-- Botones para regresar o continuar -->
-        <div class="container mt-5">
-            <div class="row">
-                <div class="col text-center">
-                    <a href="{% url 'filtros' %}" class="btn btn-secondary">Regresar</a>
-                    <a href="{% url 'carrito' %}" class="btn btn-success">Continuar al Carrito</a>
-                </div>
+    <!-- Botones para regresar o continuar -->
+    <div class="container mt-2 mb-5">
+        <div class="row">
+            <div class="col text-center">
+                <a href="{% url 'filtros' %}" class="btn btn me-3" style="background-color: #00723F;">Regresar</a>
+                <a href="{% url 'carrito' %}" class="btn btn-success">Continuar</a>
             </div>
         </div>
     </div>
+</div>
+
 
 {% endblock %}
