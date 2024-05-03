@@ -8,37 +8,33 @@
 
 {% block content %}
 
-    <div class="container col-12 col-md-6">
+    <div class="container col-12 col-md-6 mt-4 mt-md-5">
+        <div class="container py-2 border border-1 rounded shadow shadow ">
+            <p class="h4 mb-4 mt-3">Información de la Producción</p>
 
-        <div class="text-center mt-5">
-            <h4>Detalles de la Producción</h4>
-            <p>Para continuar al catálogo es necesario que captures los siguientes datos.
-                <br/>Esto sirve para mostrar el equipo del catálogo que está disponible.</p>
-        </div>
-
-        <hr class="hr"/>
-
-        <div class="container text-center mt-3 justify-content-center pt-3 pb-5">
-            <form class="form" method="POST" action="{% url 'filtros' %}">
-                {% csrf_token %}
-
-                {% if form.errors %}
-                    <div class="errors">
-                        <ul>
-                            {% for field, error_list in form.errors.items %}
-                                {% for error in error_list %}
-                                    <li>{{ field }}: {{ error }}</li>
-                                {% endfor %}
+            {# Lista de errores #}
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul class="list-group">
+                        {% for field, error_list in form.errors.items %}
+                            {% for error in error_list %}
+                                <li class="">{{ error }}</li>
                             {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            {% endif %}
+
+            <form method="POST" action="{% url 'filtros' %}">
+                {% csrf_token %}
 
                 <div class="input-group mb-3">
                     <span class="input-group-text">Nombre</span>
                     {% render_field form.nombre class="form-control" %}
                 </div>
 
+                {# Lista de materias #}
                 <div class="input-group mb-3">
                     <span class="input-group-text">Materia</span>
                     <select id="materia" name="materia" class="dropdown form-select" required>
@@ -53,6 +49,9 @@
                 <div class="input-group mb-3">
                     <span class="input-group-text">Fecha de inicio</span>
                     {% render_field form.inicio type="date" class="form-control" placeholder="selecciona una fecha de inicio" %}
+                </div>
+
+                <div class="input-group mb-3">
                     <span class="input-group-text">Hora de inicio</span>
                     {% render_field form.hora_inicio class="form-select" %}
                 </div>
@@ -63,36 +62,15 @@
                 </div>
 
 
-                <div class="row">
-                    <div class="col text-center">
-                        <a href="menu" class="btn btn-secondary me-5">Regresar</a>
-                        <button id="boton_aceptar" type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#modalContinuar">Aceptar filtro
-                        </button>
+                <hr class="my-4 mt-2 mt-sm-5">
 
-                        <div class="modal fade" id="modalContinuar" tabindex="-1" aria-labelledby="continuarModalLabel"
-                             aria-hidden="true">
-                            <div class="modal-dialog ">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="continuarModalLabel">Confirmar filtro</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                    </div>
+                <button id="boton_aceptar" type="submit" class="w-100 btn btn-primary btn-lg ">
+                    Continuar al Cátalogo
+                </button>
 
-                                    <div class="modal-body">
-                                        ¿Desea continuar al catálogo?
-                                    </div>
-
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-danger">Continuar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </form>
+
+
         </div>
     </div>
 

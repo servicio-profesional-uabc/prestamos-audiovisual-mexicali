@@ -151,7 +151,6 @@ class FiltrosView(View, LoginRequiredMixin):
 
             # TODO: Enhancement - Realizar estas operaciones en sus propios métodos de Carrito
             tiempo_duracion = int(duracion)
-
             fecha_inicio = datetime.combine(inicio, hora_inicio)
 
             # Guardar fechas actualizadas
@@ -161,13 +160,13 @@ class FiltrosView(View, LoginRequiredMixin):
             carrito_nuevo.save()
             return redirect("catalogo")
 
-        # form = FiltrosForm()
-        # form.fields['materia'].choices = [(materia.pk, materia.nombre) for materia in prestatario.materias()]
         return render(
             request=request,
-            context={'form': FiltrosForm(),
-                     'materias': prestatario.materias()},
             template_name="filtros.html",
+            context={
+                'form': form,
+                'materias': prestatario.materias()
+            },
         )
 
 
