@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container mt-2 mt-md-5 mt-lg-4">
+        <div class="row gy-3">
+            {% include "menu/opcion.html" with option="Solicitar equipo" icono="bi-file-earmark-plus" descripcion="Haz una solicitud al almacen" href="filtros" %}
+            {% include "menu/opcion.html" with option="Historial de solicitudes" icono="bi-clock-history" descripcion="Ordenes anteriores" %}
+        </div>
+    </div>
+{% endblock %}

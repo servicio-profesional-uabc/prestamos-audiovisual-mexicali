@@ -72,7 +72,7 @@ class MenuView(View, LoginRequiredMixin):
 
         return render(
             request=request,
-            template_name="menu.html",
+            template_name="menu/menu.html",
             context={'matricula': request.user.username, 'user': request.user}
         )
 
