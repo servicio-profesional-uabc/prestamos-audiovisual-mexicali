@@ -10,18 +10,28 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}">
 
     <script src="{% static 'js/bootstrap.bundle.min.js' %}" defer></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}" defer></script>
 
     {% block head %}
     {% endblock %}
 </head>
 <body class="bg-light">
 {% block nav %}
-    <nav class="navbar navbar-expand-lg justify-content-end">
+    <nav class="navbar navbar-expand-lg bg-light">
         <div class="container">
+
             <a class="navbar-brand" href="{% url 'menu' %}">
-                <img src="{% static 'img/LOGO-FACULTAD-RENOVADO.png' %}" height="50px">
-                <img src="{% static 'img/CEPA-UABC.png' %}" height="40px">
+
+                <div class="d-none d-sm-inline">
+                    <img class="" src="{% static 'img/LOGO-FACULTAD-RENOVADO-NO-BORDES-CEPA.png' %}" height="60px">
+                </div>
+
+                <div class="d-inline d-sm-none">
+                    <img class="" src="{% static 'img/CEPA-UABC-HD.png' %}" height="50px">
+                </div>
+
             </a>
+
 
             {% block navsectionname %}
                 <ul class="navbar-nav d-none d-md-block">
@@ -31,47 +41,39 @@
                 </ul>
             {% endblock %}
 
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+                    aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar"
+                 aria-labelledby="offcanvasNavbarLabel">
 
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Opciones</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
 
-                <ul class="navbar-nav">
-
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                           aria-expanded="false">
-                            Opciones
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li class="nav-item ">
-                                <form method="post" action="{% url 'logout' %}">
-                                    {% csrf_token %}
-                                    <button class="dropdown-item" type="submit">
-                                        Cerrar Sesión
-                                    </button>
-                                </form>
-                            </li>
-
-
-                        </ul>
-                    </li>
-                </ul>
-
-
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button class="nav-link" type="submit">
+                                    Cerrar Sesión
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
+
 {% endblock %}
 
 {% block content %}
 {% endblock %}
 </body>
 </html>
-
 

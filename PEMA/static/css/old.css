@@ -1,4 +1,14 @@
 
+@import url("../fonts/bootstrap-icons.woff2");
+
+/**Estilos para solicitud de pedido**/
+body {
+    font-family: "Minion Pro", serif;
+}
+
+
+
+
 body.custom-background-color {
     background-color: #f9f9f9;
 }
