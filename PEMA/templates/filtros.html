@@ -12,20 +12,6 @@
         <div class="container py-2 border border-1 rounded shadow shadow ">
             <p class="h4 mb-4 mt-3">Información de la Producción</p>
 
-            {# Lista de errores #}
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    <ul class="list-group">
-                        {% for field, error_list in form.errors.items %}
-                            {% for error in error_list %}
-                                <li class="">{{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
-
-            {% endif %}
-
             <form method="POST" action="{% url 'filtros' %}">
                 {% csrf_token %}
 
@@ -61,8 +47,20 @@
                     {% render_field form.duracion class="form-select" %}
                 </div>
 
+                {# Lista de errores #}
+                {% if form.errors %}
+                    <div class="alert alert-danger mt-sm-3">
+                        {% for field, error_list in form.errors.items %}
+                            {% for error in error_list %}
+                                <label>{{ error }}</label>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
 
-                <hr class="my-4 mt-2 mt-sm-5">
+                {% endif %}
+
+
+                <hr class="my-4 mt-2 mt-sm-2">
 
                 <button id="boton_aceptar" type="submit" class="w-100 btn btn-primary btn-lg ">
                     Continuar al Cátalogo
