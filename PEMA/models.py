@@ -525,7 +525,7 @@ class Unidad(models.Model):
 
     class Meta:
         verbose_name_plural = "Unidades"
-        unique_together = ('articulo', 'num_control')
+        unique_together = ('articulo', 'num_control', 'num_serie')
 
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
