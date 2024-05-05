@@ -23,4 +23,5 @@ código:
 `python manage.py developer_setup`
 
 ### Datos de Prueba
-Pendiente de agregar.
+- Artículos y unidades de prueba: `python manage.py importar_material data/inventario.xlsx`
+- Personal (Maestros) de prueba: `python manage.py importar_personal data/personal.xlsx`
