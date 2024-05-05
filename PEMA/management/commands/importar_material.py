@@ -52,13 +52,13 @@ class Command(BaseCommand):
 
             # verificar si la unidad ya existe para el articulo y num_control
             try:
-                unidad = Unidad.objects.get(articulo=articulo, num_control=num_control)
+                unidad = Unidad.objects.get(articulo=articulo, num_control=num_control, num_serie=num_serie)
             except Unidad.DoesNotExist:
                 # crear unidad solo si no existe
                 if num_serie:
                     # buscar una unidad existente que tenga el num_serie
                     try:
-                        unidad = Unidad.objects.get(articulo=articulo, num_serie=num_serie)
+                        unidad = Unidad.objects.get(articulo=articulo, num_serie=num_serie, num_control=num_control)
                     except Unidad.DoesNotExist:
                         # crear una nueva unidad solo si no existe con el mismo num_serie
                         unidad = Unidad.objects.create(articulo=articulo, num_control=num_control, num_serie=num_serie)
