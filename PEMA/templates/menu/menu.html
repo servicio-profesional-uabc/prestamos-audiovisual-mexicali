@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container mt-2 mt-md-5 mt-lg-4">
+        <div class="row gy-3">
+
+            {% if user.groups.first.name == "prestatarios" %}
+                {% include "menu/opcion.html" with option="Solicitar equipo" icono="bi-file-earmark-plus" descripcion="Haz una solicitud al almacen" href="filtros" %}
+                {% include "menu/opcion.html" with option="Historial de solicitudes" icono="bi-clock-history" descripcion="Ordenes anteriores" href="historial_solicitudes" %}
+            {% endif %}
+
+            {% if user.groups.first.name == "maestro" %}
+
+            {% endif %}
+
+            {% if user.groups.first.name == "almacen" %}
+            {% endif %}
+
+            {% if user.groups.first.name == "coordinador" %}
+            {% endif %}
+
+        </div>
+    </div>
+{% endblock %}
