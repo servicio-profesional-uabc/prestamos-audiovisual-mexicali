@@ -107,10 +107,10 @@ class FiltrosForm(forms.ModelForm):
     def clean_inicio(self):
         inicio = self.cleaned_data.get('inicio')
         if inicio.date().weekday() >= 5:
-            raise forms.ValidationError("Por favor elija fecha de inicio de préstamo entre semana.")
+            raise forms.ValidationError("Elija fecha de inicio de préstamo entre semana.")
 
         if inicio.date() < (date.today() + timedelta(days=3)):
-            raise forms.ValidationError("Por favor elija una fecha tres días a partir de hoy.")
+            raise forms.ValidationError("Elija una fecha tres días a partir de hoy.")
 
         # print(f'clean inicio {inicio}')
         return inicio
