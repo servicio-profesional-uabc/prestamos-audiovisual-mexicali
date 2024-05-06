@@ -18,8 +18,10 @@
             {% endif %}
 
             {% if user.groups.first.name == "coordinador" %}
+                {% include "menu/opcion.html" with option="Admin" icono="bi-clock-history" descripcion="Ordenes anteriores" href="admin" %}
             {% endif %}
 
+            {% include "menu/opcion.html" with option="Actualizar" icono="bi-person" descripcion="Actualizar datos" href="actualizar_perfil" %}
         </div>
     </div>
 {% endblock %}

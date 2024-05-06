@@ -304,6 +304,9 @@ class Perfil(models.Model):
     :ivar numero_telefono: Número de teléfono.
     """
 
+    class Meta:
+        verbose_name_plural = "Perfiles"
+
     usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
     numero_telefono = PhoneNumberField(blank=True, null=False, region='MX')
 
@@ -352,6 +355,9 @@ class Perfil(models.Model):
         :return: Nombre de usuario.
         """
         return self.usuario.username
+
+    def __str__(self):
+        return str(self.usuario)
 
 
 class Materia(models.Model):

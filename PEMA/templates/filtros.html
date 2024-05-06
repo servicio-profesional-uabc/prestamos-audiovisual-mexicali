@@ -7,43 +7,43 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container col-12 col-md-6 mt-2 mt-md-5 mt-lg-4">
+    <div class="container col-12 mb-3 col-md-6 mt-2 mt-md-5 mt-lg-4">
         <div class="container py-2 border border-1 rounded bg-white">
-            <p class="h4 mb-4 mt-3">Información de la Producción</p>
+            <p class="h4 my-4 text-center">Información de la Producción</p>
 
             <form class="" method="POST" action="{% url 'filtros' %}">
                 {% csrf_token %}
 
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Nombre</span>
-                    {% render_field form.nombre class="form-control" %}
+                <div class="form-floating mb-3">
+                    {% render_field form.nombre type="text" class="form-control" id="nombreInput" placeholder="" %}
+                    <label for="nombreInput">Nombre de la producción</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    {% render_field form.inicio id="fechaSelect" type="date" class="form-control" placeholder="Hola" %}
+                    <label for="fechaSelect">Fecha de inicio</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    {% render_field form.hora_inicio class="form-control" %}
+                    <label for="">Hora de inicio</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    {% render_field form.duracion class="form-select" %}
+                    <label for="">Duración</label>
                 </div>
 
                 {# Lista de materias #}
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Materia</span>
-                    <select id="materia" name="materia" class="dropdown form-select" required>
+                <div class="form-floating mb-3">
+                    <select class="form-select" id="materiaSelect" name="materia" required>
                         {% if materias %}
                             {% for materia in materias %}
                                 <option class="dropdown-item" value="{{ materia.pk }}">{{ materia }}</option>
                             {% endfor %}
                         {% endif %}
                     </select>
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Fecha de inicio</span>
-                    {% render_field form.inicio type="date" class="form-control" placeholder="selecciona una fecha de inicio" %}
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Hora de inicio</span>
-                    {% render_field form.hora_inicio class="form-select" %}
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text">Duración</span>
-                    {% render_field form.duracion class="form-select" %}
+                    <label for="materiaSelect">Materia</label>
                 </div>
 
                 {# Lista de errores #}
@@ -58,10 +58,7 @@
 
                 {% endif %}
 
-
-                <hr class="my-4 mt-2 mt-sm-2">
-
-                <button id="boton_aceptar" type="submit" class="w-100 btn btn-primary btn-lg ">
+                <button id="boton_aceptar" type="submit" class="w-100 btn btn-primary btn-lg mt-2 mt-3">
                     Continuar al Cátalogo
                 </button>
 

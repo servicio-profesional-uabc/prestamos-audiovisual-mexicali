@@ -7,9 +7,6 @@ from .models import *
 
 @admin.register(Materia)
 class MateriaAdmin(admin.ModelAdmin):
-    """
-    Admin panel management for Alumni
-    """
     search_fields = ('nombre', 'year')
     list_display = ('nombre', 'year', 'semestre')
     filter_horizontal = ('_alumnos', '_maestros', '_articulos')
@@ -17,12 +14,7 @@ class MateriaAdmin(admin.ModelAdmin):
 
 @admin.register(Orden)
 class OrdenAdmin(admin.ModelAdmin):
-    """
-    Admin panel management for Alumni
-    """
-
-    exclude = ('estado',)
-    # raw_id_fields = ('materia', )
+    exclude = ('estado',) #
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
     list_display = ('__str__', 'tipo', 'estado')
@@ -90,8 +82,13 @@ class ReporteAdmin(admin.ModelAdmin):
         obj.emisor = request.user
         super().save_model(request, obj, form, change)
 
+@admin.register(Perfil)
+class PerfilAdmin(admin.ModelAdmin):
+    list_display = ('numero_telefono', )
+    search_fields = ['numero_telefono']
 
-admin.site.register(Perfil)
+
+
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
 admin.site.register(Categoria)
