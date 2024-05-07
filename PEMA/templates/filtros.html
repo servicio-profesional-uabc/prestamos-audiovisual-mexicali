@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container col-12 mb-3 col-md-6 mt-2 mt-md-5 mt-lg-4">
+    <div class="container col-12 mb-3 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4">
         <div class="container py-2 border border-1 rounded bg-white">
             <p class="h4 my-4 text-center">Información de la Producción</p>
 
@@ -15,8 +15,8 @@
                 {% csrf_token %}
 
                 <div class="form-floating mb-3">
-                    {% render_field form.nombre type="text" class="form-control" id="nombreInput" placeholder="" %}
-                    <label for="nombreInput">Nombre de la producción</label>
+                    {% render_field form.nombre type="text" class="form-control" %}
+                    <label>Nombre de la producción</label>
                 </div>
 
                 <div class="form-floating mb-3">

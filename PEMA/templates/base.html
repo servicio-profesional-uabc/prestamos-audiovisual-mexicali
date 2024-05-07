@@ -17,27 +17,27 @@
 </head>
 <body class="bg-light">
 {% block nav %}
-    <nav class="navbar navbar-expand-lg bg-light">
-        <div class="container">
-
-            <a class="navbar-brand" href="{% url 'menu' %}">
-
-                <div class="d-none d-sm-inline">
-                    <img class="" src="{% static 'img/LOGO-FACULTAD-RENOVADO-NO-BORDES-CEPA.png' %}" height="60px">
-                </div>
-
-                <div class="d-inline d-sm-none">
-                    <img class="" src="{% static 'img/CEPA-UABC-HD.png' %}" height="50px">
-                </div>
-
-            </a>
-
+    <nav class="navbar navbar-expand-lg navbar-expand-xl bg-light">
+        <div class="container justify-content-start">
             <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
                     aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar"
+
+            <a class="navbar-brand justify-content-start ms-3 ms-xxl-0" href="{% url 'menu' %}">
+
+                <div class="d-none d-sm-inline">
+                    <img class="" src="{% static 'img/LOGO-FACULTAD-RENOVADO-NO-BORDES-CEPA.png' %}" height="60px">
+                </div>
+
+                <div class="d-inline d-sm-none  ">
+                    <img class="" src="{% static 'img/CEPA-UABC-HD.png' %}" height="50px">
+                </div>
+
+            </a>
+
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar"
                  aria-labelledby="offcanvasNavbarLabel">
 
                 <div class="offcanvas-header">
@@ -46,18 +46,35 @@
                 </div>
 
                 <div class="offcanvas-body">
-                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                        <li class="nav-item">
-                            <form method="post" action="{% url 'logout' %}">
-                                {% csrf_token %}
-                                <button class="nav-link" type="submit">
-                                    Cerrar Sesión
-                                </button>
-                            </form>
-                        </li>
+                    <ul class="navbar-nav flex-grow-1 pe-3">
+
+                        {% block nav-items %}
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="menu">Volver al menú</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button class="nav-link" type="submit">
+                                        Cerrar Sesión
+                                    </button>
+                                </form>
+                            </li>
+
+                        {% endblock %}
+
                     </ul>
                 </div>
             </div>
+
+            {% block nav-end %}
+
+                <!-- Aqui van algunos items -->
+
+            {% endblock %}
+
         </div>
     </nav>
 
