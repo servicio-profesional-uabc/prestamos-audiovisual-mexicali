@@ -133,8 +133,8 @@ class FiltrosView(View, LoginRequiredMixin):
         prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
-        print(request.POST)
-        print(form.errors)
+        # print(request.POST)
+        # print(form.errors)
 
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
