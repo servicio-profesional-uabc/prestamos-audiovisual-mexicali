@@ -127,8 +127,8 @@ class Command(BaseCommand):
         orden1, created = Orden.objects.get_or_create(
             prestatario=user,
             lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 10, 5, 12)),
-            final=make_aware(datetime(2024, 10, 5, 14)),
+            inicio=make_aware(datetime(2024, 5, 7, 12)),
+            final=make_aware(datetime(2024, 5, 7, 14)),
             estado="AP",
             materia=materia1,
         )
@@ -136,8 +136,8 @@ class Command(BaseCommand):
         orden2, created = Orden.objects.get_or_create(
             prestatario=user,
             lugar=Orden.Ubicacion.EXTERNO,
-            inicio=make_aware(datetime(2024, 10, 5, 11)),
-            final=make_aware(datetime(2024, 10, 5, 14)),
+            inicio=make_aware(datetime(2024, 5, 7, 11)),
+            final=make_aware(datetime(2024, 5, 7, 14)),
             estado="AP",
             materia=materia1,
             descripcion="Esta solicitud es para mi practica de Cinematografia en la laguna salada."
@@ -146,8 +146,8 @@ class Command(BaseCommand):
         orden3, created = Orden.objects.get_or_create(
             prestatario=user,
             lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 10, 5, 15)),
-            final=make_aware(datetime(2024, 10, 5, 17)),
+            inicio=make_aware(datetime(2024, 5, 7, 15)),
+            final=make_aware(datetime(2024, 5, 7, 17)),
             estado="AP",
             materia=materia1,
         )
@@ -155,8 +155,8 @@ class Command(BaseCommand):
         orden4, created = Orden.objects.get_or_create(
             prestatario=user,
             lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 10, 5, 16)),
-            final=make_aware(datetime(2024, 10, 5, 18)),
+            inicio=make_aware(datetime(2024, 5, 7, 16)),
+            final=make_aware(datetime(2024, 5, 7, 18)),
             estado="AP",
             materia=materia1,
         )
@@ -164,8 +164,8 @@ class Command(BaseCommand):
         orden5, created = Orden.objects.get_or_create(
             prestatario=user,
             lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 10, 5, 13)),
-            final=make_aware(datetime(2024, 10, 5, 16)),
+            inicio=make_aware(datetime(2024, 5, 7, 13)),
+            final=make_aware(datetime(2024, 5, 7, 16)),
             estado="AP",
             materia=materia1,
         )
@@ -173,8 +173,8 @@ class Command(BaseCommand):
         orden6, created = Orden.objects.get_or_create(
             prestatario=user,
             lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 10, 5, 11)),
-            final=make_aware(datetime(2024, 10, 5, 18)),
+            inicio=make_aware(datetime(2024, 5, 7, 11)),
+            final=make_aware(datetime(2024, 5, 7, 18)),
             estado="AP",
             materia=materia1,
         )
