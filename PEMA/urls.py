@@ -27,11 +27,7 @@ urlpatterns = [
     ),
 
     # logout
-    path(
-        route='logout',
-        view=LogoutView.as_view(),
-        name='logout'
-    ),
+    path('logout/', LogoutView.as_view(), name='logout'),
 
     path(
         route='menu',
@@ -46,7 +42,7 @@ urlpatterns = [
     ),
 
     path(
-        route='carrito/<str:action>',
+        route='carrito/<str:accion>',
         view=CarritoView.as_view(),
         name='carrito_accion'
     ),

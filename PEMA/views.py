@@ -80,7 +80,7 @@ class MenuView(View, LoginRequiredMixin):
 
         return render(
             request=request,
-            template_name="menu.html",
+            template_name="menu/menu.html",
             context={'matricula': request.user.username, 'user': request.user}
         )
 
@@ -88,24 +88,22 @@ class MenuView(View, LoginRequiredMixin):
         pass
 
 
-class CarritoView(View):
+class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request, accion=None):
-        # TODO: falta verificar si el usuario tiene carrito
         prestatario = Prestatario.get_user(request.user)
-
-        if not prestatario.tiene_carrito():
-            # TODO: solucion rapida
-            return HttpResponse("No tiene carrito")
-
         carrito = prestatario.carrito()
 
         if accion == 'ordenar':
-            carrito.ordenar()
-            return render(
-                request=request,
-                template_name="carrito.html",
-                context={}
-            )
+            # TODO: Mostrar que articulos esta ocupado
+            ordenado = carrito.ordenar()
+
+            if ordenado:
+                return redirect("historial_solicitudes")
 
         return render(
             request=request,
@@ -117,7 +115,8 @@ class CarritoView(View):
         )
 
 
-class FiltrosView(View, LoginRequiredMixin):
+class FiltrosView(LoginRequiredMixin, View):
+
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
@@ -138,8 +137,8 @@ class FiltrosView(View, LoginRequiredMixin):
         prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
-        print(request.POST)
-        print(form.errors)
+        # print(request.POST)
+        # print(form.errors)
 
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
@@ -156,7 +155,6 @@ class FiltrosView(View, LoginRequiredMixin):
 
             # TODO: Enhancement - Realizar estas operaciones en sus propios métodos de Carrito
             tiempo_duracion = int(duracion)
-
             fecha_inicio = datetime.combine(inicio, hora_inicio)
 
             # Guardar fechas actualizadas
@@ -166,13 +164,13 @@ class FiltrosView(View, LoginRequiredMixin):
             carrito_nuevo.save()
             return redirect("catalogo")
 
-        # form = FiltrosForm()
-        # form.fields['materia'].choices = [(materia.pk, materia.nombre) for materia in prestatario.materias()]
         return render(
             request=request,
-            context={'form': FiltrosForm(),
-                     'materias': prestatario.materias()},
             template_name="filtros.html",
+            context={
+                'form': form,
+                'materias': prestatario.materias()
+            },
         )
 
 
@@ -266,16 +264,17 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         return prestatario == carrito.prestatario
 
     def get(self, request):
-        prestatario = Prestatario.get_user(self.request.user)
-        if not prestatario.tiene_carrito():
-            # TODO: solucion rapida
-            return HttpResponse("No tiene carrito")
+        # TODO: Filtrar por materia
+        prestatario = Prestatario.get_user(request.user)
+        articulos = Articulo.objects.all()
 
-        carrito = prestatario.carrito()
         return render(
             request=request,
             template_name="catalogo.html",
-            context={"carrito": carrito}
+            context={
+                "articulos": articulos,
+                "carrito": prestatario.carrito()
+            },
         )
 
 
@@ -290,7 +289,12 @@ class DetallesArticuloView(View):
         )
 
 
-class AgregarAlCarritoView(View):
+class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request, articulo_id):
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
