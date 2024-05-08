@@ -8,7 +8,7 @@
 {% block nav-end %}
     <!-- TODO: Hacer que el numero se actualice -->
     <a class="btn btn-md ms-auto text-white bg-danger rounded-pill" href="{% url 'carrito' %}">
-        <i class="bi bi-box-seam"></i> 10
+        <i class="bi bi-box-seam"></i> {{ carrito.numero_articulos }}
     </a>
 {% endblock %}
 

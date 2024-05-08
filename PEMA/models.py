@@ -804,13 +804,16 @@ class Carrito(models.Model):
     def vacio(self):
         return self.articulos().count() == 0
 
+    def numero_articulos(self) -> int:
+        return ArticuloCarrito.objects.filter(propietario=self).count()
+
     def articulos(self):
         """
         Devuelve los objetos Articulo que hay en el carrito.
         """
         return Articulo.objects.filter(articulocarrito__carrito=self)
 
-    def ordenar(self) -> Exception:
+    def ordenar(self) -> bool:
         """
         Convierte el carrito en una orden (Transacción).
 
@@ -851,7 +854,9 @@ class Carrito(models.Model):
 
         except Exception as e:
             print(f"Hubo un error, la transacción ha sido cancelada. {str(e)}")
-            return e
+            return False
+
+        return True
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         return self._corresponsables.all()
