@@ -94,14 +94,8 @@ class CarritoView(View):
         if accion == 'ordenar':
             carrito.ordenar()
 
-            return render(
-                request=request,
-                template_name="carrito.html",
-                context={
-                    "articulos_carrito": carrito.articulos_carrito(),
-                    "carrito": carrito
-                }
-            )
+            # TODO: si todo sale bien redirifirlo a ordenes, si no al carrito
+            return redirect("historial_solicitudes")
 
         return render(
             request=request,
