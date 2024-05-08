@@ -93,6 +93,7 @@ class CarritoView(View):
 
         if accion == 'ordenar':
             carrito.ordenar()
+
             return render(
                 request=request,
                 template_name="carrito.html",
