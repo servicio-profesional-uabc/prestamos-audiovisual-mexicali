@@ -80,27 +80,22 @@ class MenuView(View, LoginRequiredMixin):
         pass
 
 
-class CarritoView(View):
+class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request, accion=None):
-        # TODO: falta verificar si el usuario tiene carrito
         prestatario = Prestatario.get_user(request.user)
-
-        if not prestatario.tiene_carrito():
-            # TODO: solucion rapida
-            return HttpResponse("No tiene carrito")
-
         carrito = prestatario.carrito()
 
         if accion == 'ordenar':
-            carrito.ordenar()
-            return render(
-                request=request,
-                template_name="carrito.html",
-                context={
-                    "articulos_carrito": carrito.articulos_carrito(),
-                    "carrito": carrito
-                }
-            )
+            # TODO: Mostrar que articulos esta ocupado
+            ordenado = carrito.ordenar()
+
+            if ordenado:
+                return redirect("historial_solicitudes")
 
         return render(
             request=request,
@@ -112,7 +107,8 @@ class CarritoView(View):
         )
 
 
-class FiltrosView(View, LoginRequiredMixin):
+class FiltrosView(LoginRequiredMixin, View):
+
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
@@ -247,18 +243,24 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         return redirect("historial_solicitudes")
 
 
-class CatalogoView(View):
+class CatalogoView(UserPassesTestMixin, LoginRequiredMixin, View):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request):
+        # TODO: Filtrar por materia
         prestatario = Prestatario.get_user(request.user)
         articulos = Articulo.objects.all()
-
-        if not prestatario.tiene_carrito():
-            return redirect("filtros")
 
         return render(
             request=request,
             template_name="catalogo.html",
-            context={"articulos": articulos},
+            context={
+                "articulos": articulos,
+                "carrito": prestatario.carrito()
+            },
         )
 
 
@@ -273,7 +275,12 @@ class DetallesArticuloView(View):
         )
 
 
-class AgregarAlCarritoView(View):
+class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request, articulo_id):
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)

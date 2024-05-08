@@ -1,4 +1,3 @@
-from random import shuffle
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -464,9 +463,6 @@ class Articulo(models.Model):
 
         :returns: Unidades disponibles en el rango especificado.
         """
-
-        # fokin sheet!
-
         ordenes_reservadas = Orden.objects.filter(
             # filtrar si ya está resevado o entregado el artículo
             estado__in=[
@@ -476,20 +472,24 @@ class Articulo(models.Model):
             ],
 
             # filtrar materias para las que está disponible el artículo
-            materia__in=self.materias(),
+            # materia__in=self.materias(),
 
             # Ordenes que incluyen el articulo
             _unidades__in=self.unidades()
-        ).filter((
+        )
+
+        coliciones = ordenes_reservadas.filter((
             # ordenes activas en el rango
-            Q(inicio=inicio) |
-            Q(final=final) |
-            Q(inicio__lt=inicio, final__gt=inicio) |
-            Q(inicio__lt=final, final__gt=final) |
-            Q(inicio__gt=inicio, final__lt=final)
+                Q(inicio=inicio) |
+                Q(final=final) |
+                Q(inicio__lt=inicio, final__gt=inicio) |
+                Q(inicio__lt=final, final__gt=final) |
+                Q(inicio__gt=inicio, final__lt=final)
         ))
 
-        unidades_reservadas = Unidad.objects.filter(orden__in=ordenes_reservadas)
+        print(coliciones)
+
+        unidades_reservadas = Unidad.objects.filter(orden__in=coliciones)
 
         return self.unidades().exclude(id__in=unidades_reservadas)
 
@@ -804,13 +804,16 @@ class Carrito(models.Model):
     def vacio(self):
         return self.articulos().count() == 0
 
+    def numero_articulos(self) -> int:
+        return ArticuloCarrito.objects.filter(propietario=self).count()
+
     def articulos(self):
         """
         Devuelve los objetos Articulo que hay en el carrito.
         """
         return Articulo.objects.filter(articulocarrito__carrito=self)
 
-    def ordenar(self) -> Exception:
+    def ordenar(self) -> bool:
         """
         Convierte el carrito en una orden (Transacción).
 
@@ -819,8 +822,13 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
         try:
             with transaction.atomic():
-                orden = Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
-                                             final=self.final)
+                orden = Orden.objects.create(
+                    nombre=self.nombre,
+                    prestatario=self.prestatario,
+                    materia=self.materia,
+                    inicio=self.inicio,
+                    final=self.final
+                )
 
                 # agregar corresponsables del carrito a la orden
                 for corresponsable in self._corresponsables.all():
@@ -828,8 +836,10 @@ class Carrito(models.Model):
 
                 # agregar unidades
                 for articuloCarrito in self.articulos_carrito():
-                    unidades = articuloCarrito.articulo.unidades()
+                    unidades = articuloCarrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)
+
+                    print(unidades)
 
                     if len_unidades < articuloCarrito.unidades:
                         # no hay suficientes artículos disponibles
@@ -844,7 +854,9 @@ class Carrito(models.Model):
 
         except Exception as e:
             print(f"Hubo un error, la transacción ha sido cancelada. {str(e)}")
-            return e
+            return False
+
+        return True
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         return self._corresponsables.all()
