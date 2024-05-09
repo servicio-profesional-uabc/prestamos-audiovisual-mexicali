@@ -33,6 +33,7 @@ RUN chmod 775 /app/prestamos
 RUN chmod 775 /app/PEMA/static
 RUN chmod 775 /app/static
 RUN chmod 775 /app/prestamos/wsgi.py
+RUN chmod 775 /app/media
 
 #RUN chgrp -R www-data /app
 #RUN chmod -R 2750 /app
