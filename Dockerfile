@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
 RUN apt update
-RUN apt install -y apt-utils vim curl apache2 apache2-utils
+RUN apt install -y apt-utils curl apache2 apache2-utils
 RUN apt -y install python3 libapache2-mod-wsgi-py3
 RUN ln /usr/bin/python3 /usr/bin/python
 RUN apt -y install python3-pip
@@ -31,11 +31,11 @@ RUN chmod 775 /app
 RUN chmod 775 /app/PEMA
 RUN chmod 775 /app/prestamos
 RUN chmod 775 /app/PEMA/static
-RUN chmod 775 /app/staticfiles
+RUN chmod 775 /app/static
 RUN chmod 775 /app/prestamos/wsgi.py
 
 #RUN chgrp -R www-data /app
-RUN chmod -R 2750 /app
+#RUN chmod -R 2750 /app
 
 RUN a2ensite 000-default.conf
 #RUN a2dissite 000-default.conf

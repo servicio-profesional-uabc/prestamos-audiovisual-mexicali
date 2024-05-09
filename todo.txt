@@ -1,0 +1,4 @@
+-- Todo list --
+[X] Fix static files serve de apache 
+[] Fix upload de imagenes (muestra error al agregar imagenes en directorio de media (probablemente sea permisos de directorio))
+[] Agregar variables de ambiente en dockerfile
