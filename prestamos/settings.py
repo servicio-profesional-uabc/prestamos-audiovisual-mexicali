@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.93", "10.32.213.157",  "localhost"]
 INSTALLED_APPS = [
     # para el admin
     'admin_interface',
+    #'extra_settings',
     'colorfield',
     'django.contrib.admin',
     'import_export',
@@ -142,3 +143,16 @@ MEDIA_ROOT = BASE_DIR / MEDIA_URL
 # admin personalizado
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
+# django extra settings
+# EXTRA_SETTINGS_ADMIN_APP = "extra_settings"
+# EXTRA_SETTINGS_CACHE_NAME = "extra_settings"
+# EXTRA_SETTINGS_VERBOSE_NAME = "Configuraciones"
+
+# EXTRA_SETTINGS_DEFAULTS = [
+#    {
+#        "name": "SETTING_NAME3",
+#        "type": "time",
+#        "value": time(hour=9, minute=0, second=0),
+#    },
+#]

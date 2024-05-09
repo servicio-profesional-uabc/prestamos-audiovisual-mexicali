@@ -250,15 +250,15 @@ class CatalogoView(UserPassesTestMixin, LoginRequiredMixin, View):
         return prestatario.tiene_carrito()
 
     def get(self, request):
-        # TODO: Filtrar por materia
         prestatario = Prestatario.get_user(request.user)
-        articulos = Articulo.objects.all()
+        carrito = prestatario.carrito()
+
 
         return render(
             request=request,
             template_name="catalogo.html",
             context={
-                "articulos": articulos,
+                "articulos": carrito.materia.articulos(),
                 "carrito": prestatario.carrito()
             },
         )
