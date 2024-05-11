@@ -18,16 +18,17 @@
         <!-- Modal -->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
              aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-centered pb-5">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Reportes activos</h1>
+                        <a type="button" href="{% url 'menu' %}" class="btn-close" aria-label="Close"></a>
+
+
                     </div>
                     <div class="modal-body">
-                        ...
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary">Understood</button>
+                        <p>Tienes reportes activos pendientes. Por favor, comunícate con el coordinador lo antes
+                            posible.</p>
                     </div>
                 </div>
             </div>
