@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.core.mail import send_mail
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
@@ -11,7 +12,7 @@ from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views import View
 
-from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm, FiltroCategoria
 from .models import Carrito, Articulo, Categoria
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
@@ -263,8 +264,28 @@ class CatalogoView(UserPassesTestMixin, LoginRequiredMixin, View):
             },
         )
 
+    def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
+        categoria = request.POST["categoria"]
+        articulos = carrito.materia.articulos()
+
+        print(request.POST)
+
+        if categoria != "todos":
+            categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
+            articulos = articulos.filter(id__in=categoria_instance.articulos())
 
 
+        return render(
+            request=request,
+            template_name="catalogo.html",
+            context={
+                "articulos": articulos,
+                "carrito": prestatario.carrito(),
+                "categorias": Categoria.objects.all()
+            },
+        )
 
 
 class DetallesArticuloView(View):
