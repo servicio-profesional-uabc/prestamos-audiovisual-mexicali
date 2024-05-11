@@ -12,7 +12,7 @@ from django.utils.timezone import make_aware
 from django.views import View
 
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Carrito, Articulo
+from .models import Carrito, Articulo, Categoria
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
@@ -253,15 +253,18 @@ class CatalogoView(UserPassesTestMixin, LoginRequiredMixin, View):
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
 
-
         return render(
             request=request,
             template_name="catalogo.html",
             context={
                 "articulos": carrito.materia.articulos(),
-                "carrito": prestatario.carrito()
+                "carrito": prestatario.carrito(),
+                "categorias": Categoria.objects.all()
             },
         )
+
+
+
 
 
 class DetallesArticuloView(View):

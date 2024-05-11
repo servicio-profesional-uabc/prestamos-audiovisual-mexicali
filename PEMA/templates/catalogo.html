@@ -17,6 +17,31 @@
     <div class="container text-center mt-3">
         <h3>Catálogo de Material Disponible</h3>
         <section class="py-5">
+
+
+            {# Lista de categorias #}
+            <form method="POST" class="input-group">
+
+                {% csrf_token %}
+
+                <div class="form-floating">
+                    <select type="text" class="form-select" id="floatingInputGroup2" placeholder="Categorias"
+                            required>
+                        <option class="dropdown-item">Todos</option>
+
+                        {% for categoria in categorias %}
+                            <option class="dropdown-item" value="{{ categoria.pk }}">{{ categoria }}</option>
+                        {% endfor %}
+
+                    </select>
+                    <label for="floatingInputGroup2">Categorías</label>
+                </div>
+                <button class="btn btn-outline-secondary col-2 col-md-1" type="submit" id="button-addon2"><i
+                        class="bi bi-search"></i>
+                </button>
+            </form>
+
+
             <div class="container px-4 px-lg-5 mt-3">
                 <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
                     {% for articulo in articulos %}
