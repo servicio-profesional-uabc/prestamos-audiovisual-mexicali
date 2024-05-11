@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.core.mail import send_mail
-from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
@@ -12,7 +11,7 @@ from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views import View
 
-from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm, FiltroCategoria
+from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
 from .models import Carrito, Articulo, Categoria
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
@@ -121,6 +120,7 @@ class FiltrosView(LoginRequiredMixin, View):
             request=request,
             template_name="filtros.html",
             context={
+                'prestatario': prestatario,
                 'form': FiltrosForm(),
                 'materias': prestatario.materias(),
             },
@@ -130,14 +130,12 @@ class FiltrosView(LoginRequiredMixin, View):
         prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
-        # print(request.POST)
-        # print(form.errors)
-
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
         if form.is_valid():
+            # crear carrito
             inicio = form.cleaned_data.get('inicio')
             hora_inicio = form.cleaned_data.get('hora_inicio')
             duracion = form.cleaned_data.get('duracion')
@@ -161,6 +159,7 @@ class FiltrosView(LoginRequiredMixin, View):
             request=request,
             template_name="filtros.html",
             context={
+                'prestatario': prestatario,
                 'form': form,
                 'materias': prestatario.materias()
             },
