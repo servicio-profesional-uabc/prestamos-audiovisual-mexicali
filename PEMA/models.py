@@ -570,6 +570,12 @@ class EstadoOrden(models.TextChoices):
     DEVUELTA = "DE", _("Devuelta")  #: Los productos solicitados en la orden han sido devueltos al almacén.
 
 
+class Ubicacion(models.TextChoices):
+    """Opciones para el lugar de la orden"""
+    CAMPUS = "CA", _("En el Campus")
+    EXTERNO = "EX", _("Fuera del Campus")
+
+
 class Orden(models.Model):
     """
     Una orden es un conjunto de Unidades de cada Artículo definido
@@ -594,11 +600,6 @@ class Orden(models.Model):
     class Meta:
         ordering = ("emision",)
         verbose_name_plural = "Ordenes"
-
-    class Ubicacion(models.TextChoices):
-        """Opciones para el lugar de la orden"""
-        CAMPUS = "CA", _("En el Campus")
-        EXTERNO = "EX", _("Fuera del Campus")
 
     # obligatorio
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
@@ -771,6 +772,11 @@ class Carrito(models.Model):
     """
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
+                             verbose_name='Lugar de la Producción')
+
+    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Especifico')
+    descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
@@ -825,6 +831,8 @@ class Carrito(models.Model):
                 orden = Orden.objects.create(
                     nombre=self.nombre,
                     prestatario=self.prestatario,
+                    lugar=self.lugar,
+                    descripcion_lugar=self.descripcion_lugar,
                     materia=self.materia,
                     inicio=self.inicio,
                     final=self.final
