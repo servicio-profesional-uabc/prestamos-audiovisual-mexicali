@@ -6,8 +6,13 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
 from phonenumber_field.formfields import PhoneNumberField
 
-from .models import Carrito, Materia, Perfil, Prestatario
+from .models import Carrito, Materia, Perfil, Prestatario, Categoria
 
+
+class FiltroCategoria(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nombre']
 
 class UpdateUserForm(forms.ModelForm):
     email = forms.EmailField(required=True)
