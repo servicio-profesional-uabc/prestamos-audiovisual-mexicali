@@ -270,12 +270,9 @@ class CatalogoView(UserPassesTestMixin, LoginRequiredMixin, View):
         categoria = request.POST["categoria"]
         articulos = carrito.materia.articulos()
 
-        print(request.POST)
-
         if categoria != "todos":
             categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
             articulos = articulos.filter(id__in=categoria_instance.articulos())
-
 
         return render(
             request=request,
