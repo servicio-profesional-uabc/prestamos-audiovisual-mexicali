@@ -776,7 +776,7 @@ class Carrito(models.Model):
                              verbose_name='Lugar de la Producción')
 
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Especifico')
-    descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
+    descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
@@ -831,6 +831,8 @@ class Carrito(models.Model):
                 orden = Orden.objects.create(
                     nombre=self.nombre,
                     prestatario=self.prestatario,
+                    lugar=self.lugar,
+                    descripcion_lugar=self.descripcion_lugar,
                     materia=self.materia,
                     inicio=self.inicio,
                     final=self.final
