@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -317,6 +318,8 @@ class CancelarOrdenView(View):
 
 
 class AutorizacionSolitudView(LoginRequiredMixin,View):
+    TEMPLATE = "autorizacion_solicitudes.html"
+
     def get(self, request, type, id):
 
         # if type == "autorizacion"
@@ -329,9 +332,13 @@ class AutorizacionSolitudView(LoginRequiredMixin,View):
         if type == "corresponsable":
             solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
+            # si el usuario no es la presona solicitada no lo puede ver
+            if solicitud.autorizador != request.user:
+                raise Http404("No tienes permiso de ver esta Orden")
+
             return render(
                 request=request,
-                template_name="autorizacion_solicitudes.html",
+                template_name=self.TEMPLATE,
                 context={
                     "solicitud": solicitud,
                     "orden": solicitud.orden
