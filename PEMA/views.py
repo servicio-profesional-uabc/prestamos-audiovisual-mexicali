@@ -12,7 +12,7 @@ from django.utils.timezone import make_aware
 from django.views import View
 
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Carrito, Articulo, Categoria
+from .models import Carrito, Articulo, Categoria, CorresponsableOrden
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
@@ -320,23 +320,22 @@ class CancelarOrdenView(View):
 
 
 class AutorizacionSolitudView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="autorizacion_solicitudes.html"
-        )
+    def get(self, request, type, id):
 
+        # if type == "autorizacion"
+        #    return render(
+        #        solicitud=solicitud,
+        #        request=request,
+        #        template_name="autorizacion_solicitudes.html"
+        #    )
 
-def test(request):
-    send_mail(
-        subject="Email de pruebfrom .forms import LoginForma",
-        message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
-                "prueba fue exitosa. Atentamente, Galindo.",
-        from_email=settings.EMAIL_HOST_USER,
-        fail_silently=False,
-        recipient_list=[
-            "egalindo54@uabc.edu.mx"
-        ]
-    )
+        if type == "corresponsable":
+            solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
-    return HttpResponse("OK")
+            return render(
+                request=request,
+                template_name="autorizacion_solicitudes.html",
+                context={
+                    "solicitud": solicitud,
+                }
+            )

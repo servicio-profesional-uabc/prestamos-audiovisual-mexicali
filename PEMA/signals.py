@@ -34,6 +34,10 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     lista de corresponsables de una orden.
     """
 
+    if action == 'post_remove':
+        # eliminar todos los CorresponsableOrden que no sean corresponsables
+        CorresponsableOrden.objects.exclude(id__in=instance.corresponsables()).delete()
+
     if action == 'post_add':
         # crear el corresponsableOrden de cada corresponsable y enviar correo
         for item in instance._corresponsables.all():
@@ -49,18 +53,12 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
                         {
                             'orden': object.orden,
                             'user': object.autorizador
-                         }
+                        }
                     ),
                     recipient_list=[
                         object.autorizador.email
                     ]
                 )
-
-
-
-    if action == 'post_remove':
-        # eliminar todos los CorresponsableOrden que no sean corresponsables
-        CorresponsableOrden.objects.exclude(id__in=instance.corresponsables()).delete()
 
 
 @receiver(post_save, sender=CorresponsableOrden)

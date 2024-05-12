@@ -974,6 +974,7 @@ class Autorizacion(models.Model):
     class Meta:
         abstract = True
 
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 
@@ -998,7 +999,6 @@ class AutorizacionOrden(Autorizacion):
         verbose_name_plural = "Autorizaciones"
         unique_together = ('orden', 'autorizador')
 
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
     def __str__(self):
@@ -1015,9 +1015,6 @@ class CorresponsableOrden(Autorizacion):
 
     class Meta:
         unique_together = ('orden', 'autorizador')
-
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
-    estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 
 
 # Clases de relación

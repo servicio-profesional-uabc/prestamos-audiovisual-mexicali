@@ -97,7 +97,7 @@ urlpatterns = [
     ),
 
     path(
-        route='autorizacion_solicitudes',
+        route='autorizacion_solicitudes/<str:type>/<int:id>/',
         view=AutorizacionSolitudView.as_view(),
         name='autorizacion_solicitudes'
     ),
