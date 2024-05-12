@@ -1,10 +1,7 @@
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.core.mail import send_mail
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -319,7 +316,7 @@ class CancelarOrdenView(View):
         )
 
 
-class AutorizacionSolitudView(View):
+class AutorizacionSolitudView(LoginRequiredMixin,View):
     def get(self, request, type, id):
 
         # if type == "autorizacion"
@@ -337,5 +334,6 @@ class AutorizacionSolitudView(View):
                 template_name="autorizacion_solicitudes.html",
                 context={
                     "solicitud": solicitud,
+                    "orden": solicitud.orden
                 }
             )

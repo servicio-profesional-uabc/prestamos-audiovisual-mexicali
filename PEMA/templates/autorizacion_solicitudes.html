@@ -4,15 +4,24 @@
 
 {% block content %}
 
-    <div class="container-prestamos">
-        <h4>Ordenes de Préstamos para Autorizar</h4>
+<div class="container-prestamos">
+    <h4>Ordenes de Préstamos para Autorizar</h4>
 
-            <h3>{{ solicitud.nombre }}</h3>
-            <p>Prestatario: {{ solicitud.prestatario.first_name }} {{ solicitud.prestatario.last_name }}</p>
-            <p>Estado: {{ solicitud.get_estado_display }}</p>
-            <p>Fecha de solicitud: {{ solicitud.emision }}</p>
-            <a  class="btn btn-primary">Autorizar</a>
-            <a class="btn btn-danger">Rechazar</a>
+    <h3>{{ solicitud.nombre }}</h3>
+    <p>Nombre produccion: {{ orden.nombre }} </p>
+    <p>Prestatario: {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
+    <p>Estado: {{ solicitud.estado }}</p>
+    <p>Fecha de solicitud: {{ solicitud.orden }}</p>
 
-    </div>
+    {% if request.user.is_authenticated %}
+
+    <a class="btn btn-primary">Autorizar</a>
+    <a class="btn btn-danger">Rechazar</a>
+
+    {% else %}
+
+        <a href="{% url "login" %}" class="btn btn-primary">Inicia sesion para confirmar!</a>
+
+    {% endif %}
+</div>
 {% endblock %}

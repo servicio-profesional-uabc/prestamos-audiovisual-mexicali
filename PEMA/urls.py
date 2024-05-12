@@ -18,7 +18,7 @@ from .views import SolicitudView
 urlpatterns = [
     # login
     path(
-        route='',
+        route='login/',
         view=LoginView.as_view(
             template_name='login.html',
             authentication_form=UserLoginForm
