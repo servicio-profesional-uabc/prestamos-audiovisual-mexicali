@@ -86,7 +86,7 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
     match orden.estado_corresponsables():
         case AutorizacionEstado.ACEPTADA:
 
-            orden.estado = EstadoOrden.PENDIENTE_AP  # esperando autorización
+            orden.estado = EstadoOrden.RESERVADA  # esperando autorización
             orden.solicitar_autorizacion(orden)  # enviar solicitudes
 
         case AutorizacionEstado.RECHAZADA:

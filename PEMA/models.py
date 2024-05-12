@@ -989,9 +989,11 @@ class Autorizacion(models.Model):
 
     def aceptar(self):
         self.estado = AutorizacionEstado.ACEPTADA
+        self.save()
 
     def rechazar(self):
         self.estado = AutorizacionEstado.RECHAZADA
+        self.save()
 
 
 class AutorizacionOrden(Autorizacion):

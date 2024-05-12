@@ -317,30 +317,50 @@ class CancelarOrdenView(View):
         )
 
 
-class AutorizacionSolitudView(LoginRequiredMixin,View):
+class ActualizarAutorizacion(LoginRequiredMixin, View):
+
+    def get(self, request, type, state, id):
+
+        match type:
+            case "corresponsable":
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+
+            case _:
+                raise Http404("No existe ese tipo de autorizacion")
+
+        match state:
+            case "aceptar":
+                solicitud.aceptar()
+
+            case "rechazar":
+                solicitud.rechazar()
+
+            case _:
+                raise Http404("No existe ese estado")
+
+        # regresar a la pagina de autorizaciones 
+        return redirect("autorizacion_solicitudes", type, id)
+
+
+class AutorizacionSolitudView(LoginRequiredMixin, View):
     TEMPLATE = "autorizacion_solicitudes.html"
 
     def get(self, request, type, id):
+        match type:
+            case "corresponsable":
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
-        # if type == "autorizacion"
-        #    return render(
-        #        solicitud=solicitud,
-        #        request=request,
-        #        template_name="autorizacion_solicitudes.html"
-        #    )
+                # si el usuario no es la presona solicitada no lo puede ver
+                if solicitud.autorizador != request.user:
+                    raise Http404("No tienes permiso de ver esta Orden")
 
-        if type == "corresponsable":
-            solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+                return render(
+                    request=request,
+                    template_name=self.TEMPLATE,
+                    context={
+                        "solicitud": solicitud,
+                        "orden": solicitud.orden
+                    }
+                )
 
-            # si el usuario no es la presona solicitada no lo puede ver
-            if solicitud.autorizador != request.user:
-                raise Http404("No tienes permiso de ver esta Orden")
-
-            return render(
-                request=request,
-                template_name=self.TEMPLATE,
-                context={
-                    "solicitud": solicitud,
-                    "orden": solicitud.orden
-                }
-            )
+        raise Http404("No existe ese tipo de autorizacion")
