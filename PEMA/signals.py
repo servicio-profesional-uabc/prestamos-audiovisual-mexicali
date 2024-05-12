@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
+from django.template.loader import render_to_string
 
 from PEMA.models import AutorizacionEstado
 from PEMA.models import AutorizacionOrden
@@ -8,6 +10,7 @@ from PEMA.models import CorresponsableOrden
 from PEMA.models import EstadoOrden
 from PEMA.models import Orden
 from PEMA.models import Perfil
+from prestamos import settings
 
 
 @receiver(post_save, sender=User)
@@ -32,9 +35,28 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     """
 
     if action == 'post_add':
-        # crear el corresponsableOrden de cada corresponsable
+        # crear el corresponsableOrden de cada corresponsable y enviar correo
         for item in instance._corresponsables.all():
-            CorresponsableOrden.objects.get_or_create(prestatario=item, orden=instance)
+            object, created = CorresponsableOrden.objects.get_or_create(prestatario=item, orden=instance)
+
+            if created:
+                send_mail(
+                    subject="Test Email",
+                    from_email=settings.EMAIL_HOST_USER,
+                    fail_silently=False,
+                    message=render_to_string(
+                        'emails/aceptar_corresponsable.html',
+                        {
+                            'orden': object.orden,
+                            'user': object.prestatario
+                         }
+                    ),
+                    recipient_list=[
+                        object.prestatario.email
+                    ]
+                )
+
+
 
     if action == 'post_remove':
         # eliminar todos los CorresponsableOrden que no sean corresponsables
