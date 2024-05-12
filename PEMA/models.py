@@ -974,6 +974,7 @@ class Autorizacion(models.Model):
     class Meta:
         abstract = True
 
+    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 
     def esta_pendiente(self) -> bool:
@@ -997,7 +998,6 @@ class AutorizacionOrden(Autorizacion):
         verbose_name_plural = "Autorizaciones"
         unique_together = ('orden', 'autorizador')
 
-    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
@@ -1014,9 +1014,8 @@ class CorresponsableOrden(Autorizacion):
     """
 
     class Meta:
-        unique_together = ('orden', 'prestatario')
+        unique_together = ('orden', 'autorizador')
 
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 

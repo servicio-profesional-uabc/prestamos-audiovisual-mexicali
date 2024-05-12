@@ -37,7 +37,7 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     if action == 'post_add':
         # crear el corresponsableOrden de cada corresponsable y enviar correo
         for item in instance._corresponsables.all():
-            object, created = CorresponsableOrden.objects.get_or_create(prestatario=item, orden=instance)
+            object, created = CorresponsableOrden.objects.get_or_create(autorizador=item, orden=instance)
 
             if created:
                 send_mail(
@@ -48,11 +48,11 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
                         'emails/aceptar_corresponsable.html',
                         {
                             'orden': object.orden,
-                            'user': object.prestatario
+                            'user': object.autorizador
                          }
                     ),
                     recipient_list=[
-                        object.prestatario.email
+                        object.autorizador.email
                     ]
                 )
 
