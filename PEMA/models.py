@@ -618,7 +618,7 @@ class Orden(models.Model):
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
 
     # opcional
-    _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables',
+    _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables',
                                               verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
 
@@ -835,8 +835,11 @@ class Carrito(models.Model):
                     descripcion_lugar=self.descripcion_lugar,
                     materia=self.materia,
                     inicio=self.inicio,
-                    final=self.final
+                    final=self.final,
+                    descripcion=self.descripcion
                 )
+
+                orden.agregar_corresponsable(self.prestatario)
 
                 # agregar corresponsables del carrito a la orden
                 for corresponsable in self._corresponsables.all():
@@ -853,9 +856,9 @@ class Carrito(models.Model):
                         # no hay suficientes artículos disponibles
                         raise Exception("No hay suficientes unidades disponibles")
 
-                    # elige la cantidad de elementos al azar
+                    # elige elementos al azar
                     unidades.order_by('?')
-                    for i in range(0, len_unidades):
+                    for i in range(0, articuloCarrito.unidades):
                         orden.agregar_unidad(unidades[i])
 
                 self.delete()
