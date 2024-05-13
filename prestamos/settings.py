@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir' .
@@ -144,6 +144,9 @@ MEDIA_ROOT = BASE_DIR / MEDIA_URL
 # admin personalizado
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
+#
+HOST = os.environ.get("HOST", default="http://localhost:8000/")
 
 # django extra settings
 # EXTRA_SETTINGS_ADMIN_APP = "extra_settings"
