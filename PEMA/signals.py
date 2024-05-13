@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models.signals import post_save, m2m_changed
@@ -51,8 +53,10 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
                     message=render_to_string(
                         'emails/aceptar_corresponsable.html',
                         {
+                            'invitacion': object,
                             'orden': object.orden,
-                            'user': object.autorizador
+                            'user': object.autorizador,
+                            'host': settings.URL_BASE_PARA_EMAILS,
                         }
                     ),
                     recipient_list=[
