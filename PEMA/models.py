@@ -618,7 +618,7 @@ class Orden(models.Model):
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
 
     # opcional
-    _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables',
+    _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables',
                                               verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
 
@@ -835,8 +835,11 @@ class Carrito(models.Model):
                     descripcion_lugar=self.descripcion_lugar,
                     materia=self.materia,
                     inicio=self.inicio,
-                    final=self.final
+                    final=self.final,
+                    descripcion=self.descripcion
                 )
+
+                orden.agregar_corresponsable(self.prestatario)
 
                 # agregar corresponsables del carrito a la orden
                 for corresponsable in self._corresponsables.all():
@@ -853,9 +856,9 @@ class Carrito(models.Model):
                         # no hay suficientes artículos disponibles
                         raise Exception("No hay suficientes unidades disponibles")
 
-                    # elige la cantidad de elementos al azar
+                    # elige elementos al azar
                     unidades.order_by('?')
-                    for i in range(0, len_unidades):
+                    for i in range(0, articuloCarrito.unidades):
                         orden.agregar_unidad(unidades[i])
 
                 self.delete()
@@ -974,6 +977,8 @@ class Autorizacion(models.Model):
     class Meta:
         abstract = True
 
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 
     def esta_pendiente(self) -> bool:
@@ -987,9 +992,11 @@ class Autorizacion(models.Model):
 
     def aceptar(self):
         self.estado = AutorizacionEstado.ACEPTADA
+        self.save()
 
     def rechazar(self):
         self.estado = AutorizacionEstado.RECHAZADA
+        self.save()
 
 
 class AutorizacionOrden(Autorizacion):
@@ -997,8 +1004,6 @@ class AutorizacionOrden(Autorizacion):
         verbose_name_plural = "Autorizaciones"
         unique_together = ('orden', 'autorizador')
 
-    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
     def __str__(self):
@@ -1014,11 +1019,7 @@ class CorresponsableOrden(Autorizacion):
     """
 
     class Meta:
-        unique_together = ('orden', 'prestatario')
-
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
-    estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
+        unique_together = ('orden', 'autorizador')
 
 
 # Clases de relación
