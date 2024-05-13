@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
 
 {% block content %}
 <div class="container mt-4">
@@ -18,7 +18,7 @@
                     <div class="input-group-prepend">
                         <button class="btn btn-outline-secondary" type="button" id="button-addon1" onclick="decrementValue()">-</button>
                     </div>
-                    <input type="text" class="form-control text-center" value="1" min="1" max="99" id="number">
+                    <input type="text" class="form-control text-center" value="1" id="number" min="1" max="99" style="width: 40px;" >
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="incrementValue()">+</button>
                     </div>
