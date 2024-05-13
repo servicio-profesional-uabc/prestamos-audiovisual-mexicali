@@ -145,8 +145,8 @@ MEDIA_ROOT = BASE_DIR / MEDIA_URL
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
-#
-HOST = os.environ.get("HOST", default="http://localhost:8000/")
+# para enviar las urls en los emails
+URL_BASE_PARA_EMAILS = "http://192.168.1.93:8080" # "http://10.32.213.157" #"http://localhost:8000/"
 
 # django extra settings
 # EXTRA_SETTINGS_ADMIN_APP = "extra_settings"
