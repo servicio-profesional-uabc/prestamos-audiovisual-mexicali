@@ -29,83 +29,42 @@
   </div>
 </nav>
 
-<nav class="navbar">
-  <div class="container-fluid">
-    <ul class="nav">
-      <li class="nav-item">
-        <form class="d-flex" role="search">
-          <input class="form-control me-auto" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Productos
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#">Action</a></li>
-          <li><a class="dropdown-item" href="#">Another action</a></li>
-          <li><a class="dropdown-item" href="#">Something else here</a></li>
-        </ul>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Estado
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#">Action</a></li>
-          <li><a class="dropdown-item" href="#">Another action</a></li>
-          <li><a class="dropdown-item" href="#">Something else here</a></li>
-        </ul>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Vencido
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#">Action</a></li>
-          <li><a class="dropdown-item" href="#">Another action</a></li>
-          <li><a class="dropdown-item" href="#">Something else here</a></li>
-        </ul>
-      </li>
-    </ul>
-  </div>
-</nav>
 
 <div class="container mt-auto">
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Productos</th>
-                <th scope="col">Prestatario</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Comienzo</th>
-                <th scope="col">Final</th>
-                <th scope="col">Detalles</th>
-
-            </tr>
-        </thead>
-        <tbody>
-            {% for orden in ordenes %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
                 <tr>
-                    <td>{{ orden.id }}</td>
-                    <td>
-                        <ul>
-                            {% for articulo in orden.articulos.all %}
-                                <li>{{ articulo }}</li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                    <td>{{ orden.prestatario }}</td>
-                    <td>{{ orden.estado }}</td>
-                    <td>{{ orden.inicio }}</td>
-                    <td>{{ orden.final }}</td>
-                    <td><a href="{% url 'detalles_orden_devuelta' id=orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                    <th scope="col">ID</th>
+                    <th scope="col">Productos</th>
+                    <th scope="col" class="d-none d-md-table-cell">Prestatario</th>
+                    <th scope="col" class="d-none d-md-table-cell">Estado</th>
+                    <th scope="col" class="d-none d-md-table-cell">Comienzo</th>
+                    <th scope="col" class="d-none d-md-table-cell">Final</th>
+                    <th scope="col">Detalles</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for orden in ordenes %}
+                    <tr>
+                        <td>{{ orden.id }}</td>
+                        <td>
+                            <ul>
+                                {% for articulo in orden.articulos.all %}
+                                    <li>{{ articulo }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td class="d-none d-md-table-cell">{{ orden.prestatario }}</td>
+                        <td class="d-none d-md-table-cell">{{ orden.estado }}</td>
+                        <td class="d-none d-md-table-cell">{{ orden.inicio }}</td>
+                        <td class="d-none d-md-table-cell">{{ orden.final }}</td>
+                        <td><a href="{% url 'detalles_orden_devuelta' id=orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 

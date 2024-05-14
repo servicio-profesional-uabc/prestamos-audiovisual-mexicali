@@ -14,6 +14,18 @@ from .views import FiltrosView
 from .views import HistorialSolicitudesView
 from .views import MenuView, ActualizarPerfilView
 from .views import SolicitudView
+from .views import PrincipalAlmacenView
+from .views import DetallesOrdenAutorizadaView
+from .views import OrdenesPrestadasView
+from .views import DetallesOrdenPrestadaView
+from .views import OrdenesReportadasView
+from .views import DetallesOrdenReportadaView
+from .views import OrdenesDevueltasView
+from .views import DetallesOrdenDevueltaView
+
+
+
+
 
 urlpatterns = [
     path(
@@ -122,6 +134,57 @@ urlpatterns = [
         name='actualizar_perfil',
         view=ActualizarPerfilView.as_view()
     )
+    ,
+    path(
+        route='principal',
+        view=PrincipalAlmacenView.as_view(),
+        name='principal',
+    )
+    ,
+    path(
+        route='detalles_orden_autorizada',
+        view=DetallesOrdenAutorizadaView.as_view(),
+        name='detalles_orden_autorizada',
+
+    ),
+    path(
+        route='ordenes_prestadas',
+        view=OrdenesPrestadasView.as_view(),
+        name='ordenes_prestadas',
+
+    ),
+    path(
+        route='detalles_orden_prestada',
+        view=DetallesOrdenPrestadaView.as_view(),
+        name='detalles_orden_prestada',
+
+    ),
+    path(
+        route='ordenes_reportadas',
+        view=OrdenesReportadasView.as_view(),
+        name='ordenes_reportadas',
+
+    ),
+    path(
+        route='detalles_orden_reportada',
+        view=DetallesOrdenReportadaView.as_view(),
+        name='detalles_orden_reportada',
+
+    ),
+    path(
+        route='ordenes_devueltas',
+        view=OrdenesDevueltasView.as_view(),
+        name='ordenes_devueltas',
+
+    ),
+    path(
+        route='detalles_orden_devuelta',
+        view=DetallesOrdenDevueltaView.as_view(),
+        name='detalles_orden_devuelta',
+
+    ),
+
+
 ]
 
 # https://github.com/fabiocaccamo/django-admin-interface/issues/4
