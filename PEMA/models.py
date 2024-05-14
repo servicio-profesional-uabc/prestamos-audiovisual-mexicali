@@ -570,6 +570,12 @@ class EstadoOrden(models.TextChoices):
     DEVUELTA = "DE", _("Devuelta")  #: Los productos solicitados en la orden han sido devueltos al almacén.
 
 
+class Ubicacion(models.TextChoices):
+    """Opciones para el lugar de la orden"""
+    CAMPUS = "CA", _("En el Campus")
+    EXTERNO = "EX", _("Fuera del Campus")
+
+
 class Orden(models.Model):
     """
     Una orden es un conjunto de Unidades de cada Artículo definido
@@ -595,11 +601,6 @@ class Orden(models.Model):
         ordering = ("emision",)
         verbose_name_plural = "Ordenes"
 
-    class Ubicacion(models.TextChoices):
-        """Opciones para el lugar de la orden"""
-        CAMPUS = "CA", _("En el Campus")
-        EXTERNO = "EX", _("Fuera del Campus")
-
     # obligatorio
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Emisor')
@@ -617,7 +618,7 @@ class Orden(models.Model):
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
 
     # opcional
-    _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables',
+    _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables',
                                               verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
 
@@ -771,6 +772,11 @@ class Carrito(models.Model):
     """
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
+                             verbose_name='Lugar de la Producción')
+
+    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Especifico')
+    descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
@@ -825,10 +831,15 @@ class Carrito(models.Model):
                 orden = Orden.objects.create(
                     nombre=self.nombre,
                     prestatario=self.prestatario,
+                    lugar=self.lugar,
+                    descripcion_lugar=self.descripcion_lugar,
                     materia=self.materia,
                     inicio=self.inicio,
-                    final=self.final
+                    final=self.final,
+                    descripcion=self.descripcion
                 )
+
+                orden.agregar_corresponsable(self.prestatario)
 
                 # agregar corresponsables del carrito a la orden
                 for corresponsable in self._corresponsables.all():
@@ -845,9 +856,9 @@ class Carrito(models.Model):
                         # no hay suficientes artículos disponibles
                         raise Exception("No hay suficientes unidades disponibles")
 
-                    # elige la cantidad de elementos al azar
+                    # elige elementos al azar
                     unidades.order_by('?')
-                    for i in range(0, len_unidades):
+                    for i in range(0, articuloCarrito.unidades):
                         orden.agregar_unidad(unidades[i])
 
                 self.delete()
@@ -966,6 +977,8 @@ class Autorizacion(models.Model):
     class Meta:
         abstract = True
 
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 
     def esta_pendiente(self) -> bool:
@@ -979,9 +992,11 @@ class Autorizacion(models.Model):
 
     def aceptar(self):
         self.estado = AutorizacionEstado.ACEPTADA
+        self.save()
 
     def rechazar(self):
         self.estado = AutorizacionEstado.RECHAZADA
+        self.save()
 
 
 class AutorizacionOrden(Autorizacion):
@@ -989,8 +1004,6 @@ class AutorizacionOrden(Autorizacion):
         verbose_name_plural = "Autorizaciones"
         unique_together = ('orden', 'autorizador')
 
-    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
     def __str__(self):
@@ -1006,11 +1019,7 @@ class CorresponsableOrden(Autorizacion):
     """
 
     class Meta:
-        unique_together = ('orden', 'prestatario')
-
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
-    estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
+        unique_together = ('orden', 'autorizador')
 
 
 # Clases de relación

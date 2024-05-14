@@ -6,66 +6,129 @@
     <title>Vista de prueba</title>
 {% endblock %}
 
+
+
+
+
+
 {% block content %}
-    <div class="container col-12 mb-3 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4">
-        <div class="container py-2 border border-1 rounded bg-white">
-            <p class="h4 my-4 text-center">Información de la Producción</p>
 
-            <form class="" method="POST" action="{% url 'filtros' %}">
-                {% csrf_token %}
+    {% if prestatario.suspendido %}
 
-                <div class="form-floating mb-3">
-                    {% render_field form.nombre type="text" class="form-control" %}
-                    <label>Nombre de la producción</label>
+        <!-- Modal -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered pb-5">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Reportes activos</h1>
+                        <a type="button" href="{% url 'menu' %}" class="btn-close" aria-label="Close"></a>
+
+
+                    </div>
+                    <div class="modal-body">
+                        <p>Tienes reportes activos pendientes. Por favor, comunícate con el coordinador lo antes
+                            posible.</p>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="form-floating mb-3">
-                    {% render_field form.inicio id="fechaSelect" type="date" class="form-control"  %}
-                    <label for="fechaSelect">Fecha de inicio</label>
-                </div>
+        <script>
+            // Mostrar el modal al cargar la página
+            window.addEventListener('DOMContentLoaded', function () {
+                var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
+                    keyboard: false
+                });
+                myModal.show();
+            });
+        </script>
 
-                <div class="form-floating mb-3">
-                    {% render_field form.hora_inicio class="form-control" %}
-                    <label for="">Hora de inicio</label>
-                </div>
+    {% endif %}
 
-                <div class="form-floating mb-3">
-                    {% render_field form.duracion class="form-select" %}
-                    <label for="">Duración</label>
-                </div>
 
-                {# Lista de materias #}
-                <div class="form-floating mb-3">
-                    <select class="form-select" id="materiaSelect" name="materia" required>
-                        {% if materias %}
+    {% if not prestatario.suspendido %}
+        <div class="container col-12 mb-3 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4">
+            <div class="container py-2 border border-1 rounded bg-white">
+                <h4 class="my-3 text-center">Detalles de la Producción</h4>
+
+                <form class="" method="POST" action="{% url 'filtros' %}">
+                    {% csrf_token %}
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.nombre type="text" class="form-control" %}
+                        <label>Nombre de la producción</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.lugar class="form-control" %}
+                        <label for="">Lugar de la producción</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.descripcion_lugar class="form-control" %}
+                        <label for="">Lugar exacto</label>
+                    </div>
+
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.inicio id="fechaSelect" type="date" class="form-control" %}
+                        <label for="fechaSelect">Fecha de inicio</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.hora_inicio class="form-control" %}
+                        <label for="">Hora de inicio</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.duracion class="form-select" %}
+                        <label for="">Duración</label>
+                    </div>
+
+                    {# Lista de materias #}
+                    <div class="form-floating mb-3">
+                        <select class="form-select" id="materiaSelect" name="materia" required>
                             {% for materia in materias %}
                                 <option class="dropdown-item" value="{{ materia.pk }}">{{ materia }}</option>
                             {% endfor %}
-                        {% endif %}
-                    </select>
-                    <label for="materiaSelect">Materia</label>
-                </div>
-
-                {# Lista de errores #}
-                {% if form.errors %}
-                    <div class="alert alert-danger mt-sm-3">
-                        {% for field, error_list in form.errors.items %}
-                            {% for error in error_list %}
-                                <label>{{ error }}</label>
-                            {% endfor %}
-                        {% endfor %}
+                        </select>
+                        <label for="materiaSelect">Materia</label>
                     </div>
 
-                {% endif %}
 
-                <button id="boton_aceptar" type="submit" class="w-100 btn btn-primary btn-lg mt-2 mt-3">
-                    Continuar al Cátalogo
-                </button>
-
-            </form>
+                    <div class="form-floating mt-4 mb-3">
+                        {% render_field form.descripcion id="floatingTextarea2Disabled" style="height: 8em;" class="form-control" rows="3" placeholder="Descripción de la producción" %}
+                        <label for="floatingTextarea2Disabled">Comments</label>
 
 
+                        <div id="passwordHelpBlock" class="form-text">
+                            Ingresa infomración relevente como lugar de la producción.
+                        </div>
+                    </div>
+
+                    {# Lista de errores #}
+                    {% if form.errors %}
+                        <div class="alert alert-danger mt-sm-3">
+                            {% for field, error_list in form.errors.items %}
+                                {% for error in error_list %}
+                                    <label>{{ error }}</label>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+
+                    {% endif %}
+
+                    <button id="boton_aceptar" type="submit" class="w-100 btn btn-primary btn-lg mt-2 mt-3">
+                        Continuar al Cátalogo
+                    </button>
+
+                </form>
+
+
+            </div>
         </div>
-    </div>
+
+    {% endif %}
 
 {% endblock %}

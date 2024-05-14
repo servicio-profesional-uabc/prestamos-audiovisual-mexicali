@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.core.mail import send_mail
-from django.http import HttpResponse
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -20,7 +18,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from django.db import IntegrityError
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Carrito, Articulo
+from .models import Carrito, Articulo, Categoria, CorresponsableOrden
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
@@ -128,6 +126,7 @@ class FiltrosView(LoginRequiredMixin, View):
             request=request,
             template_name="filtros.html",
             context={
+                'prestatario': prestatario,
                 'form': FiltrosForm(),
                 'materias': prestatario.materias(),
             },
@@ -137,14 +136,12 @@ class FiltrosView(LoginRequiredMixin, View):
         prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
-        # print(request.POST)
-        # print(form.errors)
-
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
         if form.is_valid():
+            # crear carrito
             inicio = form.cleaned_data.get('inicio')
             hora_inicio = form.cleaned_data.get('hora_inicio')
             duracion = form.cleaned_data.get('duracion')
@@ -168,6 +165,7 @@ class FiltrosView(LoginRequiredMixin, View):
             request=request,
             template_name="filtros.html",
             context={
+                'prestatario': prestatario,
                 'form': form,
                 'materias': prestatario.materias()
             },
@@ -264,16 +262,36 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         return prestatario == carrito.prestatario
 
     def get(self, request):
-        # TODO: Filtrar por materia
         prestatario = Prestatario.get_user(request.user)
-        articulos = Articulo.objects.all()
+        carrito = prestatario.carrito()
+
+        return render(
+            request=request,
+            template_name="catalogo.html",
+            context={
+                "articulos": carrito.materia.articulos(),
+                "carrito": prestatario.carrito(),
+                "categorias": Categoria.objects.all()
+            },
+        )
+
+    def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
+        categoria = request.POST["categoria"]
+        articulos = carrito.materia.articulos()
+
+        if categoria != "todos":
+            categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
+            articulos = articulos.filter(id__in=categoria_instance.articulos())
 
         return render(
             request=request,
             template_name="catalogo.html",
             context={
                 "articulos": articulos,
-                "carrito": prestatario.carrito()
+                "carrito": prestatario.carrito(),
+                "categorias": Categoria.objects.all()
             },
         )
 
@@ -313,24 +331,50 @@ class CancelarOrdenView(View):
         )
 
 
-class AutorizacionSolitudView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="autorizacion_solicitudes.html"
-        )
+class ActualizarAutorizacion(LoginRequiredMixin, View):
+
+    def get(self, request, type, state, id):
+
+        match type:
+            case "corresponsable":
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+
+            case _:
+                raise Http404("No existe ese tipo de autorizacion")
+
+        match state:
+            case "aceptar":
+                solicitud.aceptar()
+
+            case "rechazar":
+                solicitud.rechazar()
+
+            case _:
+                raise Http404("No existe ese estado")
+
+        # regresar a la pagina de autorizaciones 
+        return redirect("autorizacion_solicitudes", type, id)
 
 
-def test(request):
-    send_mail(
-        subject="Email de pruebfrom .forms import LoginForma",
-        message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
-                "prueba fue exitosa. Atentamente, Galindo.",
-        from_email=settings.EMAIL_HOST_USER,
-        fail_silently=False,
-        recipient_list=[
-            "egalindo54@uabc.edu.mx"
-        ]
-    )
+class AutorizacionSolitudView(LoginRequiredMixin, View):
+    TEMPLATE = "autorizacion_solicitudes.html"
 
-    return HttpResponse("OK")
+    def get(self, request, type, id):
+        match type:
+            case "corresponsable":
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+
+                # si el usuario no es la presona solicitada no lo puede ver
+                if solicitud.autorizador != request.user:
+                    raise Http404("No tienes permiso de ver esta Orden")
+
+                return render(
+                    request=request,
+                    template_name=self.TEMPLATE,
+                    context={
+                        "solicitud": solicitud,
+                        "orden": solicitud.orden
+                    }
+                )
+
+        raise Http404("No existe ese tipo de autorizacion")
