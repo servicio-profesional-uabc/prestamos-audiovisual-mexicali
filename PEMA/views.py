@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.core.mail import send_mail
-from django.http import HttpResponse
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -12,7 +10,7 @@ from django.utils.timezone import make_aware
 from django.views import View
 
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Carrito, Articulo
+from .models import Carrito, Articulo, Categoria, CorresponsableOrden
 from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
@@ -72,7 +70,7 @@ class MenuView(View, LoginRequiredMixin):
 
         return render(
             request=request,
-            template_name="menu.html",
+            template_name="menu/menu.html",
             context={'matricula': request.user.username, 'user': request.user}
         )
 
@@ -80,24 +78,22 @@ class MenuView(View, LoginRequiredMixin):
         pass
 
 
-class CarritoView(View):
+class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request, accion=None):
-        # TODO: falta verificar si el usuario tiene carrito
         prestatario = Prestatario.get_user(request.user)
-
-        if not prestatario.tiene_carrito():
-            # TODO: solucion rapida
-            return HttpResponse("No tiene carrito")
-
         carrito = prestatario.carrito()
 
         if accion == 'ordenar':
-            carrito.ordenar()
-            return render(
-                request=request,
-                template_name="carrito.html",
-                context={}
-            )
+            # TODO: Mostrar que articulos esta ocupado
+            ordenado = carrito.ordenar()
+
+            if ordenado:
+                return redirect("historial_solicitudes")
 
         return render(
             request=request,
@@ -109,7 +105,8 @@ class CarritoView(View):
         )
 
 
-class FiltrosView(View, LoginRequiredMixin):
+class FiltrosView(LoginRequiredMixin, View):
+
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
@@ -121,6 +118,7 @@ class FiltrosView(View, LoginRequiredMixin):
             request=request,
             template_name="filtros.html",
             context={
+                'prestatario': prestatario,
                 'form': FiltrosForm(),
                 'materias': prestatario.materias(),
             },
@@ -130,14 +128,12 @@ class FiltrosView(View, LoginRequiredMixin):
         prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
-        print(request.POST)
-        print(form.errors)
-
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
         if form.is_valid():
+            # crear carrito
             inicio = form.cleaned_data.get('inicio')
             hora_inicio = form.cleaned_data.get('hora_inicio')
             duracion = form.cleaned_data.get('duracion')
@@ -148,7 +144,6 @@ class FiltrosView(View, LoginRequiredMixin):
 
             # TODO: Enhancement - Realizar estas operaciones en sus propios métodos de Carrito
             tiempo_duracion = int(duracion)
-
             fecha_inicio = datetime.combine(inicio, hora_inicio)
 
             # Guardar fechas actualizadas
@@ -158,13 +153,14 @@ class FiltrosView(View, LoginRequiredMixin):
             carrito_nuevo.save()
             return redirect("catalogo")
 
-        # form = FiltrosForm()
-        # form.fields['materia'].choices = [(materia.pk, materia.nombre) for materia in prestatario.materias()]
         return render(
             request=request,
-            context={'form': FiltrosForm(),
-                     'materias': prestatario.materias()},
             template_name="filtros.html",
+            context={
+                'prestatario': prestatario,
+                'form': form,
+                'materias': prestatario.materias()
+            },
         )
 
 
@@ -245,18 +241,44 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         return redirect("historial_solicitudes")
 
 
-class CatalogoView(View):
+class CatalogoView(UserPassesTestMixin, LoginRequiredMixin, View):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
-        articulos = Articulo.objects.all()
-
-        if not prestatario.tiene_carrito():
-            return redirect("filtros")
+        carrito = prestatario.carrito()
 
         return render(
             request=request,
             template_name="catalogo.html",
-            context={"articulos": articulos},
+            context={
+                "articulos": carrito.materia.articulos(),
+                "carrito": prestatario.carrito(),
+                "categorias": Categoria.objects.all()
+            },
+        )
+
+    def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
+        categoria = request.POST["categoria"]
+        articulos = carrito.materia.articulos()
+
+        if categoria != "todos":
+            categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
+            articulos = articulos.filter(id__in=categoria_instance.articulos())
+
+        return render(
+            request=request,
+            template_name="catalogo.html",
+            context={
+                "articulos": articulos,
+                "carrito": prestatario.carrito(),
+                "categorias": Categoria.objects.all()
+            },
         )
 
 
@@ -271,7 +293,12 @@ class DetallesArticuloView(View):
         )
 
 
-class AgregarAlCarritoView(View):
+class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request, articulo_id):
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
@@ -290,24 +317,50 @@ class CancelarOrdenView(View):
         )
 
 
-class AutorizacionSolitudView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="autorizacion_solicitudes.html"
-        )
+class ActualizarAutorizacion(LoginRequiredMixin, View):
+
+    def get(self, request, type, state, id):
+
+        match type:
+            case "corresponsable":
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+
+            case _:
+                raise Http404("No existe ese tipo de autorizacion")
+
+        match state:
+            case "aceptar":
+                solicitud.aceptar()
+
+            case "rechazar":
+                solicitud.rechazar()
+
+            case _:
+                raise Http404("No existe ese estado")
+
+        # regresar a la pagina de autorizaciones 
+        return redirect("autorizacion_solicitudes", type, id)
 
 
-def test(request):
-    send_mail(
-        subject="Email de pruebfrom .forms import LoginForma",
-        message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
-                "prueba fue exitosa. Atentamente, Galindo.",
-        from_email=settings.EMAIL_HOST_USER,
-        fail_silently=False,
-        recipient_list=[
-            "egalindo54@uabc.edu.mx"
-        ]
-    )
+class AutorizacionSolitudView(LoginRequiredMixin, View):
+    TEMPLATE = "autorizacion_solicitudes.html"
 
-    return HttpResponse("OK")
+    def get(self, request, type, id):
+        match type:
+            case "corresponsable":
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+
+                # si el usuario no es la presona solicitada no lo puede ver
+                if solicitud.autorizador != request.user:
+                    raise Http404("No tienes permiso de ver esta Orden")
+
+                return render(
+                    request=request,
+                    template_name=self.TEMPLATE,
+                    context={
+                        "solicitud": solicitud,
+                        "orden": solicitud.orden
+                    }
+                )
+
+        raise Http404("No existe ese tipo de autorizacion")

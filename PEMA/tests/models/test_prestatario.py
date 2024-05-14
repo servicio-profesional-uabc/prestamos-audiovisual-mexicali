@@ -3,7 +3,7 @@ from datetime import datetime
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Carrito
+from PEMA.models import Carrito, Ubicacion
 from PEMA.models import Materia
 from PEMA.models import Prestatario, Almacen, Orden
 
@@ -19,12 +19,12 @@ class TestPrestatario(TestCase):
 
         # ordenes
         self.orden1 = Orden.objects.create(materia=self.materia, prestatario=self.user_prestatario,
-                                           lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5, 0)),
+                                           lugar=Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5, 0)),
                                            final=make_aware(datetime(2024, 10, 5, 0)))
 
         self.orden1.agregar_corresponsable(self.user_prestatario)
 
-        self.orden2 = Orden.objects.create(materia=self.materia, lugar=Orden.Ubicacion.EXTERNO,
+        self.orden2 = Orden.objects.create(materia=self.materia, lugar=Ubicacion.EXTERNO,
                                            prestatario=self.user_prestatario,
                                            inicio=make_aware(datetime(2024, 10, 5, 0)),
                                            final=make_aware(datetime(2024, 10, 5, 0)))

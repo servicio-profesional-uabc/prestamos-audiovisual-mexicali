@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
 from phonenumber_field.formfields import PhoneNumberField
 
-from .models import Carrito, Materia, Perfil, Prestatario
+from .models import Carrito, Materia, Perfil, Prestatario, Categoria
 
 
 class UpdateUserForm(forms.ModelForm):
@@ -47,7 +47,9 @@ class FiltrosForm(forms.ModelForm):
 
     class Meta:
         model = Carrito
-        fields = ['inicio', 'nombre', 'materia']
+        fields = ['inicio', 'nombre', 'materia', 'lugar', 'descripcion', 'lugar', 'descripcion_lugar']
+
+    descripcion = forms.CharField(widget=forms.Textarea)
 
     nombre = forms.CharField(required=True, max_length=250,
                              validators=[MaxLengthValidator(
@@ -66,8 +68,6 @@ class FiltrosForm(forms.ModelForm):
         (72, "3 días (72h)"),
         (96, "4 dias (96h)"),
     ))
-
-    #materia = forms.ModelChoiceField(queryset=Materia.objects.none(), required=True, empty_label='--------------------')
 
     hora_inicio = forms.ChoiceField(required=True, choices=(
         (time(hour=9, minute=0, second=0), '9:00 AM'),
@@ -107,10 +107,10 @@ class FiltrosForm(forms.ModelForm):
     def clean_inicio(self):
         inicio = self.cleaned_data.get('inicio')
         if inicio.date().weekday() >= 5:
-            raise forms.ValidationError("Por favor elija fecha de inicio de préstamo entre semana.")
+            raise forms.ValidationError("Elija fecha de inicio de préstamo entre semana.")
 
         if inicio.date() < (date.today() + timedelta(days=3)):
-            raise forms.ValidationError("Por favor elija una fecha tres días a partir de hoy.")
+            raise forms.ValidationError("Elija una fecha tres días a partir de hoy.")
 
         # print(f'clean inicio {inicio}')
         return inicio

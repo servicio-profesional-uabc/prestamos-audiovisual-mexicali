@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import AutorizacionSolitudView, AgregarAlCarritoView
+from .views import ActualizarAutorizacion, AutorizacionSolitudView, AgregarAlCarritoView
 from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
@@ -16,22 +16,27 @@ from .views import MenuView, ActualizarPerfilView
 from .views import SolicitudView
 
 urlpatterns = [
-    # login
     path(
         route='',
+        name='index',
         view=LoginView.as_view(
             template_name='login.html',
             authentication_form=UserLoginForm
-        ),
-        name='login'
+        )
+    ),
+
+    # login
+    path(
+        route='login/',
+        name='login',
+        view=LoginView.as_view(
+            template_name='login.html',
+            authentication_form=UserLoginForm
+        )
     ),
 
     # logout
-    path(
-        route='logout',
-        view=LogoutView.as_view(),
-        name='logout'
-    ),
+    path('logout/', LogoutView.as_view(), name='logout'),
 
     path(
         route='menu',
@@ -46,7 +51,7 @@ urlpatterns = [
     ),
 
     path(
-        route='carrito/<str:action>',
+        route='carrito/<str:accion>',
         view=CarritoView.as_view(),
         name='carrito_accion'
     ),
@@ -101,9 +106,15 @@ urlpatterns = [
     ),
 
     path(
-        route='autorizacion_solicitudes',
+        route='autorizacion_solicitudes/<str:type>/<int:id>/',
         view=AutorizacionSolitudView.as_view(),
         name='autorizacion_solicitudes'
+    ),
+
+    path(
+        route='actualizar_autorizacion/<str:type>/<str:state>/<int:id>',
+        view=ActualizarAutorizacion.as_view(),
+        name='actualizar_autorizacion'
     ),
 
     path(

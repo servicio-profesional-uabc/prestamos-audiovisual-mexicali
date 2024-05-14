@@ -1,39 +1,61 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-<head>
+{% block head %}
     <title>Carrito</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
+{% endblock %}
 
-<div class="container-sm order-details-container ">
-    <h2>Carrito</h2>
-    <hr class="hr green-separator" />
-    <div class="order-items">
-        <h4>Artículos en el carrito</h4>
+{% block content %}
+    <div class="container-sm order-details-container ">
+        <h2>Carrito</h2>
+        <hr class="hr green-separator"/>
+        <div class="order-items">
+            <h4>Artículos en el carrito</h4>
 
-        <ul class="list-group">
-            {% for articuloCarrito in articulos_carrito %}
-            <li class="list-group-item d-flex justify-content-between align-items-center"
-                style="background-color: #f9f9f9;">
-                <div class="d-flex align-items-center">
-                    <img src="{{ articuloCarrito.articulo.imagen.url }}"
-                         alt="{{ articuloCarrito.articulo.nombre }}"
-                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
-                         class="me-3">
-                    <span class="text-dark">{{ articuloCarrito.articulo.nombre }}</span>
-                </div>
-                <span class="badge bg-primary rounded-pill">{{ articuloCarrito.unidades }}</span>
-            </li>
-            {% endfor %}
-        </ul>
+            <ul class="list-group">
+                {% for articuloCarrito in articulos_carrito %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        style="background-color: #f9f9f9;">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ articuloCarrito.articulo.imagen.url }}"
+                                 alt="{{ articuloCarrito.articulo.nombre }}"
+                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
+                                 class="me-3">
+                            <span class="text-dark">{{ articuloCarrito.articulo.nombre }}</span>
+                        </div>
+                        <!--<span class="badge bg-primary rounded-pill">{{ articuloCarrito.unidades }}</span>-->
+                        <div class="ms-auto">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="decrementValue()">-</button>
+                            <input type="text" class="form-control d-inline text-center" value="1" min="1" max="99" style="width: 40px;">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="incrementValue()">+</button>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
 
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'catalogo' %}" class="btn btn-secondary me-3"
+               style="background-color: #DD971A;">Regresar</a>
+            <a href="{% url 'carrito_accion' 'ordenar' %}" class="btn btn-primary">Ordenar</a>
+        </div>
     </div>
-    <div class="text-center mt-4">
-        <a href="{% url 'catalogo' %}" class="btn btn-secondary me-3" style="background-color: #00723F;">Regresar</a>
-        <a href="{% url 'carrito_accion' 'ordenar' %}" class="btn btn-primary">Ordenar</a>
-    </div>
-</div>
 
+    <script>
+        function incrementValue() {
+            var input = document.querySelector('input[type="text"]');
+            var value = parseInt(input.value, 10);
+            value = isNaN(value) ? 0 : value;
+            value++;
+            input.value = value;
+        }
+        
+        function decrementValue() {
+            var input = document.querySelector('input[type="text"]');
+            var value = parseInt(input.value, 10);
+            value = isNaN(value) ? 0 : value;
+            value > 1 ? value-- : value = 1;
+            input.value = value;
+        }
+        </script>
 {% endblock %}

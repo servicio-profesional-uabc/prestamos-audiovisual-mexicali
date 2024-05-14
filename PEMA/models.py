@@ -1,4 +1,3 @@
-from random import shuffle
 from typing import Any
 
 from django.contrib.auth.models import Group
@@ -35,10 +34,8 @@ class Prestatario(User):
     def get_user(user: User) -> Any | None:
         """
         Obtiene el usuario prestatario
-
-        :param user: Usuario del que se quiere obtener el prestatario
-        :returns: Prestatario o None si no es Prestatario
         """
+
         try:
             user = Prestatario.objects.get(pk=user.pk)
         except Prestatario.DoesNotExist:
@@ -49,8 +46,6 @@ class Prestatario(User):
     def crear_usuario(*args, **kwargs) -> 'Prestatario':
         """
         Crea un usuario de tipo prestatario, util para hacer pruebas unitarias
-
-        :returns: usuario en el grupo de Prestatarios
         """
 
         grupo, _ = Prestatario.crear_grupo()
@@ -308,6 +303,9 @@ class Perfil(models.Model):
     :ivar numero_telefono: Número de teléfono.
     """
 
+    class Meta:
+        verbose_name_plural = "Perfiles"
+
     usuario = models.OneToOneField(to=User, on_delete=models.CASCADE)
     numero_telefono = PhoneNumberField(blank=True, null=False, region='MX')
 
@@ -356,6 +354,9 @@ class Perfil(models.Model):
         :return: Nombre de usuario.
         """
         return self.usuario.username
+
+    def __str__(self):
+        return str(self.usuario)
 
 
 class Materia(models.Model):
@@ -462,9 +463,6 @@ class Articulo(models.Model):
 
         :returns: Unidades disponibles en el rango especificado.
         """
-
-        # fokin sheet!
-
         ordenes_reservadas = Orden.objects.filter(
             # filtrar si ya está resevado o entregado el artículo
             estado__in=[
@@ -474,20 +472,24 @@ class Articulo(models.Model):
             ],
 
             # filtrar materias para las que está disponible el artículo
-            materia__in=self.materias(),
+            # materia__in=self.materias(),
 
             # Ordenes que incluyen el articulo
             _unidades__in=self.unidades()
-        ).filter((
+        )
+
+        coliciones = ordenes_reservadas.filter((
             # ordenes activas en el rango
-            Q(inicio=inicio) |
-            Q(final=final) |
-            Q(inicio__lt=inicio, final__gt=inicio) |
-            Q(inicio__lt=final, final__gt=final) |
-            Q(inicio__gt=inicio, final__lt=final)
+                Q(inicio=inicio) |
+                Q(final=final) |
+                Q(inicio__lt=inicio, final__gt=inicio) |
+                Q(inicio__lt=final, final__gt=final) |
+                Q(inicio__gt=inicio, final__lt=final)
         ))
 
-        unidades_reservadas = Unidad.objects.filter(orden__in=ordenes_reservadas)
+        print(coliciones)
+
+        unidades_reservadas = Unidad.objects.filter(orden__in=coliciones)
 
         return self.unidades().exclude(id__in=unidades_reservadas)
 
@@ -529,7 +531,7 @@ class Unidad(models.Model):
 
     class Meta:
         verbose_name_plural = "Unidades"
-        unique_together = ('articulo', 'num_control')
+        unique_together = ('articulo', 'num_control', 'num_serie')
 
     class Estado(models.TextChoices):
         ACTIVO = "AC", _("ACTIVO")
@@ -568,6 +570,12 @@ class EstadoOrden(models.TextChoices):
     DEVUELTA = "DE", _("Devuelta")  #: Los productos solicitados en la orden han sido devueltos al almacén.
 
 
+class Ubicacion(models.TextChoices):
+    """Opciones para el lugar de la orden"""
+    CAMPUS = "CA", _("En el Campus")
+    EXTERNO = "EX", _("Fuera del Campus")
+
+
 class Orden(models.Model):
     """
     Una orden es un conjunto de Unidades de cada Artículo definido
@@ -593,11 +601,6 @@ class Orden(models.Model):
         ordering = ("emision",)
         verbose_name_plural = "Ordenes"
 
-    class Ubicacion(models.TextChoices):
-        """Opciones para el lugar de la orden"""
-        CAMPUS = "CA", _("En el Campus")
-        EXTERNO = "EX", _("Fuera del Campus")
-
     # obligatorio
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Emisor')
@@ -615,7 +618,7 @@ class Orden(models.Model):
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
 
     # opcional
-    _corresponsables = models.ManyToManyField(to=Prestatario, related_name='corresponsables',
+    _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables',
                                               verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
 
@@ -769,6 +772,11 @@ class Carrito(models.Model):
     """
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
+                             verbose_name='Lugar de la Producción')
+
+    descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Especifico')
+    descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
@@ -802,13 +810,16 @@ class Carrito(models.Model):
     def vacio(self):
         return self.articulos().count() == 0
 
+    def numero_articulos(self) -> int:
+        return ArticuloCarrito.objects.filter(propietario=self).count()
+
     def articulos(self):
         """
         Devuelve los objetos Articulo que hay en el carrito.
         """
         return Articulo.objects.filter(articulocarrito__carrito=self)
 
-    def ordenar(self) -> Exception:
+    def ordenar(self) -> bool:
         """
         Convierte el carrito en una orden (Transacción).
 
@@ -817,8 +828,18 @@ class Carrito(models.Model):
         # TODO: Verificar si la orden es Ordinaria o Extraordinaria
         try:
             with transaction.atomic():
-                orden = Orden.objects.create(prestatario=self.prestatario, materia=self.materia, inicio=self.inicio,
-                                             final=self.final)
+                orden = Orden.objects.create(
+                    nombre=self.nombre,
+                    prestatario=self.prestatario,
+                    lugar=self.lugar,
+                    descripcion_lugar=self.descripcion_lugar,
+                    materia=self.materia,
+                    inicio=self.inicio,
+                    final=self.final,
+                    descripcion=self.descripcion
+                )
+
+                orden.agregar_corresponsable(self.prestatario)
 
                 # agregar corresponsables del carrito a la orden
                 for corresponsable in self._corresponsables.all():
@@ -826,23 +847,27 @@ class Carrito(models.Model):
 
                 # agregar unidades
                 for articuloCarrito in self.articulos_carrito():
-                    unidades = articuloCarrito.articulo.unidades()
+                    unidades = articuloCarrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)
+
+                    print(unidades)
 
                     if len_unidades < articuloCarrito.unidades:
                         # no hay suficientes artículos disponibles
                         raise Exception("No hay suficientes unidades disponibles")
 
-                    # elige la cantidad de elementos al azar
+                    # elige elementos al azar
                     unidades.order_by('?')
-                    for i in range(0, len_unidades):
+                    for i in range(0, articuloCarrito.unidades):
                         orden.agregar_unidad(unidades[i])
 
                 self.delete()
 
         except Exception as e:
             print(f"Hubo un error, la transacción ha sido cancelada. {str(e)}")
-            return e
+            return False
+
+        return True
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         return self._corresponsables.all()
@@ -952,6 +977,8 @@ class Autorizacion(models.Model):
     class Meta:
         abstract = True
 
+    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
+    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
     estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
 
     def esta_pendiente(self) -> bool:
@@ -965,9 +992,11 @@ class Autorizacion(models.Model):
 
     def aceptar(self):
         self.estado = AutorizacionEstado.ACEPTADA
+        self.save()
 
     def rechazar(self):
         self.estado = AutorizacionEstado.RECHAZADA
+        self.save()
 
 
 class AutorizacionOrden(Autorizacion):
@@ -975,8 +1004,6 @@ class AutorizacionOrden(Autorizacion):
         verbose_name_plural = "Autorizaciones"
         unique_together = ('orden', 'autorizador')
 
-    autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
 
     def __str__(self):
@@ -992,11 +1019,7 @@ class CorresponsableOrden(Autorizacion):
     """
 
     class Meta:
-        unique_together = ('orden', 'prestatario')
-
-    prestatario = models.ForeignKey(to=Prestatario, on_delete=models.CASCADE)
-    orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
-    estado = models.CharField(default=AutorizacionEstado.PENDIENTE, choices=AutorizacionEstado.choices, max_length=2)
+        unique_together = ('orden', 'autorizador')
 
 
 # Clases de relación
