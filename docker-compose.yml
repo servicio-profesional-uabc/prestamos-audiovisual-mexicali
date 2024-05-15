@@ -1,0 +1,36 @@
+services:
+  db:
+    container_name: pema-db
+    build:
+      dockerfile: Dockerfile.mysql
+      context: .
+    restart: always
+    ports:
+      - "3307:3306" # Mapea puerto 3306 del contenedor a puerto 3306 del host
+    environment:
+      MYSQL_ROOT_PASSWORD: 'P@ssword123'
+      MYSQL_DATABASE: 'pema-db'
+      MYSQL_USER: 'admin'
+      MYSQL_PASSWORD: 'P@ssword123'
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    container_name: pema-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py crear_roles && python manage.py collectstatic --noinput && service apache2 start && apache2ctl configtest && python manage.py runserver"
+    restart: always
+    ports:
+      - "8000:8000" # Mapea puerto 8000 del host al 8000 de contenedor (Desarrollo)
+      - "81:80" # Mapea puerto 80 del host al 80 del contenedor (Apache Producción)
+    volumes:
+      - .:/app
+      - ./pema.conf:/etc/apache2/sites-available/000-default.conf
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
