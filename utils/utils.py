@@ -107,6 +107,8 @@ def importar_listas(file_path):
         nombres.append(nombre)
         matriculas.append(int(matricula))
 
+    parsear_listas(nombre_materia, anno, semestre, no_empleado, nombre_empleado, nombres, matriculas)
+
 def parsear_listas(nombre_materia, anno, semestre, no_empleado, nombre_empleado, nombres, matriculas):
     """Crear Materia"""
     materia = Materia.objects.get_or_create(nombre=nombre_materia, year=anno, semestre=semestre)[0]
