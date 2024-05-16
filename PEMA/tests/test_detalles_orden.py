@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils.timezone import make_aware
 
-from PEMA.models import Orden, EstadoOrden
+from PEMA.models import Orden, EstadoOrden, Ubicacion
 from PEMA.models import Prestatario, Materia
 
 
@@ -18,7 +18,7 @@ class DetallesOrdenViewTestCase(TestCase):
         self.materia = Materia.objects.create(nombre='Cinematografia', year=2022, semestre=1)
 
         self.orden = Orden.objects.create(prestatario=self.user, nombre="Lorem ipsum dolor sit amet",
-                                          lugar=Orden.Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
+                                          lugar=Ubicacion.CAMPUS, inicio=make_aware(datetime(2024, 10, 5)),
                                           final=make_aware(datetime(2024, 10, 5)),
                                           materia=self.materia, )
 
