@@ -781,7 +781,7 @@ class Carrito(models.Model):
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
 
-    _articulos = models.ManyToManyField(to='ArticuloCarrito', blank=True)
+    _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
     _corresponsables = models.ManyToManyField(to='Prestatario', blank=True, related_name='corresponsables_carrito')
 
     def agregar(self, articulo: 'Articulo', unidades: int):
@@ -791,15 +791,17 @@ class Carrito(models.Model):
         :param articulo: El artículo que se va a agregar.
         :param unidades: Unidades que se va a agregar del Artículo.
         """
-        if not self._articulos.filter(articulo=articulo).exists():
-            # si no esta registrado este articulo
-            foo = ArticuloCarrito.objects.create(propietario=self, articulo=articulo, unidades=unidades)
-            self._articulos.add(foo)
-            return
+        articulo_carrito, created = ArticuloCarrito.objects.get_or_create(
+            propietario=self,
+            articulo=articulo
+        )
 
-        data = self._articulos.get(articulo=articulo)
-        data.unidades = unidades
-        data.save()
+        if not created:
+            articulo_carrito.unidades += unidades
+        else:
+            articulo_carrito.unidades = unidades
+
+        articulo_carrito.save()
 
     def articulos_carrito(self) -> QuerySet['ArticuloCarrito']:
         return ArticuloCarrito.objects.filter(propietario=self)
@@ -817,7 +819,7 @@ class Carrito(models.Model):
         """
         Devuelve los objetos Articulo que hay en el carrito.
         """
-        return Articulo.objects.filter(articulocarrito__carrito=self)
+        return self._articulos.all()
 
     def ordenar(self) -> bool:
         """
