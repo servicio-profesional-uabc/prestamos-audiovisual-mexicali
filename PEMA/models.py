@@ -892,8 +892,6 @@ class Carrito(models.Model):
         self._corresponsables.add(prestatario)
 
 
-
-
 class Reporte(models.Model):
     """
     Clase que representa un reporte a una Orden.
