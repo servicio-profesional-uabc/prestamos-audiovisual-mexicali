@@ -784,6 +784,20 @@ class Carrito(models.Model):
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
     _corresponsables = models.ManyToManyField(to='Prestatario', blank=True, related_name='corresponsables_carrito')
 
+    def eliminar_articulo(self, articulo: 'Articulo', unidades: int = None):
+        """
+        Elimina un artículo del carrito o reduce su cantidad.
+
+        :param articulo: El artículo que se va a eliminar.
+        :param unidades: Unidades que se van a eliminar del Artículo. Si es None, se elimina el artículo completamente.
+        """
+        articulo_carrito = ArticuloCarrito.objects.get(propietario=self, articulo=articulo)
+        if unidades is None or unidades >= articulo_carrito.unidades:
+            articulo_carrito.delete()
+        else:
+            articulo_carrito.unidades -= unidades
+            articulo_carrito.save()
+
     def agregar(self, articulo: 'Articulo', unidades: int):
         """
         Agrega un artículo al carrito.
@@ -876,6 +890,8 @@ class Carrito(models.Model):
 
     def agregar_corresponsable(self, prestatario):
         self._corresponsables.add(prestatario)
+
+
 
 
 class Reporte(models.Model):
