@@ -112,7 +112,7 @@ class Command(BaseCommand):
         user.is_staff = False
 
         user.save()
-        print('Se guardó usuario...')
+        print('Se guardó usuario...') 
         materia1.save()
         materia2.save()
         print('Se guardaron las materias...')
