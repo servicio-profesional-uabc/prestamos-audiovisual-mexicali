@@ -28,7 +28,7 @@
                             <button class="btn btn-outline-secondary btn-sm" onclick="decrementValue()">-</button>
                             <input type="text" class="form-control d-inline text-center" value="1" min="1" max="99" style="width: 40px;">
                             <button class="btn btn-outline-secondary btn-sm" onclick="incrementValue()">+</button>
-                            <a href="{% url 'eliminar_del_carrito' articulo.id %}" class="btn btn-primary">Eliminar</a>
+                            <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}" class="btn btn-primary">Eliminar</a>
 
                         </div>
                     </li>
