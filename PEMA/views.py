@@ -8,7 +8,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views import View
-
+from django.shortcuts import redirect, get_object_or_404
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
 from .models import Carrito, Articulo, Categoria, CorresponsableOrden
 from .models import Orden, Prestatario, EstadoOrden, Perfil
@@ -103,6 +103,7 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
                 "carrito": carrito
             }
         )
+
 
 
 class FiltrosView(LoginRequiredMixin, View):
@@ -295,6 +296,22 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 
         return redirect("catalogo")
 
+class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.eliminar_articulo(articulo)
+        carrito.save()
+
+        return redirect("carrito")
+    
+    
 
 class CancelarOrdenView(View):
     def get(self, request):
