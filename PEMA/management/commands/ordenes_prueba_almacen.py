@@ -1,9 +1,10 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from PEMA.models import Prestatario, Orden, Materia, EstadoOrden, TipoOrden
+from PEMA.models import Prestatario, Orden, Materia, EstadoOrden, TipoOrden, Ubicacion
 from django.utils.timezone import make_aware
 from datetime import datetime
 from django.conf import settings
+from django.db.utils import IntegrityError
 
 
 class Command(BaseCommand):
@@ -12,7 +13,7 @@ class Command(BaseCommand):
     Crea ordenes de diferentes estados y usuario para el usuario 117 con password 123
     """
 
-    USERNAME = '117'
+    USERNAME = 'prestatario'
     PASSWORD = '123'
     ID = 117
 
@@ -21,13 +22,13 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         if not settings.DEBUG:
-            self.stdout.write(self.style.ERROR(Command.ErrorMessages.ENVIRONMENT))
+            self.stdout.write(self.style.ERROR(self.ErrorMessages.ENVIRONMENT))
             return
 
         try:
             user = Prestatario.crear_usuario(id=self.ID, username=self.USERNAME, password=self.PASSWORD)
-        except:
-            user = User.objects.get(id=self.ID)
+        except IntegrityError:
+            user = User.objects.get(username=self.USERNAME)
 
         # materias
         materia1, created = Materia.objects.get_or_create(
@@ -48,21 +49,21 @@ class Command(BaseCommand):
         orden11, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=EstadoOrden.DEVUELTA,
+            estado=EstadoOrden.RESERVADA,
             materia=materia1,
         )
 
         orden12, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            lugar=Orden.Ubicacion.EXTERNO,
+            lugar=Ubicacion.EXTERNO,
             tipo=TipoOrden.EXTRAORDINARIA,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=EstadoOrden.DEVUELTA,
+            estado=EstadoOrden.ENTREGADA,
             materia=materia1,
             descripcion="Esta solicitud es para mi practica de Cinematografia en la laguna salada."
         )
@@ -70,37 +71,37 @@ class Command(BaseCommand):
         orden13, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=EstadoOrden.APROBADA,
+            estado=EstadoOrden.CANCELADA,
             materia=materia2,
         )
 
         orden14, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=EstadoOrden.ENTREGADA,
+            estado=EstadoOrden.APROBADA,
             materia=materia2,
         )
 
         orden15, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
-            estado=EstadoOrden.ENTREGADA,
+            estado=EstadoOrden.DEVUELTA,
             materia=materia1,
         )
 
         orden16, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),
             estado=EstadoOrden.APROBADA,
@@ -111,7 +112,7 @@ class Command(BaseCommand):
         user.is_staff = False
 
         user.save()
-        print('Se guardo usuario...')
+        print('Se guardó usuario...')
         materia1.save()
         materia2.save()
         print('Se guardaron las materias...')
@@ -121,5 +122,4 @@ class Command(BaseCommand):
         orden14.save()
         orden15.save()
         orden16.save()
-        print('Se guardaron las ordenes...')
-
+        print('Se guardaron las órdenes...')

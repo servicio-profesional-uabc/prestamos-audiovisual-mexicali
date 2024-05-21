@@ -2,72 +2,210 @@
 {% load static %}
 
 {% block content %}
+<style>
+  .nav-tabs .nav-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  @media (max-width: 768px) {
+    .tab-text {
+      display: none;
+    }
+    .tab-important {
+      display: inline;
+    }
+  }
+  @media (min-width: 769px) {
+    .tab-important {
+      display: none;
+    }
+    .tab-text {
+      display: inline;
+    }
+  }
+</style>
 
-  <body>
-
-  <nav class="navbar navbar-expand-lg bg-body-tertiary" >
-  <div class="container-fluid">
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+<nav>
+  <div class="nav nav-tabs nav-justified" id="nav-tab" role="tablist">
+    <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">
+      <span class="tab-important">Pendiente</span>
+      <span class="tab-text">Ordenes Pendientes</span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavDropdown">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="principal">Ordenes autorizadas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="ordenes_devueltas">Ordenes devueltas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="ordenes_prestadas">Ordenes prestadas</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="ordenes_reportadas">Ordenes reportada</a>
-        </li>
-      </ul>
-    </div>
+    <button class="nav-link" id="nav-ready-tab" data-bs-toggle="tab" data-bs-target="#nav-ready" type="button" role="tab" aria-controls="nav-ready" aria-selected="false">
+      <span class="tab-important">Lista</span>
+      <span class="tab-text">Ordenes Listas para iniciar</span>
+    </button>
+    <button class="nav-link" id="nav-cancelled-tab" data-bs-toggle="tab" data-bs-target="#nav-cancelled" type="button" role="tab" aria-controls="nav-cancelled" aria-selected="false">
+      <span class="tab-important">Cancelada</span>
+      <span class="tab-text">Ordenes Canceladas</span>
+    </button>
+    <button class="nav-link" id="nav-delivered-tab" data-bs-toggle="tab" data-bs-target="#nav-delivered" type="button" role="tab" aria-controls="nav-delivered" aria-selected="false">
+      <span class="tab-important">Entregada</span>
+      <span class="tab-text">Ordenes Entregadas</span>
+    </button>
+    <button class="nav-link" id="nav-returned-tab" data-bs-toggle="tab" data-bs-target="#nav-returned" type="button" role="tab" aria-controls="nav-returned" aria-selected="false">
+      <span class="tab-important">Devuelta</span>
+      <span class="tab-text">Ordenes Devueltas</span>
+    </button>
   </div>
 </nav>
 
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 
 
-<div class="container mt-auto">
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Productos</th>
-                <th scope="col">Prestatario</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Comienzo</th>
-                <th scope="col">Final</th>
-                <th scope="col">Detalles</th>
-
-            </tr>
-        </thead>
-        <tbody>
-            {% for orden in ordenes %}
-                <tr>
-                    <td>{{ orden.id }}</td>
-                    <td>
-                        <ul>
-                            {% for articulo in orden.articulos.all %}
-                                <li>{{ articulo }}</li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                    <td>{{ orden.prestatario }}</td>
-                    <td>{{ orden.estado }}</td>
-                    <td>{{ orden.inicio }}</td>
-                    <td>{{ orden.final }}</td>
-                    <td><a href="{% url 'detalles_orden_autorizada' id=orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="tab-content" id="nav-tabContent">
+  <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+    <div class="container mt-auto">
+        {% if ordenes_pendientes %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Comienzo</th>
+                        <th scope="col">Final</th>
+                        <th scope="col">Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orden in ordenes_pendientes %}
+                        <tr>
+                            <td>{{ orden.id }}</td>
+                            <td>{{ orden.inicio }}</td>
+                            <td>{{ orden.final }}</td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No tienes solicitudes.</p>
+        {% endif %}
+    </div>
+  </div>
+  <div class="tab-pane fade" id="nav-ready" role="tabpanel" aria-labelledby="nav-ready-tab">
+    <div class="container mt-auto">
+        {% if ordenes_listas %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Comienzo</th>
+                        <th scope="col">Final</th>
+                        <th scope="col">Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orden in ordenes_listas %}
+                        <tr>
+                            <td>{{ orden.id }}</td>
+                            <td>{{ orden.inicio }}</td>
+                            <td>{{ orden.final }}</td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No tienes solicitudes.</p>
+        {% endif %}
+    </div>
+  </div>
+  <div class="tab-pane fade" id="nav-cancelled" role="tabpanel" aria-labelledby="nav-cancelled-tab">
+    <div class="container mt-auto">
+        {% if ordenes_canceladas %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Comienzo</th>
+                        <th scope="col">Final</th>
+                        <th scope="col">Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orden in ordenes_canceladas %}
+                        <tr>
+                            <td>{{ orden.id }}</td>
+                            <td>{{ orden.inicio }}</td>
+                            <td>{{ orden.final }}</td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No tienes solicitudes.</p>
+        {% endif %}
+    </div>
+  </div>
+  <div class="tab-pane fade" id="nav-delivered" role="tabpanel" aria-labelledby="nav-delivered-tab">
+    <div class="container mt-auto">
+        {% if ordenes_entregadas %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Comienzo</th>
+                        <th scope="col">Final</th>
+                        <th scope="col">Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orden in ordenes_entregadas %}
+                        <tr>
+                            <td>{{ orden.id }}</td>
+                            <td>{{ orden.inicio }}</td>
+                            <td>{{ orden.final }}</td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No tienes solicitudes.</p>
+        {% endif %}
+    </div>
+  </div>
+  <div class="tab-pane fade" id="nav-returned" role="tabpanel" aria-labelledby="nav-returned-tab">
+    <div class="container mt-auto">
+        {% if ordenes_devueltas %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Comienzo</th>
+                        <th scope="col">Final</th>
+                        <th scope="col">Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orden in ordenes_devueltas %}
+                        <tr>
+                            <td>{{ orden.id }}</td>
+                            <td>{{ orden.inicio }}</td>
+                            <td>{{ orden.final }}</td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No tienes solicitudes.</p>
+        {% endif %}
+    </div>
+  </div>
 </div>
 
-
-  </body>
-</html>
+</body>
 {% endblock %}

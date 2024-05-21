@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
-from PEMA.models import Prestatario, Orden, Materia, EstadoOrden, TipoOrden
+from PEMA.models import Prestatario, Orden, Materia, EstadoOrden, TipoOrden, Ubicacion
 from django.utils.timezone import make_aware
 from datetime import datetime
 from django.conf import settings
@@ -58,7 +58,7 @@ class Command(BaseCommand):
         orden2, created = Orden.objects.get_or_create(
             prestatario=user,
             nombre="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            lugar=Orden.Ubicacion.EXTERNO,
+            lugar=Orden.Ubicacion.CAMPUS,
             tipo=TipoOrden.EXTRAORDINARIA,
             inicio=make_aware(datetime(2024, 10, 5)),
             final=make_aware(datetime(2024, 10, 5)),

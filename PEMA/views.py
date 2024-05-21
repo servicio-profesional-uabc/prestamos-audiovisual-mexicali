@@ -371,14 +371,26 @@ class AutorizacionSolitudView(LoginRequiredMixin, View):
 
 class PrincipalAlmacenView(LoginRequiredMixin, View):
     def get(self, request):
-        ordenes_aprobadas = Orden.objects.filter(estado=EstadoOrden.APROBADA)
+        user = request.user
 
-        print("ESTOOO",ordenes_aprobadas)  # Comprueba si obtienes resultados aquí
+        ordenes_pendientes = Orden.objects.filter(prestatario=user, estado=EstadoOrden.RESERVADA)
+        ordenes_listas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.APROBADA)
+        ordenes_canceladas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.CANCELADA)
+        ordenes_entregadas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.ENTREGADA)
+        ordenes_devueltas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.DEVUELTA)
+
+        context = {
+            "ordenes_pendientes": ordenes_pendientes,
+            "ordenes_listas": ordenes_listas,
+            "ordenes_canceladas": ordenes_canceladas,
+            "ordenes_entregadas": ordenes_entregadas,
+            "ordenes_devueltas": ordenes_devueltas,
+        }
 
         return render(
             request=request,
             template_name="principal.html",
-            context={"ordenes": ordenes_aprobadas}
+            context=context,
         )
 
 
@@ -424,8 +436,6 @@ class DetallesOrdenPrestadaView(View):
 class OrdenesReportadasView(View):
     def get(self, request):
         ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.RECHAZADA)
-        print("ESTOOO 6",ordenes_devueltas)  # Comprueba si obtienes resultados aquí
-
 
         return render(
             request=request,
@@ -451,6 +461,7 @@ class DetallesOrdenReportadaView(View):
             template_name="almacen_permisos/detalles_orden_reportada.html",
             context={"orden": orden}
         )
+
 
 
 
@@ -522,3 +533,20 @@ def cambiar_estado_DEVUELTO(request, orden_id, estado):
         return render(request, 'error.html', {'mensaje': 'Método no permitido'})
 
 
+def estado_orden(request, tipo_estado):
+    def estado_orden(request):
+        ordenes_pendientes = Orden.objects.filter(estado="Pendiente")
+        ordenes_listas = Orden.objects.filter(estado="Listo para iniciar")
+        ordenes_canceladas = Orden.objects.filter(estado="Cancelada")
+        ordenes_entregadas = Orden.objects.filter(estado="Entregada")
+        ordenes_devueltas = Orden.objects.filter(estado="Devuelta")
+
+        context = {
+            "ordenes_pendientes": ordenes_pendientes,
+            "ordenes_listas": ordenes_listas,
+            "ordenes_canceladas": ordenes_canceladas,
+            "ordenes_entregadas": ordenes_entregadas,
+            "ordenes_devueltas": ordenes_devueltas,
+        }
+
+        return render(request, "principal.html", context)
