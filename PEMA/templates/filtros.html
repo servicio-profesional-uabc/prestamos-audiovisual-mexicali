@@ -2,138 +2,133 @@
 {% load static %}
 {% load widget_tweaks %}
 
+{% block head %}
+    <title>Vista de prueba</title>
+{% endblock %}
+
+
+
+
+
+
 {% block content %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if prestatario.suspendido %}
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <title>Vista de prueba</title>
-</head>
-
-
-<div class="text-center mt-5">
-    <h4>Filtro para el catálogo de equipo</h4><br/>
-    <p>Para continuar al catálogo es necesario que captures los siguientes datos.</p>
-</div>
-<hr class="hr"/>
+        <!-- Modal -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered pb-5">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Reportes activos</h1>
+                        <a type="button" href="{% url 'menu' %}" class="btn-close" aria-label="Close"></a>
 
 
-<div class="container text-center mt-3 justify-content-center">
-    <form method="POST" action="{% url 'filtros' %}" onsubmit="setMateria()">
-        {% csrf_token %}
-        <h5 class="mt-2">Seleccionar materia y tiempo de reserva</h5>
-        <div class="row mb-4 mt-2">
-            <div class="col me-3">
-                <div class="dropdown">
-                    <select id="materias" name="materias" class="form-select" required>
-                        {% if prestatario %}
-                            {% for materia in prestatario.materias %}
-                                <option value="{{ materia.nombre }}">{{ materia.nombre }}</option>
-                            {% endfor %}
-                        {% else %}
-                            <option value="None">No existen materias</option>
-                        {% endif %}
-                    </select>
-                </div>
-            </div>
-            <div class="col">
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" required>
-                        Selecciona tiempo de préstamo
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><button class="dropdown-item">1 hora</button></li>
-                        <li><button class="dropdown-item">2 hora</button></li>
-                        <li><button class="dropdown-item">3 hora</button></li>
-                        <li><button class="dropdown-item">4 hora</button></li>
-                        <li><button class="dropdown-item">8 hora</button></li>
-                        <li><button class="dropdown-item">1 dia (24h)</button></li>
-                        <li><button class="dropdown-item">2 dia (48h)</button></li>
-                        <li><button class="dropdown-item">4 dias (96h)</button></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <h5>Selecciona la fecha</h5>
-            <div class="col d-flex align-items-center justify-content-center">
-                <input
-                        type="date"
-                        id="inicio"
-                        name="inicio"
-                        required
-                />
-            </div>
-        </div>
-        <div class="row mt-5">
-            <h5>Selecciona la hora</h5>
-            <div class="row gx-2 gx-lg-3 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('09:00')">9:00 AM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('09:30')">9:30 AM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('10:00')">10:00 AM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('10:30')">10:30 AM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('11:00')">11:00 AM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('11:30')">11:30 AM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('12:00')">12:00 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('12:30')">12:30 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('13:00')">1:00 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('13:30')">1:30 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('14:00')">2:00 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('14:30')">2:30 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('15:00')">3:00 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('15:30')">3:30 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('16:00')">4:00 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('16:30')">4:30 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('17:00')">5:00 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('17:30')">5:30 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('18:00')">6:00 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('18:30')">6:30 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('19:00')">7:00 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('19:30')">7:30 PM</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm mx-2 mb-2" onclick="setTime('20:00')">8:00 PM</button>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col text-center">
-                <a href="menu" class="btn btn-secondary me-5">Regresar</a>
-                <button id="boton_aceptar" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalContinuar">Aceptar filtro</button>
-
-                <div class="modal fade" id="modalContinuar" tabindex="-1" aria-labelledby="continuarModalLabel" aria-hidden="true">
-                    <div class="modal-dialog ">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="continuarModalLabel">Confirmar filtro</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-
-                            <div class="modal-body">
-                                ¿Desea continuar al catálogo?
-                            </div>
-
-                            <div class="modal-footer">
-                                <input type="hidden" id="time-input" name="time">
-                                <input type="hidden" id="materia-input" name="materia">
-                                <button type="submit" class="btn btn-danger">Continuar</button>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <p>Tienes reportes activos pendientes. Por favor, comunícate con el coordinador lo antes
+                            posible.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </form>
 
-    <script>
-        function setTime(time) {
-            document.getElementById("time-input").value = time;
-        }
+        <script>
+            // Mostrar el modal al cargar la página
+            window.addEventListener('DOMContentLoaded', function () {
+                var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
+                    keyboard: false
+                });
+                myModal.show();
+            });
+        </script>
 
-        function setMateria() {
-            var selectedMateria = document.getElementById("materias").value;
-            document.getElementById("materia-input").value = selectedMateria;
-        }
-    </script>
-</div>
+    {% endif %}
+
+
+    {% if not prestatario.suspendido %}
+        <div class="container col-12 mb-3 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4">
+            <div class="container py-2 border border-1 rounded bg-white">
+                <h4 class="my-3 text-center">Detalles de la Producción</h4>
+
+                <form class="" method="POST" action="{% url 'filtros' %}">
+                    {% csrf_token %}
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.nombre type="text" class="form-control" %}
+                        <label>Nombre de la producción</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.lugar class="form-control" %}
+                        <label for="">Lugar de la producción</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.descripcion_lugar class="form-control" %}
+                        <label for="">Lugar exacto</label>
+                    </div>
+
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.inicio id="fechaSelect" type="date" class="form-control" %}
+                        <label for="fechaSelect">Fecha de inicio</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.hora_inicio class="form-control" %}
+                        <label for="">Hora de inicio</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {% render_field form.duracion class="form-select" %}
+                        <label for="">Duración</label>
+                    </div>
+
+                    {# Lista de materias #}
+                    <div class="form-floating mb-3">
+                        <select class="form-select" id="materiaSelect" name="materia" required>
+                            {% for materia in materias %}
+                                <option class="dropdown-item" value="{{ materia.pk }}">{{ materia }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="materiaSelect">Materia</label>
+                    </div>
+
+
+                    <div class="form-floating mt-4 mb-3">
+                        {% render_field form.descripcion id="floatingTextarea2Disabled" style="height: 8em;" class="form-control" rows="3" placeholder="Descripción de la producción" %}
+                        <label for="floatingTextarea2Disabled">Comments</label>
+
+
+                        <div id="passwordHelpBlock" class="form-text">
+                            Ingresa infomración relevente como lugar de la producción.
+                        </div>
+                    </div>
+
+                    {# Lista de errores #}
+                    {% if form.errors %}
+                        <div class="alert alert-danger mt-sm-3">
+                            {% for field, error_list in form.errors.items %}
+                                {% for error in error_list %}
+                                    <label>{{ error }}</label>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+
+                    {% endif %}
+
+                    <button id="boton_aceptar" type="submit" class="w-100 btn btn-primary btn-lg mt-2 mt-3">
+                        Continuar al Cátalogo
+                    </button>
+
+                </form>
+
+
+            </div>
+        </div>
+
+    {% endif %}
+
 {% endblock %}

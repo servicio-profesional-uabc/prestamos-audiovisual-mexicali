@@ -1,0 +1,9 @@
+[run]
+branch = true
+omit = */tests/*, */migrations/*, */urls.py, */settings/*, */wsgi.py, manage.py, fabfile.py, .github/*, docs/*, media/*, venv/*, utils/*, static/*, prestamos/*, PEMA/management/*, PEMA/admin.py, PEMA/__init__.py, PEMA/apps.py
+
+source = .
+
+
+[report]
+show_missing = true

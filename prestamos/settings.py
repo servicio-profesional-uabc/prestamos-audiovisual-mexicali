@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
+from datetime import time
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir' .
@@ -24,17 +25,17 @@ SECRET_KEY = 'django-insecure-6b00ecn+-56drvcpf_u(1ts&=s$l1v@5k72e9c3sowawe%27xj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.93", "10.32.213.157", "localhost"]
 
 # Application definition
 
 INSTALLED_APPS = [
     # para el admin
     'admin_interface',
+    'extra_settings',
     'colorfield',
     'django.contrib.admin',
     'import_export',
-
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -103,15 +104,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Login
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/menu'
+LOGOUT_REDIRECT_URL = '/login'
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'es-mx'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -119,8 +122,6 @@ USE_TZ = True
 
 STATIC_ROOT = 'static/'
 STATIC_URL = 'static/'
-LOGIN_REDIRECT_URL = 'menu'
-LOGOUT_REDIRECT_URL = ''
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -143,3 +144,25 @@ MEDIA_ROOT = BASE_DIR / MEDIA_URL
 # admin personalizado
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
+# para enviar las urls en los emails
+URL_BASE_PARA_EMAILS = "http://192.168.1.93:8080"  # "http://10.32.213.157" #"http://localhost:8000/"
+
+# django extra settings
+# EXTRA_SETTINGS_ADMIN_APP = "extra_settings"
+# EXTRA_SETTINGS_CACHE_NAME = "extra_settings"
+# EXTRA_SETTINGS_VERBOSE_NAME = "Configuraciones"
+"""
+EXTRA_SETTINGS_DEFAULTS = [
+    {
+        "name": "HORA_APERTURA",
+        "type": "time",
+        "value": time(hour=9, minute=0, second=0),
+    },
+    {
+        "name": "HORA_CIERRE",
+        "type": "time",
+        "value": time(hour=20, minute=0, second=0),
+    },
+]
+"""

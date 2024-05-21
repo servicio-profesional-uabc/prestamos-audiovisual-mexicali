@@ -1,31 +1,18 @@
-from django.conf import settings
+import os
+
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
+from django.template.loader import render_to_string
 
-from PEMA.models import (Perfil, CorresponsableOrden, Orden, Maestro, Coordinador, EstadoOrden, AutorizacionOrden, \
-                         AutorizacionEstado)
-
-
-@receiver(m2m_changed, sender=Orden._corresponsables.through)
-def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
-    """
-    Esta señal se ejecuta cada vez que un corresponsable se actualiza la
-    lista de corresponsables de una orden.
-    """
-
-    if action == 'post_add':
-        # crear el corresponsableOrden de cada corresponsable de la Orden
-        for item in instance._corresponsables.all():
-            CorresponsableOrden.objects.get_or_create(prestatario=item, orden=instance)
-
-    if action == 'post_remove':
-        # eliminar todos los CorresponsableOrden que no sean Corresponsables de la orden
-        CorresponsableOrden.objects.exclude(id__in=instance.corresponsables()).delete()
-
-
-# m2m_changed.connect(update_corresponsable_orden, sender=Orden._corresponsables.through)
+from PEMA.models import AutorizacionEstado
+from PEMA.models import AutorizacionOrden
+from PEMA.models import CorresponsableOrden
+from PEMA.models import EstadoOrden
+from PEMA.models import Orden
+from PEMA.models import Perfil
+from prestamos import settings
 
 
 @receiver(post_save, sender=User)
@@ -38,7 +25,44 @@ def user_post_save(sender, instance, created, **kwargs):
     """
     if not created:
         return
+
     Perfil.objects.create(usuario=instance)
+
+
+@receiver(m2m_changed, sender=Orden._corresponsables.through)
+def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
+    """
+    Esta señal se ejecuta cada vez que un corresponsable se actualiza la
+    lista de corresponsables de una orden.
+    """
+
+    if action == 'post_remove':
+        # eliminar todos los CorresponsableOrden que no sean corresponsables
+        CorresponsableOrden.objects.exclude(id__in=instance.corresponsables()).delete()
+
+    if action == 'post_add':
+        # crear el corresponsableOrden de cada corresponsable y enviar correo
+        for item in instance._corresponsables.all():
+            object, created = CorresponsableOrden.objects.get_or_create(autorizador=item, orden=instance)
+
+            if created:
+                send_mail(
+                    subject="Test Email",
+                    from_email=settings.EMAIL_HOST_USER,
+                    fail_silently=False,
+                    message=render_to_string(
+                        'emails/aceptar_corresponsable.html',
+                        {
+                            'invitacion': object,
+                            'orden': object.orden,
+                            'user': object.autorizador,
+                            'host': settings.URL_BASE_PARA_EMAILS,
+                        }
+                    ),
+                    recipient_list=[
+                        object.autorizador.email
+                    ]
+                )
 
 
 @receiver(post_save, sender=CorresponsableOrden)
@@ -58,27 +82,19 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
     orden = instance.orden
 
     if created:
-        # si el registro se crea
+        # si el registro se crea, no hace nada
         return
 
-    # TODO: bloquear el estado una vez que se rechaze o acepte
-
+    # si el registro se modifica
     # verificar las respuestas de los corresponsables
     match orden.estado_corresponsables():
-        case AutorizacionEstado.ACEPTADA:  # Si todos aceptaron
+        case AutorizacionEstado.ACEPTADA:
 
-            # cambiar estado `pendiente corresponsables` a `pendiente autorizacion`
-            orden.estado = EstadoOrden.PENDIENTE_AP
+            orden.estado = EstadoOrden.RESERVADA  # esperando autorización
+            orden.solicitar_autorizacion(orden)  # enviar solicitudes
 
-            # solicitar las autorizaciones
-            if orden.es_ordinaria():
-                Maestro.solicitar_autorizacion(orden)
-
-            if orden.es_extraordinaria():
-                Coordinador.solicitar_autorizacion(orden)
-
-        case AutorizacionEstado.RECHAZADA:  # Si alguno rechazo
-            orden.estado = EstadoOrden.RECHAZADA
+        case AutorizacionEstado.RECHAZADA:
+            orden.estado = EstadoOrden.CANCELADA
 
     # guardar orden actualizada
     orden.save()
@@ -88,37 +104,22 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
 def autorizacion_orden_updated(sender, instance, created, **kwargs):
     # TODO: faltan pruebas unitarias para este trigger
 
-    if created:  # si la autorización cambia de estado
+    if created:  # si la autorización se crea
         return
 
-    autorizacion = instance
-    orden = instance.orden
+    # si la autorización cambia de estado
+    if instance.aceptada():
+        instance.orden.autorizar()
 
-    # TODO: bloquear el estado una vez que se rechaze o acepte
+    if instance.rechazada():
+        instance.orden.rechazar()
 
-    if autorizacion.aceptada():
-        orden.estado = EstadoOrden.APROBADA
-
-    if autorizacion.rechazada():
-        orden.estado = EstadoOrden.RECHAZADA
-
-    orden.save()
+    instance.orden.save()
 
 
 @receiver(post_save, sender=AutorizacionOrden)
 def autorizacion_orden_created(sender, instance, created, **kwargs):
-    if not created:  # se crea una autorizacion
+    if not created:  # se crea una autorización
         return
 
     orden = instance.orden
-
-    send_mail(subject="Email de pruebfrom .forms import LoginForma",
-              message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
-                      "prueba fue exitosa. Atentamente, Galindo.", from_email=settings.EMAIL_HOST_USER,
-              fail_silently=False, recipient_list=["egalindo54@uabc.edu.mx"])
-
-
-post_save.connect(user_post_save, sender=User)
-post_save.connect(corresponsable_orden_updated, sender=CorresponsableOrden)
-post_save.connect(autorizacion_orden_created, sender=AutorizacionOrden)
-post_save.connect(autorizacion_orden_updated, sender=AutorizacionOrden)

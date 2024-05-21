@@ -4,60 +4,35 @@
 
 {% block content %}
 
-<head>
-    <title>Autorizar solicitudes</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
+<div class="container-prestamos">
+    <h4>Ordenes de Préstamos para Autorizar</h4>
+
+    <h3>{{ solicitud.nombre }}</h3>
+    <p>Nombre produccion: {{ orden.nombre }} </p>
+    <p>Prestatario: {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
+    <p>Fecha de solicitud: {{ solicitud.orden.inicio }}</p>
+    <p>Estado: {{ solicitud.estado }}</p>
 
 
-<main>
+    {% if request.user.is_authenticated %}
 
-    <div class="container order-details-container">
-        <h2>Solicitudes de préstamo</h2>
-        <hr class="hr"/>
-        <div class="order-items">
-            <h4>Solicitudes</h4>
-            <ul>
-                {% for solicitud in solicitudes %}
-                    <li>
-                        <div class="order-item">
-                            <div class="order-item img">
-                                <img src="{{ solicitud.articulo.imagen.url }}" alt="{{ solicitud.articulo.nombre }}">
-                            </div>
-                            <div class="order-item info">
-                                <h4>{{ solicitud.articulo.nombre }}</h4>
-                                <p>{{ solicitud.articulo.descripcion }}</p>
-                                <p>Cantidad: {{ solicitud.cantidad }}</p>
-                                <p>Fecha de solicitud: {{ solicitud.fecha_solicitud }}</p>
-                                <p>Fecha de entrega: {{ solicitud.fecha_entrega }}</p>
-                                <p>Estado: {{ solicitud.get_estado_display }}</p>
-                                <a href="{% url 'autorizar_solicitud' solicitud.id %}" class="btn btn-primary">Autorizar</a>
-                                <a href="{% url 'rechazar_solicitud' solicitud.id %}" class="btn btn-danger">Rechazar</a>
-                            </div>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
+        {% if solicitud.esta_pendiente %}
+            <a href="{% url "actualizar_autorizacion" "corresponsable" "aceptar" solicitud.id %}" class="btn btn-primary">Autorizar</a>
+            <a href="{% url "actualizar_autorizacion" "corresponsable" "rechazar" solicitud.id %}" class="btn btn-danger">Rechazar</a>
+        {% endif %}
 
-</main>
+        {% if solicitud.rechazada %}
+            <h1>La orden fue rechazada</h1>
+        {% endif %}
 
+        {% if solicitud.aceptada %}
+            <h1>La orden fue aceptada</h1>
+        {% endif %}
+
+
+    {% else %}
+        <a href="{% url "login" %}" class="btn btn-primary">Inicia sesion para confirmar!</a>
+    {% endif %}
+
+</div>
 {% endblock %}
-
-{% block scripts %}
-    <script>
-        document.querySelectorAll('.btn-danger').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                if (!confirm('¿Estás seguro de que deseas rechazar esta solicitud?')) {
-                    e.preventDefault();
-                }
-            });
-        });
-    </script>
-
-
-
-
-{% endblock %}
-

@@ -1,27 +1,17 @@
-from django.contrib.auth import authenticate, login
-from datetime import timedelta
-from django.utils import timezone
-from django.shortcuts import render, redirect, get_object_or_404
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseNotAllowed
-from django.http import HttpResponse
-from django.http import HttpResponseBadRequest
-from django.http import HttpResponseRedirect
-from django.views import View
-from django.core.mail import send_mail
-from django.conf import settings
-from django.http import HttpResponse
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from datetime import datetime, timedelta
+
 from django.contrib import messages
-
-from .forms import FiltrosForm
-from .models import Orden, User, Prestatario, EstadoOrden, Materia, Carrito
-
-from .models import Orden, User, Prestatario, Group, Almacen, Coordinador, Entrega, EstadoOrden, AutorizacionOrden, Autorizacion
-from django.urls import reverse
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
-from django.utils import timezone
-from django.db import IntegrityError
+from django.shortcuts import render
+from django.utils.timezone import make_aware
+from django.views import View
+from django.shortcuts import redirect, get_object_or_404
+from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
+from .models import Carrito, Articulo, Categoria, CorresponsableOrden
+from .models import Orden, Prestatario, EstadoOrden, Perfil
 
 
 class IndexView(View):
@@ -31,60 +21,149 @@ class IndexView(View):
             template_name="index.html"
         )
 
-class MenuView(View):
+
+class ActualizarPerfilView(LoginRequiredMixin, View):
+    """
+    Vista para registrar los datos faltantes del usuario
+    """
+
     def get(self, request):
-        matricula = request.user.username
         return render(
             request=request,
-            template_name="menu.html",
-            context={'matricula':matricula}
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': ActualizarPerfil(),
+                'form_actualizar_usuario': UpdateUserForm(),
+            }
+        )
+
+    def post(self, request):
+        perfil = Perfil.user_data(user=request.user)
+
+        perfil_form = ActualizarPerfil(request.POST, instance=perfil)
+        usuario = UpdateUserForm(request.POST, instance=request.user)
+
+        if perfil_form.is_valid() and usuario.is_valid():
+            perfil_form.save()
+            usuario.save()
+            return redirect('menu')
+
+        return render(
+            request=request,
+            template_name="actualizar_perfil_y_usuario.html",
+            context={
+                'form_actualizar_perfil': perfil_form,
+                'form_actualizar_usuario': usuario,
+            }
+        )
+
+
+class MenuView(View, LoginRequiredMixin):
+    def get(self, request):
+        # Todos los usaurios deben tener perfil
+        # TODO: pantalla de error si no existe el Pefil
+        datos_usuario = Perfil.user_data(user=request.user)
+
+        if datos_usuario.incompleto():
+            # el usuario tiene datos incompletos
+            return redirect('actualizar_perfil')
+
+        return render(
+            request=request,
+            template_name="menu/menu.html",
+            context={'matricula': request.user.username, 'user': request.user}
         )
 
     def post(self, request):
         pass
 
 
-class CarritoView(View):
-    def get(self, request):
+class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
+    def get(self, request, accion=None):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
+
+        if accion == 'ordenar':
+            # TODO: Mostrar que articulos esta ocupado
+            ordenado = carrito.ordenar()
+
+            if ordenado:
+                return redirect("historial_solicitudes")
+
         return render(
             request=request,
-            template_name="carrito.html"
+            template_name="carrito.html",
+            context={
+                "articulos_carrito": carrito.articulos_carrito(),
+                "carrito": carrito
+            }
         )
 
-class FiltrosView(View):
+
+
+class FiltrosView(LoginRequiredMixin, View):
+
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
-        form = FiltrosForm()
-        context = {
-            'prestatario':prestatario,
-            'form':form,
-        }
+        if prestatario.tiene_carrito():
+            # Si ya hay un carrito se borra
+            prestatario.carrito().eliminar()
 
         return render(
             request=request,
-            template_name="filtros.html"
+            template_name="filtros.html",
+            context={
+                'prestatario': prestatario,
+                'form': FiltrosForm(),
+                'materias': prestatario.materias(),
+            },
         )
 
     def post(self, request):
         prestatario = Prestatario.get_user(request.user)
-        data = request.POST
-        fecha_inicio = request.POST.get('inicio')
-        tiempo = request.POST.get('time')
-        materias = request.POST.get('materias')
+        form = FiltrosForm(request.POST)
 
-        # if fecha_inicio != "":
-        #     pass
-        #
-        # if request.POST.get('time') == "":
-        #     messages.error(request, "FALLO")
+        if prestatario.tiene_carrito():
+            # Si ya hay un carrito se borra
+            prestatario.carrito().eliminar()
 
-        return redirect('filtros')
-            # carrito = form.save(commit=False)
-            # carrito.prestatario = prestatario
-            # carrito.materia = Materia.objects.get(nombre="Iluminacion")
-            # carrito.final = carrito.inicio + timedelta(days=3)
-            # print(f"xdddddd {carrito.inicio}")
+        if form.is_valid():
+            # crear carrito
+            inicio = form.cleaned_data.get('inicio')
+            hora_inicio = form.cleaned_data.get('hora_inicio')
+            duracion = form.cleaned_data.get('duracion')
+
+            # se crea un nuevo carrito
+            carrito_nuevo = form.save(commit=False)
+            carrito_nuevo.prestatario = request.user
+
+            # TODO: Enhancement - Realizar estas operaciones en sus propios métodos de Carrito
+            tiempo_duracion = int(duracion)
+            fecha_inicio = datetime.combine(inicio, hora_inicio)
+
+            # Guardar fechas actualizadas
+            carrito_nuevo.inicio = make_aware(fecha_inicio)
+            carrito_nuevo.final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
+
+            carrito_nuevo.save()
+            return redirect("catalogo")
+
+        return render(
+            request=request,
+            template_name="filtros.html",
+            context={
+                'prestatario': prestatario,
+                'form': form,
+                'materias': prestatario.materias()
+            },
+        )
+
 
 class SolicitudView(View):
     def get(self, request):
@@ -94,80 +173,38 @@ class SolicitudView(View):
         )
 
 
-class Permisos(View):
-    def get(self, request):
-        if request.user.is_authenticated:
-            nombre_grupo_perteneciente = request.user.groups.first().name
-            if nombre_grupo_perteneciente:
-                if nombre_grupo_perteneciente == "prestatario":
-                    prestatario_group = Group.objects.get(name='prestatarios')
-                    permisos = prestatario_group.permissions.all()
-                elif nombre_grupo_perteneciente == "maestro":
-                    maestro_group = Group.objects.get(name='maestro')
-                    permisos = maestro_group.permissions.all()
-                elif nombre_grupo_perteneciente == "coordinador":
-                    coordinador_group = Group.objects.get(name='coordinador')
-                    permisos = coordinador_group.permissions.all()
-                elif nombre_grupo_perteneciente == "almacen":
-                    almacen_group = Group.objects.get(name='almacen')
-                    permisos = almacen_group.permissions.all()
-
-
-        return render(
-            request=request,
-            template_name="menu.html",
-            context={'grupo': nombre_grupo_perteneciente}
-        )
-
-
 class HistorialSolicitudesView(View):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
-        try:
-            solicitudes_pendientes_ap = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_AP)
-            solicitudes_pendientes_ap.order_by('emision')
-        except:
-            solicitudes_pendientes_ap = None
+        ordenes = prestatario.ordenes()
 
-        try:
-            solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_CR)
-            solicitudes_pendientes_cr.order_by('emision')
-            #print(solicitudes_pendientes_cr.get(lugar=Orden.Ubicacion.EXTERNO))
-        except:
-            solicitudes_pendientes_cr = None
+        solicitudes_reservadas = ordenes.filter(estado=EstadoOrden.RESERVADA)
+        solicitudes_reservadas.order_by('emision')
 
-        try:
-            solicitudes_aprobadas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.APROBADA)
-            solicitudes_aprobadas.order_by('emision')
-        except:
-            solicitudes_aprobadas = None
+        solicitudes_entregadas = ordenes.filter(estado=EstadoOrden.ENTREGADA)
+        solicitudes_entregadas.order_by('emision')
 
-        try:
-            solicitudes_rechazadas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.RECHAZADA)
-            solicitudes_rechazadas.order_by('emision')
-        except:
-            solicitudes_rechazadas = None
+        solicitudes_canceladas = ordenes.filter(estado=EstadoOrden.CANCELADA)
+        solicitudes_canceladas.order_by('emision')
 
-        try:
-            solicitudes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.CANCELADA)
-            solicitudes_canceladas.order_by('emision')
-        except:
-            solicitudes_canceladas = None
+        solicitudes_aprobadas = ordenes.filter(estado=EstadoOrden.APROBADA)
+        solicitudes_aprobadas.order_by('emision')
 
+        solicitudes_devueltas = ordenes.filter(estado=EstadoOrden.DEVUELTA)
+        solicitudes_devueltas.order_by('emision')
 
-        context = {'solicitudes_pendientes_ap' : solicitudes_pendientes_ap,
-                   'solicitudes_pendientes_cr' : solicitudes_pendientes_cr,
-                   'solicitudes_aprobadas' : solicitudes_aprobadas,
-                   'solicitudes_rechazadas' : solicitudes_rechazadas,
-                   'solicitudes_canceladas' : solicitudes_canceladas,}
+        context = {'solicitudes_reservadas': solicitudes_reservadas,
+                   'solicitudes_entregadas': solicitudes_entregadas,
+                   'solicitudes_canceladas': solicitudes_canceladas,
+                   'solicitudes_aprobadas': solicitudes_aprobadas,
+                   'solicitudes_devueltas': solicitudes_devueltas, }
 
         return render(
             request=request,
             template_name="historial_solicitudes.html",
             context=context,
         )
-
 
 
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -192,21 +229,89 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         return redirect("historial_solicitudes")
 
 
-class CatalogoView(View):
+class CatalogoView(UserPassesTestMixin, LoginRequiredMixin, View):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
     def get(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
+
         return render(
             request=request,
-            template_name="catalogo.html"
+            template_name="catalogo.html",
+            context={
+                "articulos": carrito.materia.articulos(),
+                "carrito": prestatario.carrito(),
+                "categorias": Categoria.objects.all()
+            },
+        )
+
+    def post(self, request):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
+        categoria = request.POST["categoria"]
+        articulos = carrito.materia.articulos()
+
+        if categoria != "todos":
+            categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
+            articulos = articulos.filter(id__in=categoria_instance.articulos())
+
+        return render(
+            request=request,
+            template_name="catalogo.html",
+            context={
+                "articulos": articulos,
+                "carrito": prestatario.carrito(),
+                "categorias": Categoria.objects.all()
+            },
         )
 
 
 class DetallesArticuloView(View):
-    def get(self, request):
+    def get(self, request, id):
+        articulo = get_object_or_404(Articulo, id=id)
+
         return render(
             request=request,
-            template_name="detalles_articulo.html"
+            template_name="detalles_articulo.html",
+            context={"articulo": articulo},
         )
 
+
+class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.agregar(articulo, 1)
+        carrito.save()
+
+        return redirect("catalogo")
+
+class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.eliminar_articulo(articulo)
+        carrito.save()
+
+        return redirect("carrito")
+    
+    
 
 class CancelarOrdenView(View):
     def get(self, request):
@@ -214,30 +319,52 @@ class CancelarOrdenView(View):
             request=request,
             template_name="cancelar_orden.html"
         )
-    
-class AutorizacionSolitudView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="autorizacion_solicitudes.html"
-        )
 
 
-def test(request):
-    send_mail(
-        subject="Email de pruebfrom .forms import LoginForma",
-        message="Hola, estoy enviando correos electrónicos desde Django. Si estás recibiendo esto, es porque la "
-                "prueba fue exitosa. Atentamente, Galindo.",
-        from_email=settings.EMAIL_HOST_USER,
-        fail_silently=False,
-        recipient_list=[
-            "egalindo54@uabc.edu.mx"
-        ]
-    )
+class ActualizarAutorizacion(LoginRequiredMixin, View):
 
-    return HttpResponse("OK")
+    def get(self, request, type, state, id):
+
+        match type:
+            case "corresponsable":
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+
+            case _:
+                raise Http404("No existe ese tipo de autorizacion")
+
+        match state:
+            case "aceptar":
+                solicitud.aceptar()
+
+            case "rechazar":
+                solicitud.rechazar()
+
+            case _:
+                raise Http404("No existe ese estado")
+
+        # regresar a la pagina de autorizaciones 
+        return redirect("autorizacion_solicitudes", type, id)
 
 
+class AutorizacionSolitudView(LoginRequiredMixin, View):
+    TEMPLATE = "autorizacion_solicitudes.html"
 
+    def get(self, request, type, id):
+        match type:
+            case "corresponsable":
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
-    
+                # si el usuario no es la presona solicitada no lo puede ver
+                if solicitud.autorizador != request.user:
+                    raise Http404("No tienes permiso de ver esta Orden")
+
+                return render(
+                    request=request,
+                    template_name=self.TEMPLATE,
+                    context={
+                        "solicitud": solicitud,
+                        "orden": solicitud.orden
+                    }
+                )
+
+        raise Http404("No existe ese tipo de autorizacion")

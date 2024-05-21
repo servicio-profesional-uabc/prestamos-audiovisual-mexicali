@@ -1,57 +1,47 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
+{% load static %}
+
 
 {% block content %}
-    <head>
-        <title>Detalles Articulo</title>
-    </head>
-    <div class="container text-center mt-5">
-        <!--Palabras de inicio-->
-        <h1>PEMA - Detalles Articulo</h1>
-        
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}" class="img-fluid rounded" style="max-width: 100%; height: auto; border-radius: 5px;">
+        </div>
+        <div class="col-md-6 d-flex flex-column justify-content-between">
+            <div>
+                <h1>{{ articulo.nombre }}</h1>
+                <p>{{ articulo.descripcion }}</p>
+            </div>
+            <div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon1" onclick="decrementValue()">-</button>
+                    </div>
+                    <input type="text" class="form-control text-center" value="1" id="number" min="1" max="99" style="width: 40px;" >
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="incrementValue()">+</button>
+                    </div>
+                </div>
+                <a href="{% url 'catalogo' %}" class="btn btn-secondary" style="background-color: #DD971A;">Regresar</a>
+                <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar</a>
+            </div>
+        </div>
     </div>
+</div>
+<script>
+    function incrementValue() {
+        var value = parseInt(document.getElementById('number').value, 10);
+        value = isNaN(value) ? 1 : value;
+        value++;
+        document.getElementById('number').value = value;
+    }
+    
+    function decrementValue() {
+        var value = parseInt(document.getElementById('number').value, 10);
+        value = isNaN(value) ? 1 : value;
+        value < 2 ? value = 1 : value--;
+        document.getElementById('number').value = value;
+    }
+    </script>
 {% endblock %}
-    <!-- Modal -->
-{#    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">#}
-{#      <div class="modal-dialog ">#}
-{#        <div class="modal-content">#}
-{##}
-{#          <div class="modal-header">#}
-{#             <!--Reglamento-->#}
-{#            <h5 class="modal-title" id="exampleModalLabel">Reglamento</h5>#}
-{#            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>#}
-{#          </div>#}
-{##}
-{#          <div class="modal-body">#}
-{##}
-{#            <!--Para mostrar el reglamento en cerrarPDF-->#}
-{#            <embed id="pdfViewer" src="{% static 'img/Meta.pdf' %}" type="application/pdf" width="100%" height="600px">#}
-{##}
-{#            <!--Crea un checkbox para cerrar el reglamento-->#}
-{#            <input type="checkbox" id="cerrarPDF">#}
-{##}
-{#            <!--Etiqueta del checkbox y texto del mismo checkbox-->#}
-{#            <label for="cerrarPDF">He leído términos y condiciones</label><br><br>#}
-{##}
-{#            <!--Boton para continuar una hez que haya aceptado los terminos y condiciones-->#}
-{#            <button id="botonContinuar" class="btn btn-primary my-3" data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-family: 'Minion Pro', sans-serif;" disabled>Continuar</button>#}
-{##}
-{#            <script>#}
-{#              <!-- Toma la referencia del checkbox "cerrarPDF"-->#}
-{#              var checkbox = document.getElementById('cerrarPDF');#}
-{##}
-{#              var botonContinuar = document.getElementById('botonContinuar');#}
-{##}
-{#              checkbox.addEventListener('change', function() {#}
-{#                  if (this.checked) {#}
-{#                      botonContinuar.disabled = false;#}
-{#                  } else {#}
-{#                      botonContinuar.disabled = true;#}
-{#                  }#}
-{#              });#}
-{#            </script>#}
-{#              <!-- Redirigir se realiza en views.py -->#}
-{#          </div>#}
-{#        </div>#}
-{#      </div>#}
-{#    </div>#}

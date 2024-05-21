@@ -11,8 +11,6 @@
 
 <body class="text-center">
     <div class="container mt-5">
-        <h4>Historial de Solicitudes</h4>
-
         {% if solicitudes %}
         <div class="table-responsive mt-3">
             <table class="table table-bordered">
@@ -62,11 +60,11 @@
         {% endif %}
         <br />
 
-        <h4>Ordenes pendientes en aprobación</h4>
+        <h4>Ordenes reservadas</h4>
         <hr class="hr" />
-        {% if solicitudes_pendientes_ap %}
+        {% if solicitudes_reservadas %}
         <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
-            {% for solicitud in solicitudes_pendientes_ap %}
+            {% for solicitud in solicitudes_reservadas %}
             <tbody>
                 <tr>
                     <td style="display: flex">
@@ -82,12 +80,11 @@
         {% endif %}
         <br />
 
-
-        <h4>Ordenes pendientes por corresponsables</h4>
+        <h4>Ordenes activas</h4>
         <hr class="hr" />
-        {% if solicitudes_pendientes_cr %}
+        {% if solicitudes_entregadas %}
         <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
-            {% for solicitud in solicitudes_pendientes_cr %}
+            {% for solicitud in solicitudes_entregadas %}
             <tbody>
                 <tr>
                     <td style="display: flex">
@@ -103,11 +100,11 @@
         {% endif %}
         <br />
 
-        <h4>Ordenes rechazadas</h4>
+        <h4>Ordenes regresadas</h4>
         <hr class="hr" />
-        {% if solicitudes_rechazadas %}
+        {% if solicitudes_devueltas %}
         <table class="table table-responsive table-bordered table-striped mx-auto mt-4" style="max-width: 500px;">
-            {% for solicitud in solicitudes_rechazadas %}
+            {% for solicitud in solicitudes_devueltas %}
             <tbody>
                 <tr>
                     <td style="display: flex">
