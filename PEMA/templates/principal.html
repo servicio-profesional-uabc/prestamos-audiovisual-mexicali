@@ -24,6 +24,9 @@
       display: inline;
     }
   }
+  .no-underline {
+    text-decoration: none;
+  }
 </style>
 
 <nav>
@@ -63,18 +66,14 @@
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Comienzo</th>
-                        <th scope="col">Final</th>
-                        <th scope="col">Detalles</th>
+                        <th scope="col">Nombre de la practica</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for orden in ordenes_pendientes %}
                         <tr>
                             <td>{{ orden.id }}</td>
-                            <td>{{ orden.inicio }}</td>
-                            <td>{{ orden.final }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -93,18 +92,14 @@
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Comienzo</th>
-                        <th scope="col">Final</th>
-                        <th scope="col">Detalles</th>
+                        <th scope="col">Nombre de la practica</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for orden in ordenes_listas %}
                         <tr>
                             <td>{{ orden.id }}</td>
-                            <td>{{ orden.inicio }}</td>
-                            <td>{{ orden.final }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -123,18 +118,14 @@
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Comienzo</th>
-                        <th scope="col">Final</th>
-                        <th scope="col">Detalles</th>
+                        <th scope="col">Nombre de la practica</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for orden in ordenes_canceladas %}
                         <tr>
                             <td>{{ orden.id }}</td>
-                            <td>{{ orden.inicio }}</td>
-                            <td>{{ orden.final }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -153,18 +144,14 @@
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Comienzo</th>
-                        <th scope="col">Final</th>
-                        <th scope="col">Detalles</th>
+                        <th scope="col">Nombre de la practica</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for orden in ordenes_entregadas %}
                         <tr>
                             <td>{{ orden.id }}</td>
-                            <td>{{ orden.inicio }}</td>
-                            <td>{{ orden.final }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -183,18 +170,14 @@
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Comienzo</th>
-                        <th scope="col">Final</th>
-                        <th scope="col">Detalles</th>
+                        <th scope="col">Nombre de la practica</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for orden in ordenes_devueltas %}
                         <tr>
                             <td>{{ orden.id }}</td>
-                            <td>{{ orden.inicio }}</td>
-                            <td>{{ orden.final }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
