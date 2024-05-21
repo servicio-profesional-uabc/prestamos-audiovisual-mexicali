@@ -184,41 +184,28 @@ class HistorialSolicitudesView(View):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
-        try:
-            solicitudes_pendientes_ap = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_AP)
-            solicitudes_pendientes_ap.order_by('emision')
-        except:
-            solicitudes_pendientes_ap = None
+        ordenes = prestatario.ordenes()
 
-        try:
-            solicitudes_pendientes_cr = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.PENDIENTE_CR)
-            solicitudes_pendientes_cr.order_by('emision')
-        except:
-            solicitudes_pendientes_cr = None
+        solicitudes_reservadas = ordenes.filter(estado=EstadoOrden.RESERVADA)
+        solicitudes_reservadas.order_by('emision')
 
-        try:
-            solicitudes_aprobadas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.APROBADA)
-            solicitudes_aprobadas.order_by('emision')
-        except:
-            solicitudes_aprobadas = None
+        solicitudes_entregadas = ordenes.filter(estado=EstadoOrden.ENTREGADA)
+        solicitudes_entregadas.order_by('emision')
 
-        try:
-            solicitudes_rechazadas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.RECHAZADA)
-            solicitudes_rechazadas.order_by('emision')
-        except:
-            solicitudes_rechazadas = None
+        solicitudes_canceladas = ordenes.filter(estado=EstadoOrden.CANCELADA)
+        solicitudes_canceladas.order_by('emision')
 
-        try:
-            solicitudes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=Orden.Estado.CANCELADA)
-            solicitudes_canceladas.order_by('emision')
-        except:
-            solicitudes_canceladas = None
+        solicitudes_aprobadas = ordenes.filter(estado=EstadoOrden.APROBADA)
+        solicitudes_aprobadas.order_by('emision')
 
-        context = {'solicitudes_pendientes_ap': solicitudes_pendientes_ap,
-                   'solicitudes_pendientes_cr': solicitudes_pendientes_cr,
+        solicitudes_devueltas = ordenes.filter(estado=EstadoOrden.DEVUELTA)
+        solicitudes_devueltas.order_by('emision')
+
+        context = {'solicitudes_reservadas': solicitudes_reservadas,
+                   'solicitudes_entregadas': solicitudes_entregadas,
+                   'solicitudes_canceladas': solicitudes_canceladas,
                    'solicitudes_aprobadas': solicitudes_aprobadas,
-                   'solicitudes_rechazadas': solicitudes_rechazadas,
-                   'solicitudes_canceladas': solicitudes_canceladas, }
+                   'solicitudes_devueltas': solicitudes_devueltas, }
 
         return render(
             request=request,
