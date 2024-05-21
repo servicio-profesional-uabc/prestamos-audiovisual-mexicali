@@ -665,6 +665,18 @@ class Orden(models.Model):
         """
         self._corresponsables.add(prestatario)
 
+    def asignar_tipo(self):
+        self.tipo == TipoOrden.ORDINARIA
+        delta = self.final - self.inicio
+        print("Inicio:", self.inicio)
+        print("Final:", self.final)
+        print("Horas:", str(delta.total_seconds()/(60*60)))
+        print("Lugar:", self.lugar)
+        if(self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8):
+            self.tipo = TipoOrden.EXTRAORDINARIA
+        print("Tipo:", self.tipo)
+        return self.tipo
+    
     def es_ordinaria(self) -> bool:
         """
         Si una orden es ordinaria
@@ -707,6 +719,7 @@ class Orden(models.Model):
         """
         Crea las Autorizaciones para la orden acorde al tipo
         """
+        
         if self.es_ordinaria():
             Maestro.solicitar_autorizacion(orden)
 
