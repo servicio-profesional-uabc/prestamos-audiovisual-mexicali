@@ -697,13 +697,8 @@ class Orden(models.Model):
     def asignar_tipo(self):
         self.tipo == TipoOrden.ORDINARIA
         delta = self.final - self.inicio
-        print("Inicio:", self.inicio)
-        print("Final:", self.final)
-        print("Horas:", str(delta.total_seconds()/(60*60)))
-        print("Lugar:", self.lugar)
         if(self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8):
             self.tipo = TipoOrden.EXTRAORDINARIA
-        print("Tipo:", self.tipo)
         return self.tipo
     
     def es_ordinaria(self) -> bool:
@@ -915,6 +910,9 @@ class Carrito(models.Model):
                 for corresponsable in self._corresponsables.all():
                     orden.agregar_corresponsable(corresponsable)
 
+                if self.vacio():
+                        raise Exception("No selecciono ningún artículo")
+                    
                 for articulo_carrito in self.articulos_carrito():
                     unidades = articulo_carrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)

@@ -151,28 +151,21 @@ class TestOrden(TestCase):
                                            lugar=Ubicacion.CAMPUS, estado=EstadoOrden.RESERVADA,
                                            inicio=self.generar_fechas(0), final=make_aware(datetime(2024, 5, 27, 12)))
         
-        #O1=E, O2=O, O3=E, O4=E, O5=O, O6=E
         
-        print("Orden1")
         qs1 = self.orden1.asignar_tipo()
         self.assertQuerysetEqual(qs1, TipoOrden.EXTRAORDINARIA)
         
-        print("Orden2")
         qs2 = self.orden2.asignar_tipo()
         self.assertQuerysetEqual(qs2, TipoOrden.ORDINARIA)
         
-        print("Orden3")
         qs3 = self.orden3.asignar_tipo()
         self.assertQuerysetEqual(qs3, TipoOrden.EXTRAORDINARIA)
         
-        print("Orden4")
         qs4 = self.orden4.asignar_tipo()
         self.assertQuerysetEqual(qs4, TipoOrden.EXTRAORDINARIA)
         
-        print("Orden5")
         qs5 = self.orden5.asignar_tipo()
         self.assertQuerysetEqual(qs5, TipoOrden.ORDINARIA)
         
-        print("Orden6")
         qs6 = self.orden6.asignar_tipo()
         self.assertQuerysetEqual(qs6, TipoOrden.EXTRAORDINARIA)
