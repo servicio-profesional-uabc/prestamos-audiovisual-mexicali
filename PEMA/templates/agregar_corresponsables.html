@@ -4,11 +4,29 @@
     <title>Agregar Corresponsables</title>
 </head>
 <body>
-    <h1>Agregar Corresponsables al Carrito: {{ carrito.nombre }}</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Guardar</button>
-    </form>
+<h1>Agregar Corresponsables al Carrito: {{ object.nombre }}</h1>
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label for="id_corresponsables">Corresponsables:</label>
+        <ul>
+            {% for option in form.corresponsables.field.queryset %}
+
+                {% if option != request.user %}
+                    {% comment %}
+                Con este no mostramos al usuario que hizo el carrito
+                {% endcomment %}
+
+                    <li>
+                        <input type="checkbox" name="corresponsables" value="{{ option.pk }}"
+                               id="id_corresponsables_{{ forloop.counter0 }}">
+                        <label for="id_corresponsables_{{ forloop.counter0 }}">{{ option.username }}</label>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+    <button type="submit">Guardar</button>
+</form>
 </body>
 </html>
