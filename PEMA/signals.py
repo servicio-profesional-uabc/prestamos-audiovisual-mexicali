@@ -45,8 +45,7 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
         for item in instance._corresponsables.all():
             
             object, created = CorresponsableOrden.objects.get_or_create(autorizador=item, orden=instance)
-            #print(object.orden.materia.maestros())
-            
+        
             if created:
                 memail = []
                 for m in object.orden.materia.maestros():
