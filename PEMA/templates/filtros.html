@@ -77,13 +77,13 @@
                     </div>
 
                     <div class="form-floating mb-3">
-                        {% render_field form.hora_inicio class="form-control" %}
+                        {% render_field form.hora_inicio id="horaInicio" class="form-control" %}
                         <label for="">Hora de inicio</label>
                     </div>
 
                     <div class="form-floating mb-3">
-                        {% render_field form.duracion class="form-select" %}
-                        <label for="">Duración</label>
+                        {% render_field form.duracion id="duracion" class="form-select" %}
+                        <label for="duracion">Duración</label>
                     </div>
 
                     {# Lista de materias #}
@@ -128,6 +128,39 @@
 
             </div>
         </div>
+
+        <script>
+            function printHello(){
+                console.log('Hello')
+            }
+
+            function addHours(date, hours) {
+                const hoursToAdd = hours * 60 * 60 * 1000;
+                date.setTime(date.getTime() + hoursToAdd);
+                return date;
+            }
+
+            window.addEventListener('change', () => {
+                var duracionSelect = document.getElementById('duracion')
+                var fechaSelect = document.getElementById('fechaSelect')
+                var horaInicio = document.getElementById('horaInicio')
+
+                // Juntar fecha y hora de inicio
+                let inicioDate = fechaSelect.value.split('-')
+                let horaInicioTime = horaInicio.value.split(':')
+
+                inicioDate = new Date(inicioDate[0], inicioDate[1], inicioDate[2], horaInicioTime[0], horaInicioTime[1], horaInicioTime[2])
+                // inicioDate.setHours(horaInicio.value)
+
+                // Calcular fecha de finalización
+                let duracionHours = parseInt(duracionSelect.value)
+                let endDatetime = addHours(inicioDate, duracionSelect.value);
+
+                console.log(inicioDate)
+                console.log(`End Datetime: ${endDatetime}`);
+                console.log(`Hora inicio: ${horaInicio.value}`)
+            })
+        </script>
 
     {% endif %}
 
