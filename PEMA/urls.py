@@ -4,15 +4,23 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import ActualizarAutorizacion, AutorizacionSolitudView, AgregarAlCarritoView
+from .views import ActualizarAutorizacion, AutorizacionSolitudView, AgregarAlCarritoView, AgregarCorresponsablesView
 from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
 from .views import DetallesArticuloView
+from .views import DetallesOrdenAutorizadaView
+from .views import DetallesOrdenDevueltaView
+from .views import DetallesOrdenPrestadaView
+from .views import DetallesOrdenReportadaView
 from .views import DetallesOrdenView
 from .views import FiltrosView
 from .views import HistorialSolicitudesView
 from .views import MenuView, ActualizarPerfilView
+from .views import OrdenesDevueltasView
+from .views import OrdenesPrestadasView
+from .views import OrdenesReportadasView
+from .views import PrincipalAlmacenView
 from .views import SolicitudView
 
 urlpatterns = [
@@ -55,7 +63,6 @@ urlpatterns = [
         view=CarritoView.as_view(),
         name='carrito_accion'
     ),
-
 
     path(
         route='filtros',
@@ -121,6 +128,65 @@ urlpatterns = [
         route='actualizar_perfil',
         name='actualizar_perfil',
         view=ActualizarPerfilView.as_view()
+    ),
+
+    path(
+        route='principal',
+        view=PrincipalAlmacenView.as_view(),
+        name='principal',
+    ),
+
+    path(
+        route='detalles_orden_autorizada',
+        view=DetallesOrdenAutorizadaView.as_view(),
+        name='detalles_orden_autorizada',
+
+    ),
+
+    path(
+        route='ordenes_prestadas',
+        view=OrdenesPrestadasView.as_view(),
+        name='ordenes_prestadas',
+
+    ),
+
+    path(
+        route='detalles_orden_prestada',
+        view=DetallesOrdenPrestadaView.as_view(),
+        name='detalles_orden_prestada',
+
+    ),
+
+    path(
+        route='ordenes_reportadas',
+        view=OrdenesReportadasView.as_view(),
+        name='ordenes_reportadas',
+    ),
+
+    path(
+        route='detalles_orden_reportada',
+        view=DetallesOrdenReportadaView.as_view(),
+        name='detalles_orden_reportada',
+    ),
+
+    path(
+        route='ordenes_devueltas',
+        view=OrdenesDevueltasView.as_view(),
+        name='ordenes_devueltas',
+
+    ),
+
+    path(
+        route='detalles_orden_devuelta',
+        view=DetallesOrdenDevueltaView.as_view(),
+        name='detalles_orden_devuelta',
+
+    ),
+
+    path(
+        route='corresponsables',
+        view=AgregarCorresponsablesView.as_view(),
+        name='corresponables'
     )
 ]
 

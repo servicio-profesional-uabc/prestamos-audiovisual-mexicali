@@ -818,7 +818,7 @@ class Carrito(models.Model):
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
-    _corresponsables = models.ManyToManyField(to='Prestatario', blank=True, related_name='corresponsables_carrito')
+    _corresponsables = models.ManyToManyField(to=User, blank=True, related_name='corresponsables_carrito')
 
     def eliminar_articulo(self, articulo: 'Articulo', unidades: int = None):
         """

@@ -7,9 +7,45 @@
     <title>Ordenes reportadas</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body>
+  <body>
 
-</body>
+<div class="container mt-auto">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Productos</th>
+                <th scope="col">Prestatario</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Comienzo</th>
+                <th scope="col">Final</th>
+                <th scope="col">Detalles</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for orden in ordenes %}
+                <tr>
+                    <td>{{ orden.id }}</td>
+                    <td>
+                        <ul>
+                            {% for articulo in orden.articulos.all %}
+                                <li>{{ articulo }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ orden.prestatario }}</td>
+                    <td>{{ orden.reportes.estado }}</td>
+                    <td>{{ orden.inicio }}</td>
+                    <td>{{ orden.final }}</td>
+                    <td><a href="{% url 'desactivacion_reportadas' orden.id %}" class="btn btn-secondary justify-content-center">Ver detalles</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+  </body>
 </html>
 {% endblock %}
-```
