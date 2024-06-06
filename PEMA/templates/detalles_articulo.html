@@ -1,13 +1,47 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-    <div class="container mt-5">
-        <h1>{{ articulo.nombre }}</h1>
-        <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}" class="img-fluid">
-        <p>{{ articulo.descripcion }}</p>
 
-        <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar al Carrito</a>
-        <a href="{% url 'catalogo' %}" class="btn btn-secondary">Regresar al Catálogo</a>
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ articulo.imagen.url }}" alt="{{ articulo.nombre }}" class="img-fluid rounded" style="max-width: 100%; height: auto; border-radius: 5px;">
+        </div>
+        <div class="col-md-6 d-flex flex-column justify-content-between">
+            <div>
+                <h1>{{ articulo.nombre }}</h1>
+                <p>{{ articulo.descripcion }}</p>
+            </div>
+            <div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon1" onclick="decrementValue()">-</button>
+                    </div>
+                    <input type="text" class="form-control text-center" value="1" id="number" min="1" max="99" style="width: 40px;" >
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="incrementValue()">+</button>
+                    </div>
+                </div>
+                <a href="{% url 'catalogo' %}" class="btn btn-secondary" style="background-color: #DD971A;">Regresar</a>
+                <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar</a>
+            </div>
+        </div>
     </div>
+</div>
+<script>
+    function incrementValue() {
+        var value = parseInt(document.getElementById('number').value, 10);
+        value = isNaN(value) ? 1 : value;
+        value++;
+        document.getElementById('number').value = value;
+    }
+    
+    function decrementValue() {
+        var value = parseInt(document.getElementById('number').value, 10);
+        value = isNaN(value) ? 1 : value;
+        value < 2 ? value = 1 : value--;
+        document.getElementById('number').value = value;
+    }
+    </script>
 {% endblock %}

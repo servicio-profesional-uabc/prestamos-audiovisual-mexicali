@@ -3,11 +3,15 @@ from datetime import datetime
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia, AutorizacionEstado, \
+from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia, Ubicacion, EstadoOrden, AutorizacionEstado, \
     CorresponsableOrden, TipoOrden
 
 
 class TestOrden(TestCase):
+    @staticmethod
+    def generar_fechas(hora):
+        return make_aware(datetime(2024, 5, 24, 12 + hora))
+    
     def setUp(self):
         # usuarios
         self.prestataio = Prestatario.crear_usuario(id=0, username="<NAME>", password="<PASSWORD>")
@@ -24,13 +28,13 @@ class TestOrden(TestCase):
         materia = Materia.objects.create(nombre="Fotografia", year=2022, semestre=1)
 
         self.orden_ordinaria = Orden.objects.create(prestatario=self.prestataio, materia=materia,
-                                                    inicio=make_aware(datetime(2024, 3, 16, 12)),
-                                                    final=make_aware(datetime(2024, 3, 16, 18)),
+                                                    inicio=self.generar_fechas(0),
+                                                    final=self.generar_fechas(6),
                                                     tipo=TipoOrden.ORDINARIA)
 
         self.orden_extraordinaria = Orden.objects.create(prestatario=self.prestataio, materia=materia,
-                                                         inicio=make_aware(datetime(2024, 3, 16, 12)),
-                                                         final=make_aware(datetime(2024, 3, 16, 18)),
+                                                         inicio=self.generar_fechas(0),
+                                                         final=self.generar_fechas(6),
                                                          tipo=TipoOrden.EXTRAORDINARIA)
 
     def test_agregar_unidad(self):
@@ -124,3 +128,44 @@ class TestOrden(TestCase):
         self.assertEqual(self.orden_ordinaria.estado_corresponsables(), AutorizacionEstado.ACEPTADA)
 
         # autorizaciones_corresponsables.update(estado=AutorizacionEstado.ACEPTADA)
+
+    def test_asignar_tipo(self):
+        self.prestatario = Prestatario.crear_usuario(id="123", username="test", password="<PASSWORD>")
+        self.materia1 = Materia.objects.create(nombre='Cinematografia', year=2024, semestre=1)
+        self.orden1 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
+                                           lugar=Ubicacion.CAMPUS, estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(-2), final=self.generar_fechas(8))
+        self.orden2 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
+                                           lugar=Ubicacion.CAMPUS, estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(0), final=self.generar_fechas(8))
+        self.orden3 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
+                                           lugar=Ubicacion.EXTERNO, estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(0), final=self.generar_fechas(4))
+        self.orden4 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
+                                           lugar=Ubicacion.EXTERNO, estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(0), final=self.generar_fechas(9))
+        self.orden5 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
+                                           lugar=Ubicacion.CAMPUS, estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(0), final=self.generar_fechas(4))
+        self.orden6 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario,
+                                           lugar=Ubicacion.CAMPUS, estado=EstadoOrden.RESERVADA,
+                                           inicio=self.generar_fechas(0), final=make_aware(datetime(2024, 5, 27, 12)))
+        
+        
+        qs1 = self.orden1.asignar_tipo()
+        self.assertQuerysetEqual(qs1, TipoOrden.EXTRAORDINARIA)
+        
+        qs2 = self.orden2.asignar_tipo()
+        self.assertQuerysetEqual(qs2, TipoOrden.ORDINARIA)
+        
+        qs3 = self.orden3.asignar_tipo()
+        self.assertQuerysetEqual(qs3, TipoOrden.EXTRAORDINARIA)
+        
+        qs4 = self.orden4.asignar_tipo()
+        self.assertQuerysetEqual(qs4, TipoOrden.EXTRAORDINARIA)
+        
+        qs5 = self.orden5.asignar_tipo()
+        self.assertQuerysetEqual(qs5, TipoOrden.ORDINARIA)
+        
+        qs6 = self.orden6.asignar_tipo()
+        self.assertQuerysetEqual(qs6, TipoOrden.EXTRAORDINARIA)

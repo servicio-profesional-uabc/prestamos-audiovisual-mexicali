@@ -47,6 +47,9 @@ class TestCarrito(TestCase):
                                          inicio=make_aware(datetime(2024, 3, 16, 12)),
                                          final=make_aware(datetime(2024, 3, 16, 18)))
 
+        # Ordenar el carrito vacío
+        carrito.ordenar()
+        
         # Agregar un artículo al carrito
         carrito.agregar(articulo=self.articulo, unidades=1)
 
