@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
-from PEMA.models import Prestatario, Orden, Materia, Articulo, Unidad, Categoria
+from PEMA.models import Prestatario, Orden, Materia, Articulo, Unidad, Categoria, Ubicacion
 from django.utils.timezone import make_aware
 from datetime import datetime
 
@@ -126,7 +126,7 @@ class Command(BaseCommand):
         # ordenes
         orden1, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 12)),
             final=make_aware(datetime(2024, 5, 7, 14)),
             estado="AP",
@@ -135,7 +135,7 @@ class Command(BaseCommand):
 
         orden2, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.EXTERNO,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 11)),
             final=make_aware(datetime(2024, 5, 7, 14)),
             estado="AP",
@@ -145,7 +145,7 @@ class Command(BaseCommand):
 
         orden3, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 15)),
             final=make_aware(datetime(2024, 5, 7, 17)),
             estado="AP",
@@ -154,7 +154,7 @@ class Command(BaseCommand):
 
         orden4, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 16)),
             final=make_aware(datetime(2024, 5, 7, 18)),
             estado="AP",
@@ -163,7 +163,7 @@ class Command(BaseCommand):
 
         orden5, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 13)),
             final=make_aware(datetime(2024, 5, 7, 16)),
             estado="AP",
@@ -172,7 +172,7 @@ class Command(BaseCommand):
 
         orden6, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
+            lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 11)),
             final=make_aware(datetime(2024, 5, 7, 18)),
             estado="AP",

@@ -43,9 +43,15 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     if action == 'post_add':
         # crear el corresponsableOrden de cada corresponsable y enviar correo
         for item in instance._corresponsables.all():
+            
             object, created = CorresponsableOrden.objects.get_or_create(autorizador=item, orden=instance)
-
+            #print(object.orden.materia.maestros())
+            
             if created:
+                memail = []
+                for m in object.orden.materia.maestros():
+                    memail.append(m.email)
+
                 send_mail(
                     subject="Test Email",
                     from_email=settings.EMAIL_HOST_USER,
@@ -59,9 +65,7 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
                             'host': settings.URL_BASE_PARA_EMAILS,
                         }
                     ),
-                    recipient_list=[
-                        object.autorizador.email
-                    ]
+                    recipient_list= memail
                 )
 
 

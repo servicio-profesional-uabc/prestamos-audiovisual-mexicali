@@ -1,7 +1,9 @@
 
-Produccion: {{ orden }}
+Produccion: {{ orden.nombre }}
 Solicitador: {{ orden.prestatario }}
+Materia: {{ orden.materia }}
 Nombre: {{ user.first_name }} ({{ user.username }})
-Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'corresponsable' invitacion.id %}
+
+Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'corresponsable' invitacion.autorizador.id %}
 
 {{ request.scheme }}

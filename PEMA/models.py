@@ -641,7 +641,11 @@ class Orden(models.Model):
         """
         Cancela la orden cambiando su estado a CANCELADA.
         """
+        if self.estado in [EstadoOrden.ENTREGADA, EstadoOrden.DEVUELTA]:
+            return
+        
         self.estado = EstadoOrden.CANCELADA
+        self.save()
 
     def cancelada(self) -> bool:
         """
@@ -671,12 +675,25 @@ class Orden(models.Model):
 
         :param entregador: El usuario que entrega la orden.
         """
-        if self.estado in [EstadoOrden.CANCELADA, EstadoOrden.DEVUELTA]:
+        if self.estado in [EstadoOrden.CANCELADA, EstadoOrden.DEVUELTA, EstadoOrden.RESERVADA]:
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
         self.estado = EstadoOrden.ENTREGADA
         self.save()
+
+    def devolver(self, almacen: 'Almacen'):
+
+        if self.estado in [EstadoOrden.APROBADA, EstadoOrden.CANCELADA, EstadoOrden.RESERVADA]:
+            return
+        
+        devolucion, _ = Devolucion.objects.get_or_create(almacen=almacen, orden=self)
+        self.estado = EstadoOrden.DEVUELTA
+        self.save()
+
+    def devuelta(self):
+        return self.estado == EstadoOrden.DEVUELTA        
+
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         """
@@ -1025,7 +1042,7 @@ class Devolucion(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 

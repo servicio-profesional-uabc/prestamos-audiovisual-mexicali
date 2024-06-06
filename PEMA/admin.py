@@ -21,7 +21,7 @@ class OrdenAdmin(admin.ModelAdmin):
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo')
 
-    actions = ['entregar', 'devolver']
+    actions = ['entregar', 'devolver', 'cancelar']
 
     # TODO: implementar estos metodos
 
@@ -38,7 +38,24 @@ class OrdenAdmin(admin.ModelAdmin):
 
     @admin.action(description='Marcar como devuelto')
     def devolver(self, request, queryset):
-        messages.error(request, "Ni esto")
+        for orden in queryset:
+            orden.devolver(request.user)
+            if orden.devuelta():
+                messages.success(request, f'Orden {orden} devuelta')
+            else:
+                messages.warning(request, f'No se pudo devolver la orden {orden}')
+
+    @admin.action(description='Marcar como cancelado')
+    def cancelar(self, request, queryset):
+        for orden in queryset:
+            orden.cancelar()
+
+            if orden.cancelada():
+                messages.success(request, f'Orden {orden} cancelada')
+            else:
+                messages.warning(request, f'No se pudo cancelar la orden {orden}')
+            
+    
 
 
 @admin.register(Articulo)
