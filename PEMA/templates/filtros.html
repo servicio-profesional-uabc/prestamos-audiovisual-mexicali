@@ -148,6 +148,8 @@
                 // Juntar fecha y hora de inicio
                 let inicioDate = fechaSelect.value.split('-')
                 let horaInicioTime = horaInicio.value.split(':')
+                // console.log(inicioDate.toLocaleString())
+                // console.log(horaInicio.value)
 
                 inicioDate = new Date(inicioDate[0], inicioDate[1], inicioDate[2], horaInicioTime[0], horaInicioTime[1], horaInicioTime[2])
                 // inicioDate.setHours(horaInicio.value)
@@ -155,10 +157,14 @@
                 // Calcular fecha de finalización
                 let duracionHours = parseInt(duracionSelect.value)
                 let endDatetime = addHours(inicioDate, duracionSelect.value);
+                
+                let mes = parseInt(endDatetime.getMonth()) - 1
+                mes = mes.toString()
+                mes = mes.length < 2 ? mes = '0' + mes : mes
+                endDatetime.setMonth(mes)
 
-                console.log(inicioDate)
-                console.log(`End Datetime: ${endDatetime}`);
-                console.log(`Hora inicio: ${horaInicio.value}`)
+                // console.log(`End Datetime: ${endDatetime}`);
+                // console.log(`Hora inicio: ${horaInicio.value}`)
             })
         </script>
 
