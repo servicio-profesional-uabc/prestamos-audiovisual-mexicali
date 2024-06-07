@@ -30,7 +30,7 @@ class AgregarCorresponsablesView(UpdateView):
     model = Carrito
     form_class = CorresponsableForm
     template_name = 'agregar_corresponsables.html'
-    success_url = reverse_lazy('catalogo')
+    success_url = reverse_lazy('carrito')
 
     def get_object(self, queryset=None):
         user = self.request.user
@@ -53,7 +53,7 @@ class AgregarCorresponsablesView(UpdateView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('catalogo')
+        return reverse_lazy('carrito')
 
 
 class ActualizarPerfilView(LoginRequiredMixin, View):
