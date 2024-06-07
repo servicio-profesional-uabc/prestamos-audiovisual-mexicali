@@ -77,13 +77,13 @@
                     </div>
 
                     <div class="form-floating mb-3">
-                        {% render_field form.hora_inicio class="form-control" %}
+                        {% render_field form.hora_inicio id="horaInicio" class="form-control" %}
                         <label for="">Hora de inicio</label>
                     </div>
 
                     <div class="form-floating mb-3">
-                        {% render_field form.duracion class="form-select" %}
-                        <label for="">Duración</label>
+                        {% render_field form.duracion id="duracion" class="form-select" %}
+                        <label for="duracion">Duración</label>
                     </div>
 
                     {# Lista de materias #}
