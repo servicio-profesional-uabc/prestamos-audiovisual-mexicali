@@ -150,6 +150,7 @@ class FiltrosView(LoginRequiredMixin, View):
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
+        
 
         return render(
             request=request,

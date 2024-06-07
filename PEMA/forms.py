@@ -5,6 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
 from phonenumber_field.formfields import PhoneNumberField
+from django.utils.timezone import make_aware
 
 from .models import Carrito, Perfil, Prestatario
 
@@ -134,3 +135,30 @@ class FiltrosForm(forms.ModelForm):
 
         # print(f'clean inicio {inicio}')
         return inicio
+
+    def clean(self):
+        cleaned_data = super().clean()
+        inicio = cleaned_data.get('inicio')
+        hora_inicio = cleaned_data.get('hora_inicio')
+        duracion = cleaned_data.get('duracion')
+        
+        if not inicio:
+            return
+
+        if not hora_inicio:
+            return
+
+        if not duracion:
+            return
+
+        tiempo_duracion = int(duracion)
+        fecha_inicio = datetime.combine(inicio, hora_inicio)
+        fecha_final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
+
+        if fecha_final.date().weekday() >= 5:
+            raise(forms.ValidationError("La fecha final del préstamo es en fin de semana. Intente de nuevo."))
+        
+        if fecha_final.hour > 20 or fecha_final.hour < 9:
+            raise(forms.ValidationError("La fecha final del préstamo es fuera del horario de atención. Intente de nuevo."))
+
+        return cleaned_data
