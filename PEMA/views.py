@@ -3,13 +3,18 @@ from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 from django.views import View
+from django.views.generic.edit import UpdateView
 
+from .forms import CorresponsableForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
 from .models import Articulo, Categoria, CorresponsableOrden
+from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
 
@@ -19,13 +24,6 @@ class IndexView(View):
             request=request,
             template_name="index.html"
         )
-
-
-from django.urls import reverse_lazy
-from django.views.generic.edit import UpdateView
-from django.shortcuts import get_object_or_404
-from .models import Carrito, Prestatario
-from .forms import CorresponsableForm
 
 
 class AgregarCorresponsablesView(UpdateView):
