@@ -129,7 +129,7 @@ class Command(BaseCommand):
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 12)),
             final=make_aware(datetime(2024, 5, 7, 14)),
-            estado="AP",
+            estado='RS',
             materia=materia1,
         )
 
@@ -138,7 +138,7 @@ class Command(BaseCommand):
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 11)),
             final=make_aware(datetime(2024, 5, 7, 14)),
-            estado="AP",
+            estado='RS',
             materia=materia1,
             descripcion="Esta solicitud es para mi practica de Cinematografia en la laguna salada."
         )
@@ -148,7 +148,7 @@ class Command(BaseCommand):
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 15)),
             final=make_aware(datetime(2024, 5, 7, 17)),
-            estado="AP",
+            estado='RS',
             materia=materia1,
         )
 
@@ -157,7 +157,7 @@ class Command(BaseCommand):
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 5, 7, 16)),
             final=make_aware(datetime(2024, 5, 7, 18)),
-            estado="AP",
+            estado='RS',
             materia=materia1,
         )
 
