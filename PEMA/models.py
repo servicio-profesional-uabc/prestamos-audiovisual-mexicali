@@ -422,7 +422,7 @@ class Materia(models.Model):
         :returns: Lista de profesores asociados a la materia.
         """
         return self._maestros.all()
-
+    
     def articulos(self) -> QuerySet['Articulo']:
         """
         Obtiene la lista de artículos disponibles para la materia.

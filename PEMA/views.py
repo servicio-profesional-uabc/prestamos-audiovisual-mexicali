@@ -374,7 +374,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
         return redirect("autorizacion_solicitudes", type, id)
 
 
-class AutorizacionSolitudView(LoginRequiredMixin, View):
+class AutorizacionSolicitudView(LoginRequiredMixin, View):
     TEMPLATE = "autorizacion_solicitudes.html"
 
     def get(self, request, type, id):
@@ -397,6 +397,12 @@ class AutorizacionSolitudView(LoginRequiredMixin, View):
 
         raise Http404("No existe ese tipo de autorizacion")
 
+class AprobarSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """
+    Vista para aprobar una solicitud, solo usuario Maestro o Coordinador solo pueden acceder a esta vista.
+    """
+    def test_func(self):
+        pass
 
 ######################ALMACEN###############################
 
