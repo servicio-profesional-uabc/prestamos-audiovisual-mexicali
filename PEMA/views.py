@@ -357,7 +357,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
             case "corresponsable":
                 solicitud = get_object_or_404(CorresponsableOrden, pk=id)
             
-            case "aprobador":
+            case "aprobacion":
                 solicitud = get_object_or_404(AutorizacionOrden, pk=id)
 
             case _:
@@ -373,8 +373,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
 
                 case _:
                     raise Http404("No existe ese estado")
-        
-        if type == "aprobador":
+        else:
             match state:
                 case "aprobar":
                     solicitud.aprobar()
@@ -390,7 +389,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
 
 
 class AutorizacionSolicitudView(LoginRequiredMixin, View):
-    TEMPLATE = "autorizacion_solicitudes.html"
+    autorizacion_template = "autorizacion_solicitudes.html"
 
     def get(self, request, type, id):
         match type:
@@ -399,27 +398,29 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
+                    print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")
 
                 return render(
                     request=request,
-                    template_name=self.TEMPLATE,
+                    template_name=self.autorizacion_template,
                     context={
                         "solicitud": solicitud,
                         "orden": solicitud.orden
                     }
                 )
 
-            case "aprobador":
+            case "aprobacion":
                 solicitud = get_object_or_404(AutorizacionOrden, pk=id)
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
+                    # print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")
 
                 return render(
                     request=request,
-                    template_name=self.TEMPLATE,
+                    template_name=self.autorizacion_template,
                     context={
                         "solicitud": solicitud,
                         "orden": solicitud.orden
