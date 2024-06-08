@@ -189,7 +189,7 @@ urlpatterns = [
     path(
         route='corresponsables',
         view=AgregarCorresponsablesView.as_view(),
-        name='corresponables'
+        name='corresponsables'
     )
 ]
 

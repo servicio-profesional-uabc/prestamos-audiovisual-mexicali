@@ -3,13 +3,18 @@ from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 from django.views import View
+from django.views.generic.edit import UpdateView
 
+from .forms import CorresponsableForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
 from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden
+from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
 
@@ -21,18 +26,11 @@ class IndexView(View):
         )
 
 
-from django.urls import reverse_lazy
-from django.views.generic.edit import UpdateView
-from django.shortcuts import get_object_or_404
-from .models import Carrito, Prestatario
-from .forms import CorresponsableForm
-
-
 class AgregarCorresponsablesView(UpdateView):
     model = Carrito
     form_class = CorresponsableForm
     template_name = 'agregar_corresponsables.html'
-    success_url = reverse_lazy('catalogo')  # Asegúrate de tener esta URL configurada
+    success_url = reverse_lazy('carrito')
 
     def get_object(self, queryset=None):
         user = self.request.user
@@ -41,22 +39,21 @@ class AgregarCorresponsablesView(UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         carrito = self.get_object()
-        materia = carrito.materia
-        kwargs.update({'materia': materia})
+        kwargs['instance'] = carrito
+        kwargs['materia'] = carrito.materia
         return kwargs
 
     def form_valid(self, form):
         response = super().form_valid(form)
         # Limpiamos los corresponsables actuales
-        self.object._corresponsables.clear()
+        form.instance._corresponsables.clear()
         # Agregamos los nuevos corresponsables
         for corresponsable in form.cleaned_data['corresponsables']:
-            self.object._corresponsables.add(corresponsable)
-
+            form.instance._corresponsables.add(corresponsable)
         return response
 
     def get_success_url(self):
-        return reverse_lazy('catalogo')
+        return reverse_lazy('carrito')
 
 
 class ActualizarPerfilView(LoginRequiredMixin, View):

@@ -36,7 +36,7 @@ class UserLoginForm(AuthenticationForm):
 
 class CorresponsableForm(forms.ModelForm):
     corresponsables = forms.ModelMultipleChoiceField(
-        queryset=User.objects.none(),
+        queryset=Prestatario.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
         label="Corresponsables"
@@ -47,10 +47,14 @@ class CorresponsableForm(forms.ModelForm):
         fields = ['corresponsables']
 
     def __init__(self, *args, **kwargs):
+        carrito = kwargs.get('instance')
         materia = kwargs.pop('materia', None)
         super(CorresponsableForm, self).__init__(*args, **kwargs)
-        if materia:
-            self.fields['corresponsables'].queryset = materia.alumnos()
+
+        if materia and carrito:
+            alumnos = materia.alumnos()
+            self.fields['corresponsables'].queryset = alumnos
+            self.fields['corresponsables'].initial = carrito._corresponsables.all()
 
 
 # Forms para Filtros/Carrito
