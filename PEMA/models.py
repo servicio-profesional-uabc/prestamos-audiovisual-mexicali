@@ -498,7 +498,7 @@ class Articulo(models.Model):
         """
         ordenes_reservadas = Orden.objects.filter(
             estado__in=[EstadoOrden.RESERVADA, EstadoOrden.APROBADA, EstadoOrden.ENTREGADA],
-            _unidades__in=self.unidades()
+            _unidades__in=self.unidades().filter(estado=Unidad.Estado.ACTIVO)
         )
 
         colisiones = ordenes_reservadas.filter(
