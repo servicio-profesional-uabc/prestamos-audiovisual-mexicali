@@ -6,7 +6,7 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
-from PEMA.models import AutorizacionEstado
+from PEMA.models import AutorizacionEstado, Coordinador
 from PEMA.models import AutorizacionOrden
 from PEMA.models import CorresponsableOrden
 from PEMA.models import EstadoOrden

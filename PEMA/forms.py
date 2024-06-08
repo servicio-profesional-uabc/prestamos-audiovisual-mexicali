@@ -7,7 +7,7 @@ from django.core.validators import MaxLengthValidator
 from phonenumber_field.formfields import PhoneNumberField
 from django.utils.timezone import make_aware
 
-from .models import Carrito, Perfil, Prestatario
+from .models import Carrito, Perfil, Prestatario, Ubicacion
 
 
 class UpdateUserForm(forms.ModelForm):
@@ -118,6 +118,12 @@ class FiltrosForm(forms.ModelForm):
         (time(hour=19, minute=0, second=0), '7:00 PM'),
         (time(hour=19, minute=30, second=0), '7:30 PM'),
         (time(hour=20, minute=0, second=0), '8:00 PM'),
+    ))
+
+
+    lugar = forms.ChoiceField(required=True, choices=(
+        (Ubicacion.CAMPUS, "En el Campus"),
+        (Ubicacion.EXTERNO, "Fuera del Campus"),
     ))
 
     def clean_hora_inicio(self):

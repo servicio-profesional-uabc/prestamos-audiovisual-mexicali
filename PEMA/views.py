@@ -13,7 +13,7 @@ from django.views.generic.edit import UpdateView
 
 from .forms import CorresponsableForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, Categoria, CorresponsableOrden
+from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
@@ -257,7 +257,7 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def post(self, request, id):
         orden = get_object_or_404(Orden, id=id)
-        orden.estado = EstadoOrden.CANCELADA
+        orden.cancelar()
         orden.save()
         messages.success(request, "Haz cancelado tu orden exitosamente.")
         return redirect("historial_solicitudes")
@@ -347,31 +347,49 @@ class CancelarOrdenView(View):
 
 
 class ActualizarAutorizacion(LoginRequiredMixin, View):
-
     def get(self, request, type, state, id):
+        """
+        Corresponsable puede aceptar o rechazar una orden de otro prestatario
+        Aprobador es Maestro o Coordinador quien puede aprobar o cancelar una la orden de un prestatario o propia en caso de ser Maestro
+        """
 
         match type:
             case "corresponsable":
                 solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+            
+            case "aprobador":
+                solicitud = get_object_or_404(AutorizacionOrden, pk=id)
 
             case _:
                 raise Http404("No existe ese tipo de autorizacion")
 
-        match state:
-            case "aceptar":
-                solicitud.aceptar()
+        if type == "corresponsable":
+            match state:
+                case "aceptar":
+                    solicitud.aceptar()
 
-            case "rechazar":
-                solicitud.rechazar()
+                case "rechazar":
+                    solicitud.rechazar()
 
-            case _:
-                raise Http404("No existe ese estado")
+                case _:
+                    raise Http404("No existe ese estado")
+        
+        if type == "aprobador":
+            match state:
+                case "aprobar":
+                    solicitud.aprobar()
+                
+                case "rechazar":
+                    solicitud.cancelar()
+
+                case _:
+                    raise Http404("No existe ese estado")
 
         # regresar a la pagina de autorizaciones 
         return redirect("autorizacion_solicitudes", type, id)
 
 
-class AutorizacionSolitudView(LoginRequiredMixin, View):
+class AutorizacionSolicitudView(LoginRequiredMixin, View):
     TEMPLATE = "autorizacion_solicitudes.html"
 
     def get(self, request, type, id):
@@ -392,8 +410,23 @@ class AutorizacionSolitudView(LoginRequiredMixin, View):
                     }
                 )
 
-        raise Http404("No existe ese tipo de autorizacion")
+            case "aprobador":
+                solicitud = get_object_or_404(AutorizacionOrden, pk=id)
 
+                # si el usuario no es la presona solicitada no lo puede ver
+                if solicitud.autorizador != request.user:
+                    raise Http404("No tienes permiso de ver esta Orden")
+
+                return render(
+                    request=request,
+                    template_name=self.TEMPLATE,
+                    context={
+                        "solicitud": solicitud,
+                        "orden": solicitud.orden
+                    }
+                )
+
+        raise Http404("No existe ese tipo de autorizacion")
 
 ######################ALMACEN###############################
 
