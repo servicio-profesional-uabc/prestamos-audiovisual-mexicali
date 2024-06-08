@@ -376,6 +376,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
         else:
             match state:
                 case "aprobar":
+                    # TODO : Solicitud es AutorizarOrden, hace falta que Orden ejecute aprobar
                     solicitud.aprobar()
                 
                 case "rechazar":
@@ -390,6 +391,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
 
 class AutorizacionSolicitudView(LoginRequiredMixin, View):
     autorizacion_template = "autorizacion_solicitudes.html"
+    aprobacion_template = "aprobacion_solicitudes.html"
 
     def get(self, request, type, id):
         match type:
@@ -420,7 +422,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
 
                 return render(
                     request=request,
-                    template_name=self.autorizacion_template,
+                    template_name=self.aprobacion_template,
                     context={
                         "solicitud": solicitud,
                         "orden": solicitud.orden
