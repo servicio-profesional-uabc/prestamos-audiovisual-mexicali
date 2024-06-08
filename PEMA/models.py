@@ -972,6 +972,13 @@ class Reporte(models.Model):
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     emision = models.DateTimeField(auto_now_add=True)
 
+    def desactivar(self):
+        """
+        Desactiva el reporte.
+        """
+        self.estado = Reporte.Estado.INACTIVO
+        self.save()
+
     def __str__(self):
         return f"{self.orden}"
 
