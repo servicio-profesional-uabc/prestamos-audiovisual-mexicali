@@ -5,7 +5,6 @@ from django.urls import path
 
 from .forms import UserLoginForm
 from .views import ActualizarAutorizacion
-from .views import AprobarSolicitudView
 from .views import AutorizacionSolicitudView
 from .views import AgregarAlCarritoView
 from .views import AgregarCorresponsablesView
@@ -132,11 +131,6 @@ urlpatterns = [
         route='actualizar_perfil',
         name='actualizar_perfil',
         view=ActualizarPerfilView.as_view()
-    ),
-    
-    path(route='aprobar_solicitud/<int:id>', 
-         view=AprobarSolicitudView.as_view(), 
-         name='aprobar_solicitud'
     ),
 
     path(

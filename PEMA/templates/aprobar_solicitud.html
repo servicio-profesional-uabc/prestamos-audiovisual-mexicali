@@ -5,7 +5,7 @@
 {% block content %}
 
 <div class="container-prestamos">
-    <h4>Ordenes de Préstamos para Autorizar</h4>
+    <h4>Ordenes de Préstamos para Aprobar</h4>
 
     <h3>{{ solicitud.nombre }}</h3>
     <p>Nombre produccion: {{ orden.nombre }} </p>
@@ -13,22 +13,18 @@
     <p>Fecha de solicitud: {{ solicitud.orden.inicio }}</p>
     <p>Estado: {{ solicitud.estado }}</p>
 
-
     {% if request.user.is_authenticated %}
 
-        {% if solicitud.esta_pendiente %}
-            <a href="{% url "actualizar_autorizacion" "corresponsable" "aceptar" solicitud.id %}" class="btn btn-primary">Autorizar</a>
-            <a href="{% url "actualizar_autorizacion" "corresponsable" "rechazar" solicitud.id %}" class="btn btn-danger">Rechazar</a>
-        {% endif %}
+        <a href="{% url "aprobar_solicitud" "aceptar" solicitud.id %}" class="btn btn-primary">Autorizar</a>
+        <a href="{% url "aprobar_solicitud" "rechazar" solicitud.id %}" class="btn btn-danger">Rechazar</a>
 
-        {% if solicitud.rechazada %}
+        {% comment %} {% if solicitud.rechazada %}
             <h1>La orden fue rechazada</h1>
         {% endif %}
 
         {% if solicitud.aceptada %}
-            <h1>La orden fue aceptada</h1>
-        {% endif %}
-
+            <h1>La orden fue aprobada</h1>
+        {% endif %} {% endcomment %}
 
     {% else %}
         <a href="{% url "login" %}" class="btn btn-primary">Inicia sesion para confirmar!</a>
