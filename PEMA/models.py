@@ -155,6 +155,7 @@ class Coordinador(User):
         group, created = Group.objects.get_or_create(name='coordinador')
         group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
+        group.permissions.add(Permission.objects.get(codename='view_orden'))
         group.permissions.add(Permission.objects.get(codename='change_reporte'))
         return group, created
 
