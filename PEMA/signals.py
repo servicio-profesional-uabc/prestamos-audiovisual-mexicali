@@ -65,43 +65,6 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
                     ]
                 )
 
-@receiver(m2m_changed, sender=Orden._corresponsables.through)
-def update_maestro_orden(sender, instance, action, *args, **kwargs):
-    """
-    Esta señal se ejecuta cada vez que un corresponsable se actualiza la
-    lista de corresponsables de una orden.
-    """
-
-    if action == 'post_remove':
-        # eliminar todos los CorresponsableOrden que no sean corresponsables
-        CorresponsableOrden.objects.exclude(id__in=instance.corresponsables()).delete()
-
-    if action == 'post_add':
-        # crear el corresponsableOrden de cada corresponsable y enviar correo
-        for item in instance._corresponsables.all():
-            
-            object, created = CorresponsableOrden.objects.get_or_create(autorizador=item, orden=instance)
-        
-            if created:
-                maestros_email = []
-                for m in object.orden.materia.maestros():
-                    maestros_email.append(m.email)                
-                send_mail(
-                    subject="Test Email",
-                    from_email=settings.EMAIL_HOST_USER,
-                    fail_silently=False,
-                    message=render_to_string(
-                        'emails/aceptar_corresponsable.html',
-                        {
-                            'invitacion': object,
-                            'orden': object.orden,
-                            'user': object.autorizador,
-                            'host': settings.URL_BASE_PARA_EMAILS,
-                        }
-                    ),
-                    recipient_list= maestros_email
-                )
-
 @receiver(post_save, sender=CorresponsableOrden)
 def corresponsable_orden_updated(sender, instance, created, **kwargs):
     """
