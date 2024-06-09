@@ -6,7 +6,7 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
-from PEMA.models import AutorizacionEstado, Coordinador
+from PEMA.models import AutorizacionEstado, Coordinador, TipoOrden
 from PEMA.models import AutorizacionOrden
 from PEMA.models import CorresponsableOrden
 from PEMA.models import EstadoOrden
@@ -91,7 +91,8 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
         case AutorizacionEstado.ACEPTADA:
 
             orden.estado = EstadoOrden.RESERVADA  # esperando autorización
-            orden.solicitar_autorizacion(orden)  # enviar solicitudes
+            orden.solicitar_autorizacion() # envia solicitud a maestro o coordinador dependiendo del tipo de orden
+            # orden.solicitar_autorizacion(orden)  # enviar solicitudes
 
         case AutorizacionEstado.RECHAZADA:
             orden.estado = EstadoOrden.CANCELADA
@@ -119,7 +120,30 @@ def autorizacion_orden_updated(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=AutorizacionOrden)
 def autorizacion_orden_created(sender, instance, created, **kwargs):
+    """
+    Esta señal se ejecuta cada vez que se crea una autorización, este envía un correo al usuario maestro o coordinador para aprobar o cancelar dicha orden.
+    orden.solicitar_autorizacion() se crean dichos objetos de AutorizacionOrden (esto sucede en la señal corresponsable_orden_updated)
+    """
     if not created:  # se crea una autorización
         return
 
     orden = instance.orden
+
+    autorizador = instance.autorizador
+    prestatario = instance.orden.prestatario    
+
+    send_mail(
+        subject=f"PEMA - Nueva solicitud de autorización para préstamo de equipo",
+        from_email=settings.EMAIL_HOST_USER,
+        fail_silently=False,
+        message=render_to_string(
+            'emails/aprobar_solicitud.html',
+            {
+                'orden': orden,
+                'user': prestatario,
+                'autorizador': autorizador,
+                'host': settings.URL_BASE_PARA_EMAILS,
+            }
+        ),
+        recipient_list=[autorizador.email]
+    )

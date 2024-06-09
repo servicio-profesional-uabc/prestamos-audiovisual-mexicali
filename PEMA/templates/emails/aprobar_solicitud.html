@@ -1,6 +1,5 @@
 Produccion: {{ orden }}
 Solicitador: {{ orden.prestatario }}
-Nombre: {{ user.first_name }} ({{ user.username }})
-Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'aprobar' invitacion.id %}
+Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'aprobacion' orden.id %}
 
 {{ request.scheme }}
