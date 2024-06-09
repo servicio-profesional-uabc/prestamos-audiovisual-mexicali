@@ -155,6 +155,7 @@ class Coordinador(User):
         group, created = Group.objects.get_or_create(name='coordinador')
         group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
+        group.permissions.add(Permission.objects.get(codename='view_orden'))
         group.permissions.add(Permission.objects.get(codename='change_reporte'))
         return group, created
 
@@ -422,7 +423,7 @@ class Materia(models.Model):
         :returns: Lista de profesores asociados a la materia.
         """
         return self._maestros.all()
-
+    
     def articulos(self) -> QuerySet['Articulo']:
         """
         Obtiene la lista de artículos disponibles para la materia.
@@ -498,7 +499,7 @@ class Articulo(models.Model):
         """
         ordenes_reservadas = Orden.objects.filter(
             estado__in=[EstadoOrden.RESERVADA, EstadoOrden.APROBADA, EstadoOrden.ENTREGADA],
-            _unidades__in=self.unidades()
+            _unidades__in=self.unidades().filter(estado=Unidad.Estado.ACTIVO)
         )
 
         colisiones = ordenes_reservadas.filter(
@@ -922,6 +923,9 @@ class Carrito(models.Model):
                     descripcion=self.descripcion
                 )
 
+                # TODO: asignar_tipo() no está asignando el tipo de orden
+                orden.asignar_tipo()
+
                 orden.agregar_corresponsable(self.prestatario)
 
                 for corresponsable in self._corresponsables.all():
@@ -984,6 +988,13 @@ class Reporte(models.Model):
     estado = models.CharField(max_length=2, choices=Estado.choices, default=Estado.ACTIVO)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     emision = models.DateTimeField(auto_now_add=True)
+
+    def desactivar(self):
+        """
+        Desactiva el reporte.
+        """
+        self.estado = Reporte.Estado.INACTIVO
+        self.save()
 
     def __str__(self):
         return f"{self.orden}"

@@ -99,12 +99,23 @@ class ReporteAdmin(admin.ModelAdmin):
     list_display = ('orden', 'estado')
     autocomplete_fields = ('orden',)
     exclude = ('emisor',)
+    actions = ['desactivar_reportes']
 
     def save_model(self, request, obj, form, change):
         # Registrar el usuario que está usando el admin como el emisor
         # del reporte
         obj.emisor = request.user
         super().save_model(request, obj, form, change)
+    
+    @admin.action(description='Desactivar reportes')
+    def desactivar_reportes(self, request, queryset):
+        updated = 0
+        for reporte in queryset:
+            if reporte.estado == Reporte.Estado.ACTIVO:
+                reporte.desactivar()
+                updated += 1
+        self.message_user(request, f'{updated} reporte(s) desactivado(s) exitosamente.', messages.SUCCESS)
+
 
 
 @admin.register(Perfil)

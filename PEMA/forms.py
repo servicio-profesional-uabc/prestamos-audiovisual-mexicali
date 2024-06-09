@@ -5,8 +5,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
 from phonenumber_field.formfields import PhoneNumberField
+from django.utils.timezone import make_aware
 
-from .models import Carrito, Perfil, Prestatario
+from .models import Carrito, Perfil, Prestatario, Ubicacion
 
 
 class UpdateUserForm(forms.ModelForm):
@@ -35,7 +36,7 @@ class UserLoginForm(AuthenticationForm):
 
 class CorresponsableForm(forms.ModelForm):
     corresponsables = forms.ModelMultipleChoiceField(
-        queryset=User.objects.none(),
+        queryset=Prestatario.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
         label="Corresponsables"
@@ -46,10 +47,14 @@ class CorresponsableForm(forms.ModelForm):
         fields = ['corresponsables']
 
     def __init__(self, *args, **kwargs):
+        carrito = kwargs.get('instance')
         materia = kwargs.pop('materia', None)
         super(CorresponsableForm, self).__init__(*args, **kwargs)
-        if materia:
-            self.fields['corresponsables'].queryset = materia.alumnos()
+
+        if materia and carrito:
+            alumnos = materia.alumnos()
+            self.fields['corresponsables'].queryset = alumnos
+            self.fields['corresponsables'].initial = carrito._corresponsables.all()
 
 
 # Forms para Filtros/Carrito
@@ -115,6 +120,12 @@ class FiltrosForm(forms.ModelForm):
         (time(hour=20, minute=0, second=0), '8:00 PM'),
     ))
 
+
+    lugar = forms.ChoiceField(required=True, choices=(
+        (Ubicacion.CAMPUS, "En el Campus"),
+        (Ubicacion.EXTERNO, "Fuera del Campus"),
+    ))
+
     def clean_hora_inicio(self):
         """
         El form capturado por usuario regresa str entonces convierte a objeto time
@@ -134,3 +145,30 @@ class FiltrosForm(forms.ModelForm):
 
         # print(f'clean inicio {inicio}')
         return inicio
+
+    def clean(self):
+        cleaned_data = super().clean()
+        inicio = cleaned_data.get('inicio')
+        hora_inicio = cleaned_data.get('hora_inicio')
+        duracion = cleaned_data.get('duracion')
+        
+        if not inicio:
+            return
+
+        if not hora_inicio:
+            return
+
+        if not duracion:
+            return
+
+        tiempo_duracion = int(duracion)
+        fecha_inicio = datetime.combine(inicio, hora_inicio)
+        fecha_final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
+
+        if fecha_final.date().weekday() >= 5:
+            raise(forms.ValidationError("La fecha final del préstamo es en fin de semana. Intente de nuevo."))
+        
+        if fecha_final.hour > 20 or fecha_final.hour < 9:
+            raise(forms.ValidationError("La fecha final del préstamo es fuera del horario de atención. Intente de nuevo."))
+
+        return cleaned_data

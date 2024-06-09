@@ -3,13 +3,18 @@ from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 from django.views import View
+from django.views.generic.edit import UpdateView
 
+from .forms import CorresponsableForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, Categoria, CorresponsableOrden
+from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden
+from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
 
@@ -21,18 +26,11 @@ class IndexView(View):
         )
 
 
-from django.urls import reverse_lazy
-from django.views.generic.edit import UpdateView
-from django.shortcuts import get_object_or_404
-from .models import Carrito, Prestatario
-from .forms import CorresponsableForm
-
-
 class AgregarCorresponsablesView(UpdateView):
     model = Carrito
     form_class = CorresponsableForm
     template_name = 'agregar_corresponsables.html'
-    success_url = reverse_lazy('catalogo')  # Asegúrate de tener esta URL configurada
+    success_url = reverse_lazy('carrito')
 
     def get_object(self, queryset=None):
         user = self.request.user
@@ -41,22 +39,21 @@ class AgregarCorresponsablesView(UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         carrito = self.get_object()
-        materia = carrito.materia
-        kwargs.update({'materia': materia})
+        kwargs['instance'] = carrito
+        kwargs['materia'] = carrito.materia
         return kwargs
 
     def form_valid(self, form):
         response = super().form_valid(form)
         # Limpiamos los corresponsables actuales
-        self.object._corresponsables.clear()
+        form.instance._corresponsables.clear()
         # Agregamos los nuevos corresponsables
         for corresponsable in form.cleaned_data['corresponsables']:
-            self.object._corresponsables.add(corresponsable)
-
+            form.instance._corresponsables.add(corresponsable)
         return response
 
     def get_success_url(self):
-        return reverse_lazy('catalogo')
+        return reverse_lazy('carrito')
 
 
 class ActualizarPerfilView(LoginRequiredMixin, View):
@@ -150,6 +147,7 @@ class FiltrosView(LoginRequiredMixin, View):
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
+        
 
         return render(
             request=request,
@@ -259,7 +257,7 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def post(self, request, id):
         orden = get_object_or_404(Orden, id=id)
-        orden.estado = EstadoOrden.CANCELADA
+        orden.cancelar()
         orden.save()
         messages.success(request, "Haz cancelado tu orden exitosamente.")
         return redirect("historial_solicitudes")
@@ -349,32 +347,51 @@ class CancelarOrdenView(View):
 
 
 class ActualizarAutorizacion(LoginRequiredMixin, View):
-
     def get(self, request, type, state, id):
+        """
+        Corresponsable puede aceptar o rechazar una orden de otro prestatario
+        Aprobador es Maestro o Coordinador quien puede aprobar o cancelar una la orden de un prestatario o propia en caso de ser Maestro
+        """
 
         match type:
             case "corresponsable":
                 solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+            
+            case "aprobacion":
+                solicitud = get_object_or_404(AutorizacionOrden, pk=id)
 
             case _:
                 raise Http404("No existe ese tipo de autorizacion")
 
-        match state:
-            case "aceptar":
-                solicitud.aceptar()
+        if type == "corresponsable":
+            match state:
+                case "aceptar":
+                    solicitud.aceptar()
 
-            case "rechazar":
-                solicitud.rechazar()
+                case "rechazar":
+                    solicitud.rechazar()
 
-            case _:
-                raise Http404("No existe ese estado")
+                case _:
+                    raise Http404("No existe ese estado")
+        else:
+            match state:
+                case "aprobar":
+                    # TODO : Solicitud es AutorizarOrden, hace falta que Orden ejecute aprobar
+                    solicitud.aprobar()
+                
+                case "rechazar":
+                    solicitud.cancelar()
+
+                case _:
+                    raise Http404("No existe ese estado")
 
         # regresar a la pagina de autorizaciones 
         return redirect("autorizacion_solicitudes", type, id)
 
 
-class AutorizacionSolitudView(LoginRequiredMixin, View):
-    TEMPLATE = "autorizacion_solicitudes.html"
+class AutorizacionSolicitudView(LoginRequiredMixin, View):
+    autorizacion_template = "autorizacion_solicitudes.html"
+    aprobacion_template = "aprobacion_solicitudes.html"
 
     def get(self, request, type, id):
         match type:
@@ -383,11 +400,29 @@ class AutorizacionSolitudView(LoginRequiredMixin, View):
 
                 # si el usuario no es la persona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
+                    print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")
 
                 return render(
                     request=request,
-                    template_name=self.TEMPLATE,
+                    template_name=self.autorizacion_template,
+                    context={
+                        "solicitud": solicitud,
+                        "orden": solicitud.orden
+                    }
+                )
+
+            case "aprobacion":
+                solicitud = get_object_or_404(AutorizacionOrden, pk=id)
+
+                # si el usuario no es la presona solicitada no lo puede ver
+                if solicitud.autorizador != request.user:
+                    # print(solicitud.autorizador)
+                    raise Http404("No tienes permiso de ver esta Orden")
+
+                return render(
+                    request=request,
+                    template_name=self.aprobacion_template,
                     context={
                         "solicitud": solicitud,
                         "orden": solicitud.orden
@@ -395,7 +430,6 @@ class AutorizacionSolitudView(LoginRequiredMixin, View):
                 )
 
         raise Http404("No existe ese tipo de autorizacion")
-
 
 ######################ALMACEN###############################
 
