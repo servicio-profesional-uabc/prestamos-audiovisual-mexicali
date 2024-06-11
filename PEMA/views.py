@@ -400,7 +400,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
             case "corresponsable":
                 solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
-                # si el usuario no es la presona solicitada no lo puede ver
+                # si el usuario no es la persona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
                     print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
-from PEMA.models import Prestatario, Orden, Materia, Articulo, Unidad, Categoria
+from PEMA.models import Prestatario, Orden, Materia, Articulo, Unidad, Categoria, Ubicacion
 from django.utils.timezone import make_aware
 from datetime import datetime
 
@@ -69,55 +69,75 @@ class Command(BaseCommand):
         categoria1.agregar(articulo=articulo1)
         categoria1.agregar(articulo=articulo2)
         
+        """        
         unidad1, created = Unidad.objects.get_or_create(
-            estado="ACTIVO",
+            estado=Unidad.Estado.ACTIVO,
             articulo=articulo1,
             num_control="1",
             num_serie="1"
         )
         unidad2, created = Unidad.objects.get_or_create(
-            estado="ACTIVO",
+            estado=Unidad.Estado.ACTIVO,
             articulo=articulo2,
             num_control="2",
             num_serie="2"
         )
         unidad3, created = Unidad.objects.get_or_create(
-            estado="ACTIVO",
+            estado=Unidad.Estado.ACTIVO,
             articulo=articulo1,
             num_control="3",
             num_serie="3"
         )
         unidad4, created = Unidad.objects.get_or_create(
-            estado="ACTIVO",
+            estado=Unidad.Estado.ACTIVO,
             articulo=articulo1,
             num_control="4",
             num_serie="4"
         )
         
         unidad5, created = Unidad.objects.get_or_create(
-            estado="ACTIVO",
+            estado=Unidad.Estado.ACTIVO,
             articulo=articulo2,
             num_control="5",
             num_serie="5"
         )
         unidad6, created = Unidad.objects.get_or_create(
-            estado="ACTIVO",
+            estado=Unidad.Estado.ACTIVO,
             articulo=articulo2,
             num_control="6",
             num_serie="6"
         )
         unidad7, created = Unidad.objects.get_or_create(
-            estado="ACTIVO",
+            estado=Unidad.Estado.ACTIVO,
             articulo=articulo2,
             num_control="7",
             num_serie="7"
         )
         unidad8, created = Unidad.objects.get_or_create(
-            estado="ACTIVO",
+            estado=Unidad.Estado.ACTIVO,
             articulo=articulo2,
             num_control="8",
             num_serie="8"
-        )
+        ) 
+        """
+        
+        unidad1, created = articulo1.crear_unidad(num_control="1", num_serie="1")
+        unidad2, created = articulo2.crear_unidad(num_control="2", num_serie="2")
+        unidad3, created = articulo1.crear_unidad(num_control="3", num_serie="3")
+        unidad4, created = articulo1.crear_unidad(num_control="4", num_serie="4")
+        unidad5, created = articulo2.crear_unidad(num_control="5", num_serie="5")
+        unidad6, created = articulo2.crear_unidad(num_control="6", num_serie="6")
+        unidad7, created = articulo2.crear_unidad(num_control="7", num_serie="7")
+        unidad8, created = articulo2.crear_unidad(num_control="8", num_serie="8")
+        unidad1.estado = Unidad.Estado.ACTIVO
+        unidad2.estado = Unidad.Estado.ACTIVO
+        unidad3.estado = Unidad.Estado.ACTIVO
+        unidad4.estado = Unidad.Estado.ACTIVO
+        unidad5.estado = Unidad.Estado.ACTIVO
+        unidad6.estado = Unidad.Estado.ACTIVO
+        unidad7.estado = Unidad.Estado.ACTIVO
+        unidad8.estado = Unidad.Estado.ACTIVO 
+
         
         # Agregar articulo a materia
         materia1.agregar_articulo(articulo1)
@@ -126,55 +146,55 @@ class Command(BaseCommand):
         # ordenes
         orden1, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 5, 7, 12)),
-            final=make_aware(datetime(2024, 5, 7, 14)),
-            estado="AP",
+            lugar=Ubicacion.CAMPUS,
+            inicio=make_aware(datetime(2024, 10, 5, 12)),
+            final=make_aware(datetime(2024, 10, 5, 14)),
+            estado='RS',
             materia=materia1,
         )
 
         orden2, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.EXTERNO,
-            inicio=make_aware(datetime(2024, 5, 7, 11)),
-            final=make_aware(datetime(2024, 5, 7, 14)),
-            estado="AP",
+            lugar=Ubicacion.CAMPUS,
+            inicio=make_aware(datetime(2024, 10, 5, 11)),
+            final=make_aware(datetime(2024, 10, 5, 14)),
+            estado='RS',
             materia=materia1,
             descripcion="Esta solicitud es para mi practica de Cinematografia en la laguna salada."
         )
 
         orden3, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 5, 7, 15)),
-            final=make_aware(datetime(2024, 5, 7, 17)),
-            estado="AP",
+            lugar=Ubicacion.CAMPUS,
+            inicio=make_aware(datetime(2024, 10, 5, 15)),
+            final=make_aware(datetime(2024, 10, 5, 17)),
+            estado='RS',
             materia=materia1,
         )
 
         orden4, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 5, 7, 16)),
-            final=make_aware(datetime(2024, 5, 7, 18)),
-            estado="AP",
+            lugar=Ubicacion.CAMPUS,
+            inicio=make_aware(datetime(2024, 10, 5, 16)),
+            final=make_aware(datetime(2024, 10, 5, 18)),
+            estado='RS',
             materia=materia1,
         )
 
         orden5, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 5, 7, 13)),
-            final=make_aware(datetime(2024, 5, 7, 16)),
+            lugar=Ubicacion.CAMPUS,
+            inicio=make_aware(datetime(2024, 10, 5, 13)),
+            final=make_aware(datetime(2024, 10, 5, 16)),
             estado="AP",
             materia=materia1,
         )
 
         orden6, created = Orden.objects.get_or_create(
             prestatario=user,
-            lugar=Orden.Ubicacion.CAMPUS,
-            inicio=make_aware(datetime(2024, 5, 7, 11)),
-            final=make_aware(datetime(2024, 5, 7, 18)),
+            lugar=Ubicacion.CAMPUS,
+            inicio=make_aware(datetime(2024, 10, 5, 11)),
+            final=make_aware(datetime(2024, 10, 5, 18)),
             estado="AP",
             materia=materia1,
         )
@@ -222,14 +242,39 @@ class Command(BaseCommand):
         orden6.save()
         print('Se guardaron las ordenes...')
 
-        print(articulo1.disponible(make_aware(datetime(2024, 10, 5, 12)), make_aware(datetime(2024, 10, 5, 14))))
-        
-        print(articulo1.disponible(make_aware(datetime(2024, 10, 5, 11)), make_aware(datetime(2024, 10, 5, 14))))
-        
-        print(articulo2.disponible(make_aware(datetime(2024, 10, 5, 14)), make_aware(datetime(2024, 10, 5, 16))))
+        print('orden1:')
+        print(orden1.inicio)
+        print(orden1.final)
+        print('orden2:')
+        print(orden2.inicio)
+        print(orden2.final)
+        print('orden3:')
+        print(orden3.inicio)
+        print(orden3.final)
+        print('orden4:')
+        print(orden4.inicio)
+        print(orden4.final)
+        print('orden5:')
+        print(orden5.inicio)
+        print(orden5.final)
+        print('orden6:')
+        print(orden6.inicio)
+        print(orden6.final)
+        print("articulo1")
+        print("Disponible:", articulo1.disponible(make_aware(datetime(2024, 10, 5, 12)), make_aware(datetime(2024, 10, 5, 14))))
+
+        print("articulo1")
+        print("Disponible:", articulo1.disponible(make_aware(datetime(2024, 10, 5, 11)), make_aware(datetime(2024, 10, 5, 14))))
+
+        print("articulo2")
+        print("Disponible:", articulo2.disponible(make_aware(datetime(2024, 10, 5, 14)), make_aware(datetime(2024, 10, 5, 16))))
         
         print(materia1.alumnos())
         
         print(Prestatario.materias(user))
         
-        
+        unidades = Unidad.objects.all()
+        print(Unidad.Estado.ACTIVO)
+        for u in unidades:
+            print(u.articulo)
+            print(u.estado)

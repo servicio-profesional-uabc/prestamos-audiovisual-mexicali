@@ -497,11 +497,21 @@ class Articulo(models.Model):
         :param final: Fecha y hora de finalización del rango.
         :returns: Unidades disponibles en el rango especificado.
         """
+        
+        """ print('Unidades:')
+        print(self.unidades())
+        print('estados:')
+        for u in self.unidades():
+            print(u.estado)
+            print(Unidad.Estado.ACTIVO)
+        print('Unidades activas:')
+        print(self.unidades().filter(estado=Unidad.Estado.ACTIVO)) """
         ordenes_reservadas = Orden.objects.filter(
             estado__in=[EstadoOrden.RESERVADA, EstadoOrden.APROBADA, EstadoOrden.ENTREGADA],
             _unidades__in=self.unidades().filter(estado=Unidad.Estado.ACTIVO)
         )
-
+        #print('Ordenes reservadas:')
+        #print(ordenes_reservadas)
         colisiones = ordenes_reservadas.filter(
             Q(inicio=inicio) |
             Q(final=final) |
@@ -509,8 +519,11 @@ class Articulo(models.Model):
             Q(inicio__lt=final, final__gt=final) |
             Q(inicio__gt=inicio, final__lt=final)
         )
-
+        #print('colisiones')
+        #print(colisiones)
         unidades_reservadas = Unidad.objects.filter(orden__in=colisiones)
+        #print('Unidades reservadas:')
+        #print(unidades_reservadas)
         return self.unidades().exclude(id__in=unidades_reservadas)
 
     def categorias(self) -> QuerySet['Categoria']:
@@ -642,7 +655,11 @@ class Orden(models.Model):
         """
         Cancela la orden cambiando su estado a CANCELADA.
         """
+        if self.estado in [EstadoOrden.ENTREGADA, EstadoOrden.DEVUELTA]:
+            return
+        
         self.estado = EstadoOrden.CANCELADA
+        self.save()
 
     def cancelada(self) -> bool:
         """
@@ -672,12 +689,25 @@ class Orden(models.Model):
 
         :param entregador: El usuario que entrega la orden.
         """
-        if self.estado in [EstadoOrden.CANCELADA, EstadoOrden.DEVUELTA]:
+        if self.estado in [EstadoOrden.CANCELADA, EstadoOrden.DEVUELTA, EstadoOrden.RESERVADA]:
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
         self.estado = EstadoOrden.ENTREGADA
         self.save()
+
+    def devolver(self, almacen: 'Almacen'):
+
+        if self.estado in [EstadoOrden.APROBADA, EstadoOrden.CANCELADA, EstadoOrden.RESERVADA]:
+            return
+        
+        devolucion, _ = Devolucion.objects.get_or_create(almacen=almacen, orden=self)
+        self.estado = EstadoOrden.DEVUELTA
+        self.save()
+
+    def devuelta(self):
+        return self.estado == EstadoOrden.DEVUELTA        
+
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         """
@@ -696,12 +726,12 @@ class Orden(models.Model):
         self._corresponsables.add(prestatario)
 
     def asignar_tipo(self):
-        self.tipo == TipoOrden.ORDINARIA
         delta = self.final - self.inicio
         if(self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8):
-            self.tipo = TipoOrden.EXTRAORDINARIA
-        return self.tipo
-    
+            return TipoOrden.EXTRAORDINARIA
+        else:
+            return TipoOrden.ORDINARIA
+
     def es_ordinaria(self) -> bool:
         """
         Verifica si una orden es ordinaria.
@@ -905,10 +935,9 @@ class Carrito(models.Model):
                     final=self.final,
                     descripcion=self.descripcion
                 )
-
-                # TODO: asignar_tipo() no está asignando el tipo de orden
-                orden.asignar_tipo()
-
+                
+                orden.tipo = orden.asignar_tipo()
+                orden.save()
                 orden.agregar_corresponsable(self.prestatario)
 
                 for corresponsable in self._corresponsables.all():
@@ -920,7 +949,8 @@ class Carrito(models.Model):
                 for articulo_carrito in self.articulos_carrito():
                     unidades = articulo_carrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)
-
+                    #print(len_unidades)
+                    #print(articulo_carrito.unidades)
                     if len_unidades < articulo_carrito.unidades:
                         raise Exception("No hay suficientes unidades disponibles")
 
@@ -1036,7 +1066,7 @@ class Devolucion(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
+    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 
