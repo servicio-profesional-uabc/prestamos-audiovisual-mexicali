@@ -25,6 +25,7 @@ from .views import OrdenesPrestadasView
 from .views import OrdenesReportadasView
 from .views import PrincipalAlmacenView
 from .views import SolicitudView
+from .views import EliminarDelCarritoView
 
 urlpatterns = [
     path(
@@ -185,12 +186,17 @@ urlpatterns = [
         name='detalles_orden_devuelta',
 
     ),
-
+     path(
+        route='eliminar_del_carrito/<int:articulo_id>/',
+        view=EliminarDelCarritoView.as_view(),
+        name='eliminar_del_carrito'
+    ),
     path(
         route='corresponsables',
         view=AgregarCorresponsablesView.as_view(),
-        name='corresponsables'
-    )
+        name='corresponsables'  
+    ),
+   
 ]
 
 # https://github.com/fabiocaccamo/django-admin-interface/issues/4
