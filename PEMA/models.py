@@ -208,6 +208,7 @@ class Maestro(User):
 
         :param orden: La orden para la cual se solicita autorización.
         """
+
         for maestro in orden.materia.maestros():
             AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
 
@@ -646,6 +647,7 @@ class Orden(models.Model):
     estado = models.CharField(default=EstadoOrden.RESERVADA, choices=EstadoOrden.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
+    maestro = models.OneToOneField(to=User, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="orden_maestro")
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
     _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables', verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
@@ -674,6 +676,14 @@ class Orden(models.Model):
         Aprueba la orden cambiando su estado a APROBADA.
         """
         self.estado = EstadoOrden.APROBADA
+    
+    def aprobada(self) -> bool:
+        """
+        Verifica si la orden está aprobada.
+
+        :returns: True si la orden está aprobada, False en caso contrario.
+        """
+        return self.estado == EstadoOrden.APROBADA
 
     def entregada(self) -> bool:
         """
@@ -779,7 +789,7 @@ class Orden(models.Model):
         :param unidad: La unidad que se quiere agregar.
         """
         self._unidades.add(unidad)
-
+    
     def solicitar_autorizacion(self):
         """
         Solicita autorización para la orden acorde al tipo.
@@ -846,11 +856,13 @@ class Carrito(models.Model):
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
+    maestro = models.OneToOneField(to=User, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="carrito_maestro")
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
     _corresponsables = models.ManyToManyField(to=User, blank=True, related_name='corresponsables_carrito')
-
+        
+        
     def eliminar_articulo(self, articulo: 'Articulo', unidades: int = None):
         """
         Elimina un artículo del carrito o reduce su cantidad.
@@ -931,13 +943,15 @@ class Carrito(models.Model):
                     lugar=self.lugar,
                     descripcion_lugar=self.descripcion_lugar,
                     materia=self.materia,
+                    maestro=self.maestro,
                     inicio=self.inicio,
                     final=self.final,
                     descripcion=self.descripcion
                 )
-                
+
                 orden.tipo = orden.asignar_tipo()
                 orden.save()
+
                 orden.agregar_corresponsable(self.prestatario)
 
                 for corresponsable in self._corresponsables.all():

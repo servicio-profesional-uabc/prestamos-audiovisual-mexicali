@@ -360,7 +360,8 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
                 solicitud = get_object_or_404(CorresponsableOrden, pk=id)
             
             case "aprobacion":
-                solicitud = get_object_or_404(AutorizacionOrden, pk=id)
+                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id).first()
+                print(solicitud)
 
             case _:
                 raise Http404("No existe ese tipo de autorizacion")
@@ -379,10 +380,10 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
             match state:
                 case "aprobar":
                     # TODO : Solicitud es AutorizarOrden, hace falta que Orden ejecute aprobar
-                    solicitud.aprobar()
+                    solicitud.orden.aprobar()
                 
                 case "rechazar":
-                    solicitud.cancelar()
+                    solicitud.orden.cancelar()
 
                 case _:
                     raise Http404("No existe ese estado")
@@ -415,7 +416,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
                 )
 
             case "aprobacion":
-                solicitud = get_object_or_404(AutorizacionOrden, pk=id)
+                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
