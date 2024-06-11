@@ -207,6 +207,7 @@ class Maestro(User):
 
         :param orden: La orden para la cual se solicita autorización.
         """
+
         for maestro in orden.materia.maestros():
             AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
 
@@ -656,6 +657,14 @@ class Orden(models.Model):
         Aprueba la orden cambiando su estado a APROBADA.
         """
         self.estado = EstadoOrden.APROBADA
+    
+    def aprobada(self) -> bool:
+        """
+        Verifica si la orden está aprobada.
+
+        :returns: True si la orden está aprobada, False en caso contrario.
+        """
+        return self.estado == EstadoOrden.APROBADA
 
     def entregada(self) -> bool:
         """
@@ -748,7 +757,7 @@ class Orden(models.Model):
         :param unidad: La unidad que se quiere agregar.
         """
         self._unidades.add(unidad)
-
+    
     def solicitar_autorizacion(self):
         """
         Solicita autorización para la orden acorde al tipo.

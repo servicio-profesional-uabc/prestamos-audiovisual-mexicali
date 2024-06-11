@@ -109,13 +109,13 @@ def autorizacion_orden_updated(sender, instance, created, **kwargs):
         return
 
     # si la autorización cambia de estado
-    if instance.aceptada():
-        instance.orden.autorizar()
+    # if instance.aceptada():
+    #     instance.orden.autorizar()
 
-    if instance.rechazada():
-        instance.orden.rechazar()
+    # if instance.rechazada():
+    #     instance.orden.rechazar()
 
-    instance.orden.save()
+    # instance.orden.save()
 
 
 @receiver(post_save, sender=AutorizacionOrden)
