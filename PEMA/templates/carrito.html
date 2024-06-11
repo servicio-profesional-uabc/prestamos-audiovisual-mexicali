@@ -33,6 +33,15 @@
             </ul>
         </div>
 
+        <div class="text-left mt-4" style="max-width: 50%">
+            <label for="maestro" class="form-label">Elige a tu maestro a quien se le enviará la solicitud de autorización por correo. Si tu solicitud es extraordinaria, el coordinador será quien recibirá el correo. </label>
+            <select class="form-select" id="maestro"> 
+            {% for maestro in carrito.materia.maestros %}
+                <option class="dropdown-item" value="{{ maestro.id }}">{{ maestro.username }} - {{maestro.email}}</option>
+            {% endfor %}
+            </select> 
+        </div>
+
         <div class="text-center mt-4">
             <a href="{% url 'catalogo' %}" class="btn btn-warning me-3" style="background-color: #DD971A;">Regresar</a>
             <a href="{% url 'corresponsables' %}" class="btn btn-secondary me-3" >Agregar Corresponsables</a>

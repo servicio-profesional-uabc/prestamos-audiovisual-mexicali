@@ -633,6 +633,7 @@ class Orden(models.Model):
     estado = models.CharField(default=EstadoOrden.RESERVADA, choices=EstadoOrden.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
+    maestro = models.OneToOneField(to=User, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="orden_maestro")
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
     _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables', verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
@@ -824,11 +825,13 @@ class Carrito(models.Model):
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
+    maestro = models.OneToOneField(to=User, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="carrito_maestro")
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
     _corresponsables = models.ManyToManyField(to=User, blank=True, related_name='corresponsables_carrito')
-
+        
+        
     def eliminar_articulo(self, articulo: 'Articulo', unidades: int = None):
         """
         Elimina un artículo del carrito o reduce su cantidad.
@@ -909,12 +912,12 @@ class Carrito(models.Model):
                     lugar=self.lugar,
                     descripcion_lugar=self.descripcion_lugar,
                     materia=self.materia,
+                    maestro=self.maestro,
                     inicio=self.inicio,
                     final=self.final,
                     descripcion=self.descripcion
                 )
 
-                # TODO: asignar_tipo() no está asignando el tipo de orden
                 orden.asignar_tipo()
 
                 orden.agregar_corresponsable(self.prestatario)
