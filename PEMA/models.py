@@ -151,6 +151,7 @@ class Coordinador(User):
         # permisos
         group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
+        group.permissions.add(Permission.objects.get(codename='view_orden'))
         group.permissions.add(Permission.objects.get(codename='change_reporte'))
 
         return group, created
@@ -394,7 +395,7 @@ class Materia(models.Model):
         """
         return self._maestros.all()
 
-    def articulos(self):
+    def articulos(self) -> QuerySet['Articulo']:
         """
         :returns: Lista de artículos disponibles para la materia.
         """
@@ -464,18 +465,8 @@ class Articulo(models.Model):
         :returns: Unidades disponibles en el rango especificado.
         """
         ordenes_reservadas = Orden.objects.filter(
-            # filtrar si ya está resevado o entregado el artículo
-            estado__in=[
-                EstadoOrden.RESERVADA,
-                EstadoOrden.APROBADA,
-                EstadoOrden.ENTREGADA
-            ],
-
-            # filtrar materias para las que está disponible el artículo
-            # materia__in=self.materias(),
-
-            # Ordenes que incluyen el articulo
-            _unidades__in=self.unidades()
+            estado__in=[EstadoOrden.RESERVADA, EstadoOrden.APROBADA, EstadoOrden.ENTREGADA],
+            _unidades__in=self.unidades().filter(estado=Unidad.Estado.ACTIVO)
         )
 
         coliciones = ordenes_reservadas.filter((
@@ -665,6 +656,13 @@ class Orden(models.Model):
         """
         self._corresponsables.add(prestatario)
 
+    def asignar_tipo(self):
+        self.tipo == TipoOrden.ORDINARIA
+        delta = self.final - self.inicio
+        if(self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8):
+            self.tipo = TipoOrden.EXTRAORDINARIA
+        return self.tipo
+    
     def es_ordinaria(self) -> bool:
         """
         Si una orden es ordinaria
@@ -707,6 +705,7 @@ class Orden(models.Model):
         """
         Crea las Autorizaciones para la orden acorde al tipo
         """
+        
         if self.es_ordinaria():
             Maestro.solicitar_autorizacion(orden)
 
@@ -782,7 +781,7 @@ class Carrito(models.Model):
     final = models.DateTimeField(default=timezone.now, null=False)
 
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
-    _corresponsables = models.ManyToManyField(to='Prestatario', blank=True, related_name='corresponsables_carrito')
+    _corresponsables = models.ManyToManyField(to=User, blank=True, related_name='corresponsables_carrito')
 
     def eliminar_articulo(self, articulo: 'Articulo', unidades: int = None):
         """
@@ -855,15 +854,21 @@ class Carrito(models.Model):
                     descripcion=self.descripcion
                 )
 
+                # TODO: asignar_tipo() no está asignando el tipo de orden
+                orden.asignar_tipo()
+
                 orden.agregar_corresponsable(self.prestatario)
 
                 # agregar corresponsables del carrito a la orden
                 for corresponsable in self._corresponsables.all():
                     orden.agregar_corresponsable(corresponsable)
 
-                # agregar unidades
-                for articuloCarrito in self.articulos_carrito():
-                    unidades = articuloCarrito.articulo.disponible(self.inicio, self.final)
+                if self.vacio():
+                        raise Exception("No selecciono ningún artículo")
+                    
+                for articulo_carrito in self.articulos_carrito():
+                    unidades = articulo_carrito.articulo.disponible(self.inicio, self.final)
+
                     len_unidades = len(unidades)
 
                     print(unidades)
@@ -913,6 +918,13 @@ class Reporte(models.Model):
     estado = models.CharField(max_length=2, choices=Estado.choices, default=Estado.ACTIVO)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     emision = models.DateTimeField(auto_now_add=True)
+
+    def desactivar(self):
+        """
+        Desactiva el reporte.
+        """
+        self.estado = Reporte.Estado.INACTIVO
+        self.save()
 
     def __str__(self):
         return f"{self.orden}"

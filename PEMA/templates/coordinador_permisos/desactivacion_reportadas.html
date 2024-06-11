@@ -46,17 +46,33 @@
             <h4>Tipo</h4>
             <p>{{ orden.get_tipo_display }}</p>
 
-            <h4>Estado</h4>
+            <h4>Observaciones</h4>
             <p>{{ orden.reportes.descripcion}}</p>
 
-            <h4>Fecha de reporte</h4>
-            <p>{{ orden.reportes.estado }}</p>
 
         </div>
     </div>
 
-    <div class="justify-content-center text-center">
-        <a href="{% url 'ordenes_reportadas'%}" class="btn btn-secondary justify-content-center">Regresar</a>
+    <div class="modal fade" id="modalDesactivar" tabindex="-1" aria-labelledby="DesactivarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="DesactivarModalLabel">Desactivar reporte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Desea desactivar el reporte?
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'desactivacion_reportadas' id=orden.id %}" class="btn btn-secondary justify-content-center">Si</a>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <div class="justify-content-center text-center">
+        <a href="{% url 'ordenes_reportadas_cordi'%}" class="btn btn-secondary">Regresar</a>
+    </div>
+
 </main>
 {% endblock %}
