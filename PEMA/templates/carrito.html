@@ -24,9 +24,10 @@
                             <span class="text-dark">{{ articuloCarrito.articulo.nombre }}</span>
                         </div>
                         <div class="ms-auto">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="decrementValue()">-</button>
-                            <input type="text" class="form-control d-inline text-center" value="1" min="1" max="99" style="width: 40px;">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="incrementValue()">+</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="decrementValue(this)">-</button>
+                            <input type="text" class="form-control d-inline text-center" value="{{ articuloCarrito.unidades }}" min="1" max="99" style="width: 40px;">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="incrementValue(this)">+</button>
+                            <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}" class="btn btn-primary">Eliminar</a>
                         </div>
                     </li>
                 {% endfor %}
@@ -34,8 +35,10 @@
         </div>
 
         <div class="text-center mt-4">
-            <a href="{% url 'catalogo' %}" class="btn btn-secondary me-3" style="background-color: #DD971A;">Regresar</a>
+            <a href="{% url 'catalogo' %}" class="btn btn-warning me-3" style="background-color: #DD971A;">Regresar</a>
+            <a href="{% url 'corresponsables' %}" class="btn btn-secondary me-3" >Agregar Corresponsables</a>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Ordenar</button>
+            
         </div>
     </div>
 
@@ -78,16 +81,16 @@
             });
         });
 
-        function incrementValue() {
-            var input = document.querySelector('input[type="text"]');
+        function incrementValue(button) {
+            var input = button.previousElementSibling;
             var value = parseInt(input.value, 10);
             value = isNaN(value) ? 0 : value;
             value++;
             input.value = value;
         }
 
-        function decrementValue() {
-            var input = document.querySelector('input[type="text"]');
+        function decrementValue(button) {
+            var input = button.nextElementSibling;
             var value = parseInt(input.value, 10);
             value = isNaN(value) ? 0 : value;
             value > 1 ? value-- : value = 1;
