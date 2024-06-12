@@ -7,12 +7,10 @@
 
 {% block nav-end %}
     <!-- TODO: Hacer que el numero se actualice -->
-    <a class="btn btn-md ms-auto text-white bg-success rounded-pill" href="{% url 'carrito' %}">
-        <i class="bi bi-cart"></i> {{ carrito.numero_articulos }}
+    <a class="btn btn-md ms-auto text-white bg-danger rounded-pill" href="{% url 'carrito' %}">
+        <i class="bi bi-box-seam"></i> {{ carrito.numero_articulos }}
     </a>
-
 {% endblock %}
-
 
 {% block content %}
 
@@ -82,7 +80,7 @@
         <div class="container mt-2 mb-5">
             <div class="row">
                 <div class="col text-center">
-                    <a href="{% url 'filtros' %}" class="btn btn me-3" style="background-color: #b38600; color: #fff;">Regresar</a>
+                    <a href="{% url 'filtros' %}" class="btn btn me-3" style="background-color: #00723F;">Regresar</a>
                     <a href="{% url 'carrito' %}" class="btn btn-success">Continuar</a>
                 </div>
             </div>
