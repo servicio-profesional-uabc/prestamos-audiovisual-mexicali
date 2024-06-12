@@ -5,9 +5,9 @@ from django.urls import path
 
 from .forms import UserLoginForm
 from .views import ActualizarAutorizacion
-from .views import AutorizacionSolicitudView
+#from .views import AutorizacionSolicitudView
 from .views import AgregarAlCarritoView
-from .views import AgregarCorresponsablesView
+#from .views import AgregarCorresponsablesView
 from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
@@ -25,7 +25,7 @@ from .views import OrdenesPrestadasView
 from .views import OrdenesReportadasView
 from .views import PrincipalAlmacenView
 from .views import SolicitudView
-from .views import EliminarDelCarritoView
+#from .views import EliminarDelCarritoView
 
 urlpatterns = [
     path(
