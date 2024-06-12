@@ -132,3 +132,18 @@ class TestArticulo(TestCase):
 
         qs6 = self.articulo2.disponible(self.generar_fechas(1), self.generar_fechas(4))
         self.assertQuerysetEqual(qs6, [self.unidad7, self.unidad8], ordered=False)
+
+
+        print('qs1')
+        print(qs1)
+        print('qs2')
+        print(qs2)
+        print('qs3')
+        print(qs3)
+        print('qs4')
+        print(qs4)
+        print('qs5')
+        print(qs5)
+        print('qs6')
+        print(qs6)
+        

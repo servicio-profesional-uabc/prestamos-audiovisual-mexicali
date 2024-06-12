@@ -43,8 +43,9 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     if action == 'post_add':
         # crear el corresponsableOrden de cada corresponsable y enviar correo
         for item in instance._corresponsables.all():
+            
             object, created = CorresponsableOrden.objects.get_or_create(autorizador=item, orden=instance)
-
+        
             if created:
                 send_mail(
                     subject="Test Email",
@@ -63,7 +64,6 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
                         object.autorizador.email
                     ]
                 )
-
 
 @receiver(post_save, sender=CorresponsableOrden)
 def corresponsable_orden_updated(sender, instance, created, **kwargs):
@@ -109,13 +109,13 @@ def autorizacion_orden_updated(sender, instance, created, **kwargs):
         return
 
     # si la autorización cambia de estado
-    if instance.aceptada():
-        instance.orden.autorizar()
+    # if instance.aceptada():
+    #     instance.orden.autorizar()
 
-    if instance.rechazada():
-        instance.orden.rechazar()
+    # if instance.rechazada():
+    #     instance.orden.rechazar()
 
-    instance.orden.save()
+    # instance.orden.save()
 
 
 @receiver(post_save, sender=AutorizacionOrden)
