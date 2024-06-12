@@ -339,11 +339,13 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         prestatario = Prestatario.get_user(self.request.user)
         return prestatario.tiene_carrito()
 
-    def get(self, request, articulo_id):
+    def post(self, request, articulo_id):
+        prestatario = Prestatario.get_user(self.request.user)
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
-
-        carrito.agregar(articulo, 1)
+        cantidad = int(request.POST.get('cantidad', 1))
+        
+        carrito.agregar(articulo, cantidad)
         carrito.save()
 
         return redirect("catalogo")
@@ -412,7 +414,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
             case "corresponsable":
                 solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
 
-                # si el usuario no es la presona solicitada no lo puede ver
+                # si el usuario no es la persona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
                     raise Http404("No tienes permiso de ver esta Orden")
 
@@ -622,3 +624,18 @@ def estado_orden(request, tipo_estado):
         }
 
         return render(request, "principal.html", context)
+    
+class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.eliminar_articulo(articulo)
+        carrito.save()
+
+        return redirect("carrito")

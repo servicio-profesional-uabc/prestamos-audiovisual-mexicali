@@ -81,6 +81,7 @@ class TestOrden(TestCase):
         # La orden no está marcada como entregada inicialmente
         self.assertFalse(self.orden_ordinaria.entregada())
 
+        self.orden_ordinaria.estado = EstadoOrden.APROBADA
         # Marcar la orden como entregada
         self.orden_ordinaria.entregar(entregador=self.almacen)
         self.assertTrue(self.orden_ordinaria.entregada())
@@ -94,11 +95,12 @@ class TestOrden(TestCase):
         # La orden no está marcada como entregada inicialmente
         self.assertFalse(self.orden_ordinaria.entregada())
 
+        self.orden_ordinaria.estado = EstadoOrden.APROBADA
         # Marcar la orden como entregada
-        self.orden_ordinaria.entregar(self.almacen)
+        self.orden_ordinaria.entregar(entregador=self.almacen)
 
         # Verificar que la orden ha sido marcada como entregada
-        self.assertTrue(self.orden_ordinaria.entregada())
+        self.assertEqual(self.orden_ordinaria.estado, EstadoOrden.ENTREGADA)
 
     def test_estado_corresponsables(self):
         # definir usuarios
