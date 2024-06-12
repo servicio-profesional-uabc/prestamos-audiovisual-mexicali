@@ -949,6 +949,14 @@ class Carrito(models.Model):
         :param prestatario: El prestatario que se quiere agregar como corresponsable.
         """
         self._corresponsables.add(prestatario)
+    
+    def numero_unidades(self) -> int:
+        """
+        Obtiene el número total de unidades en el carrito.
+
+        :returns: Número total de unidades en el carrito.
+        """
+        return sum(articulo_carrito.unidades for articulo_carrito in ArticuloCarrito.objects.filter(propietario=self))
 
 
 class Reporte(models.Model):

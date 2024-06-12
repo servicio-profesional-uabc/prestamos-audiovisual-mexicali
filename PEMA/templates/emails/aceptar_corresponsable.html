@@ -3,5 +3,4 @@ Produccion: {{ orden }}
 Solicitador: {{ orden.prestatario }}
 Nombre: {{ user.first_name }} ({{ user.username }})
 Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'corresponsable' invitacion.id %}
-
 {{ request.scheme }}
