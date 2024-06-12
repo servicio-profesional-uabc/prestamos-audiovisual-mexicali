@@ -77,34 +77,33 @@
                     </div>
 
                     <div class="form-floating mb-3">
-                        {% render_field form.hora_inicio id="horaInicio" class="form-control" %}
+                        {% render_field form.hora_inicio class="form-control" %}
                         <label for="">Hora de inicio</label>
                     </div>
 
                     <div class="form-floating mb-3">
-                        {% render_field form.duracion id="duracion" class="form-select" %}
-                        <label for="duracion">Duración</label>
+                        {% render_field form.duracion class="form-select" %}
+                        <label for="">Duración</label>
                     </div>
 
                     {# Lista de materias #}
                     <div class="form-floating mb-3">
                         <select class="form-select" id="materiaSelect" name="materia" required>
-                            {% for materia in prestatario.materias %}
-                                {% if not materia.son_correos_vacios %}
-                                    <option class="dropdown-item" value="{{ materia.pk }}" {% if materia == materia_elegida %}selected{% endif %}>{{ materia }}</option>
-                                {% endif %}
+                            {% for materia in materias %}
+                                <option class="dropdown-item" value="{{ materia.pk }}">{{ materia }}</option>
                             {% endfor %}
                         </select>
                         <label for="materiaSelect">Materia</label>
                     </div>
 
+
                     <div class="form-floating mt-4 mb-3">
                         {% render_field form.descripcion id="floatingTextarea2Disabled" style="height: 8em;" class="form-control" rows="3" placeholder="Descripción de la producción" %}
-                        <label for="floatingTextarea2Disabled">Descripción de actividades</label>
+                        <label for="floatingTextarea2Disabled">Comments</label>
 
 
                         <div id="passwordHelpBlock" class="form-text">
-                            Ingresa información sobre las actividades que se realizarán con los artículos solicitados.
+                            Ingresa infomración relevente como lugar de la producción.
                         </div>
                     </div>
 
