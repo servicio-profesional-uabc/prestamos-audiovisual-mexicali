@@ -21,7 +21,7 @@ class OrdenAdmin(admin.ModelAdmin):
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo')
 
-    actions = ['entregar', 'devolver', 'cancelar']
+    actions = ['entregar', 'devolver']
 
     # TODO: implementar estos metodos
 
@@ -38,24 +38,7 @@ class OrdenAdmin(admin.ModelAdmin):
 
     @admin.action(description='Marcar como devuelto')
     def devolver(self, request, queryset):
-        for orden in queryset:
-            orden.devolver(request.user)
-            if orden.devuelta():
-                messages.success(request, f'Orden {orden} devuelta')
-            else:
-                messages.warning(request, f'No se pudo devolver la orden {orden}')
-
-    @admin.action(description='Marcar como cancelado')
-    def cancelar(self, request, queryset):
-        for orden in queryset:
-            orden.cancelar()
-
-            if orden.cancelada():
-                messages.success(request, f'Orden {orden} cancelada')
-            else:
-                messages.warning(request, f'No se pudo cancelar la orden {orden}')
-            
-    
+        messages.error(request, "Ni esto")
 
 
 @admin.register(Articulo)
@@ -99,23 +82,12 @@ class ReporteAdmin(admin.ModelAdmin):
     list_display = ('orden', 'estado')
     autocomplete_fields = ('orden',)
     exclude = ('emisor',)
-    actions = ['desactivar_reportes']
 
     def save_model(self, request, obj, form, change):
         # Registrar el usuario que está usando el admin como el emisor
         # del reporte
         obj.emisor = request.user
         super().save_model(request, obj, form, change)
-    
-    @admin.action(description='Desactivar reportes')
-    def desactivar_reportes(self, request, queryset):
-        updated = 0
-        for reporte in queryset:
-            if reporte.estado == Reporte.Estado.ACTIVO:
-                reporte.desactivar()
-                updated += 1
-        self.message_user(request, f'{updated} reporte(s) desactivado(s) exitosamente.', messages.SUCCESS)
-
 
 
 @admin.register(Perfil)
