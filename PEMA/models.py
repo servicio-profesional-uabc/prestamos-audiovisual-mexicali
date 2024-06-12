@@ -208,8 +208,8 @@ class Maestro(User):
         :param orden: La orden para la cual se solicita autorización.
         """
 
-        for maestro in orden.materia.maestros():
-            AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
+        maestro = orden.maestro
+        AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -455,6 +455,13 @@ class Materia(models.Model):
         :param usuario: El usuario que se quiere agregar como alumno.
         """
         self._alumnos.add(usuario)
+    
+    def son_correos_vacios(self) -> bool:
+        """
+        Revisa si todos los correos de los maestros están completos.
+        """
+        return all([Perfil.user_data(maestro).email().strip() == "" for maestro in self.maestros()])
+
 
     def __str__(self):
         return f"{self.nombre} ({self.year}-{self.semestre})"
@@ -633,8 +640,8 @@ class Orden(models.Model):
     estado = models.CharField(default=EstadoOrden.RESERVADA, choices=EstadoOrden.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
-    maestro = models.OneToOneField(to=User, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="orden_maestro")
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
+    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="orden_maestro")
     _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables', verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
     emision = models.DateTimeField(auto_now_add=True)
@@ -709,6 +716,7 @@ class Orden(models.Model):
         delta = self.final - self.inicio
         if(self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8):
             self.tipo = TipoOrden.EXTRAORDINARIA
+        self.save()
         return self.tipo
     
     def es_ordinaria(self) -> bool:
@@ -825,7 +833,7 @@ class Carrito(models.Model):
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    maestro = models.OneToOneField(to=User, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="carrito_maestro")
+    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='carrito_maestro')
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
@@ -960,6 +968,14 @@ class Carrito(models.Model):
         :param prestatario: El prestatario que se quiere agregar como corresponsable.
         """
         self._corresponsables.add(prestatario)
+    
+    def tiene_maestro(self) -> bool:
+        """
+        Verifica si el carrito tiene un maestro asignado.
+
+        :returns: True si el carrito tiene un maestro asignado, False en caso contrario.
+        """
+        return self.maestro is not None
 
 
 class Reporte(models.Model):
