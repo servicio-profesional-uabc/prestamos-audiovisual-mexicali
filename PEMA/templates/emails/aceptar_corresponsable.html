@@ -4,6 +4,6 @@ Solicitador: {{ orden.prestatario }}
 Materia: {{ orden.materia }}
 Nombre: {{ user.first_name }} ({{ user.username }})
 
-Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'corresponsable' invitacion.autorizador.id %}
+Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'corresponsable' invitacion.orden.id %}
 
 {{ request.scheme }}
