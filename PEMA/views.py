@@ -13,7 +13,7 @@ from django.views.generic.edit import UpdateView
 
 from .forms import CorresponsableForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, Categoria, CorresponsableOrden
+from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden, Maestro, Materia
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
@@ -122,13 +122,6 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
 
-        if accion == 'ordenar':
-            # TODO: Mostrar que articulos esta ocupado
-            ordenado = carrito.ordenar()
-
-            if ordenado:
-                return redirect("historial_solicitudes")
-
         return render(
             request=request,
             template_name="carrito.html",
@@ -138,7 +131,25 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
             }
         )
 
+    def post(self, request, accion):
+        if accion == 'ordenar':
+            carrito = Prestatario.get_user(request.user).carrito()
+            maestro_id = request.POST.get('maestro')
+            if maestro_id:
+                maestro = get_object_or_404(Maestro, pk=maestro_id)
+                carrito.maestro = maestro
+                carrito.save()
 
+            if carrito.tiene_maestro():
+                # TODO: Mostrar que articulos esta ocupado
+                ordenado = carrito.ordenar()
+
+                if ordenado:
+                    return redirect("historial_solicitudes")
+        
+        return redirect("carrito")
+
+    
 class FiltrosView(LoginRequiredMixin, View):
 
     def get(self, request):
@@ -147,6 +158,7 @@ class FiltrosView(LoginRequiredMixin, View):
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
+
 
         return render(
             request=request,
@@ -193,7 +205,7 @@ class FiltrosView(LoginRequiredMixin, View):
             context={
                 'prestatario': prestatario,
                 'form': form,
-                'materias': prestatario.materias()
+                'materias': prestatario.materias(),
             },
         )
 
@@ -256,7 +268,7 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def post(self, request, id):
         orden = get_object_or_404(Orden, id=id)
-        orden.estado = EstadoOrden.CANCELADA
+        orden.cancelar()
         orden.save()
         messages.success(request, "Haz cancelado tu orden exitosamente.")
         return redirect("historial_solicitudes")
@@ -327,7 +339,7 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         prestatario = Prestatario.get_user(self.request.user)
         return prestatario.tiene_carrito()
 
-    def get(self, request, articulo_id):
+    def post(self, request, articulo_id):
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
 
@@ -336,6 +348,20 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 
         return redirect("catalogo")
 
+class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.eliminar_articulo(articulo)
+        carrito.save()
+
+        return redirect("carrito")
 
 class CancelarOrdenView(View):
     def get(self, request):
@@ -346,37 +372,59 @@ class CancelarOrdenView(View):
 
 
 class ActualizarAutorizacion(LoginRequiredMixin, View):
-
     def get(self, request, type, state, id):
+        """
+        Corresponsable puede aceptar o rechazar una orden de otro prestatario
+        Aprobador es Maestro o Coordinador quien puede aprobar o cancelar una la orden de un prestatario o propia en caso de ser Maestro
+        """
 
         match type:
             case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+                solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
+            
+            case "aprobacion":
+                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
 
             case _:
                 raise Http404("No existe ese tipo de autorizacion")
 
-        match state:
-            case "aceptar":
-                solicitud.aceptar()
+        if type == "corresponsable":
+            match state:
+                case "aceptar":
+                    solicitud.aceptar()
 
-            case "rechazar":
-                solicitud.rechazar()
+                case "rechazar":
+                    solicitud.rechazar()
 
-            case _:
-                raise Http404("No existe ese estado")
+                case _:
+                    raise Http404("No existe ese estado")
+        else:
+            match state:
+                case "aprobar":
+                    # TODO : Solicitud es AutorizarOrden, hace falta que Orden ejecute aprobar
+                    print('here')
+                    solicitud.orden.aprobar()
+                    solicitud.orden.save()
+                
+                case "rechazar":
+                    solicitud.orden.cancelar()
+                    solicitud.orden.save()
+
+                case _:
+                    raise Http404("No existe ese estado")
 
         # regresar a la pagina de autorizaciones 
         return redirect("autorizacion_solicitudes", type, id)
 
 
-class AutorizacionSolitudView(LoginRequiredMixin, View):
-    TEMPLATE = "autorizacion_solicitudes.html"
+class AutorizacionSolicitudView(LoginRequiredMixin, View):
+    autorizacion_template = "autorizacion_solicitudes.html"
+    aprobacion_template = "aprobacion_solicitudes.html"
 
     def get(self, request, type, id):
         match type:
             case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+                solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
@@ -384,7 +432,24 @@ class AutorizacionSolitudView(LoginRequiredMixin, View):
 
                 return render(
                     request=request,
-                    template_name=self.TEMPLATE,
+                    template_name=self.autorizacion_template,
+                    context={
+                        "solicitud": solicitud,
+                        "orden": solicitud.orden
+                    }
+                )
+
+            case "aprobacion":
+                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
+
+                # si el usuario no es la presona solicitada no lo puede ver
+                if solicitud.autorizador != request.user:
+                    print(solicitud.autorizador)
+                    raise Http404("No tienes permiso de ver esta Orden")
+
+                return render(
+                    request=request,
+                    template_name=self.aprobacion_template,
                     context={
                         "solicitud": solicitud,
                         "orden": solicitud.orden
@@ -392,7 +457,6 @@ class AutorizacionSolitudView(LoginRequiredMixin, View):
                 )
 
         raise Http404("No existe ese tipo de autorizacion")
-
 
 ######################ALMACEN###############################
 

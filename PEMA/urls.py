@@ -4,7 +4,10 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import ActualizarAutorizacion, AutorizacionSolitudView, AgregarAlCarritoView, AgregarCorresponsablesView
+from .views import ActualizarAutorizacion
+from .views import AutorizacionSolicitudView
+from .views import AgregarAlCarritoView
+from .views import AgregarCorresponsablesView
 from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
@@ -22,6 +25,7 @@ from .views import OrdenesPrestadasView
 from .views import OrdenesReportadasView
 from .views import PrincipalAlmacenView
 from .views import SolicitudView
+from .views import EliminarDelCarritoView
 
 urlpatterns = [
     path(
@@ -114,7 +118,7 @@ urlpatterns = [
 
     path(
         route='autorizacion_solicitudes/<str:type>/<int:id>/',
-        view=AutorizacionSolitudView.as_view(),
+        view=AutorizacionSolicitudView.as_view(),
         name='autorizacion_solicitudes'
     ),
 
@@ -184,10 +188,17 @@ urlpatterns = [
     ),
 
     path(
+        route='eliminar_del_carrito/<int:articulo_id>/',
+        view=EliminarDelCarritoView.as_view(),
+        name='eliminar_del_carrito'
+    ),
+
+    path(
         route='corresponsables',
         view=AgregarCorresponsablesView.as_view(),
-        name='corresponsables'
-    )
+        name='corresponsables'  
+    ),
+   
 ]
 
 # https://github.com/fabiocaccamo/django-admin-interface/issues/4

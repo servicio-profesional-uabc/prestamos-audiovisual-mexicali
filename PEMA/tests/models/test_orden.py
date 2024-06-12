@@ -81,6 +81,7 @@ class TestOrden(TestCase):
         # La orden no está marcada como entregada inicialmente
         self.assertFalse(self.orden_ordinaria.entregada())
 
+        self.orden_ordinaria.estado = EstadoOrden.APROBADA
         # Marcar la orden como entregada
         self.orden_ordinaria.entregar(entregador=self.almacen)
         self.assertTrue(self.orden_ordinaria.entregada())
@@ -94,11 +95,12 @@ class TestOrden(TestCase):
         # La orden no está marcada como entregada inicialmente
         self.assertFalse(self.orden_ordinaria.entregada())
 
+        self.orden_ordinaria.estado = EstadoOrden.APROBADA
         # Marcar la orden como entregada
-        self.orden_ordinaria.entregar(self.almacen)
+        self.orden_ordinaria.entregar(entregador=self.almacen)
 
         # Verificar que la orden ha sido marcada como entregada
-        self.assertTrue(self.orden_ordinaria.entregada())
+        self.assertEqual(self.orden_ordinaria.estado, EstadoOrden.ENTREGADA)
 
     def test_estado_corresponsables(self):
         # definir usuarios
@@ -151,28 +153,21 @@ class TestOrden(TestCase):
                                            lugar=Ubicacion.CAMPUS, estado=EstadoOrden.RESERVADA,
                                            inicio=self.generar_fechas(0), final=make_aware(datetime(2024, 5, 27, 12)))
         
-        #O1=E, O2=O, O3=E, O4=E, O5=O, O6=E
         
-        print("Orden1")
         qs1 = self.orden1.asignar_tipo()
         self.assertQuerysetEqual(qs1, TipoOrden.EXTRAORDINARIA)
         
-        print("Orden2")
         qs2 = self.orden2.asignar_tipo()
         self.assertQuerysetEqual(qs2, TipoOrden.ORDINARIA)
         
-        print("Orden3")
         qs3 = self.orden3.asignar_tipo()
         self.assertQuerysetEqual(qs3, TipoOrden.EXTRAORDINARIA)
         
-        print("Orden4")
         qs4 = self.orden4.asignar_tipo()
         self.assertQuerysetEqual(qs4, TipoOrden.EXTRAORDINARIA)
         
-        print("Orden5")
         qs5 = self.orden5.asignar_tipo()
         self.assertQuerysetEqual(qs5, TipoOrden.ORDINARIA)
         
-        print("Orden6")
         qs6 = self.orden6.asignar_tipo()
         self.assertQuerysetEqual(qs6, TipoOrden.EXTRAORDINARIA)
