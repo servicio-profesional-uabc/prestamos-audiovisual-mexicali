@@ -89,8 +89,10 @@
                     {# Lista de materias #}
                     <div class="form-floating mb-3">
                         <select class="form-select" id="materiaSelect" name="materia" required>
-                            {% for materia in materias %}
-                                <option class="dropdown-item" value="{{ materia.pk }}">{{ materia }}</option>
+                            {% for materia in prestatario.materias %}
+                                {% if not materia.son_correos_vacios %}
+                                    <option class="dropdown-item" value="{{ materia.pk }}" {% if materia == materia_elegida %}selected{% endif %}>{{ materia }}</option>
+                                {% endif %}
                             {% endfor %}
                         </select>
                         <label for="materiaSelect">Materia</label>
