@@ -24,9 +24,9 @@
                             <span class="text-dark">{{ articuloCarrito.articulo.nombre }}</span>
                         </div>
                         <div class="ms-auto">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="decrementValue(this)">-</button>
-                            <input type="text" class="form-control d-inline text-center" value="{{ articuloCarrito.unidades }}" min="1" max="99" style="width: 50px; height: 40px; background-color: #f9f9f9; border: none;" >&nbsp;
-                            <button class="btn btn-outline-secondary btn-sm" onclick="incrementValue(this)">+</button>
+                            <button class="btn btn-outline-secondary btn-sm decrement" onclick="decrementValue(this)">-</button>
+                            <input type="text" class="form-control d-inline text-center quantity-input" value="{{ articuloCarrito.unidades }}" min="1" max="99" style="width: 50px; height: 40px; background-color: #f9f9f9; border: none;" >&nbsp;
+                            <button class="btn btn-outline-secondary btn-sm increment" onclick="incrementValue(this)">+</button>
                             <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}" class="btn btn-danger btn-sm">Eliminar</a>
                         </div>
                     </li>
@@ -64,23 +64,19 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var checkbox = document.getElementById('cerrarPDF');
-            var botonContinuar = document.getElementById('botonContinuar');
+            var quantityInputs = document.querySelectorAll('.quantity-input');
 
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    botonContinuar.disabled = false;
-                } else {
-                    botonContinuar.disabled = true;
+            quantityInputs.forEach(function(input) {
+                var storedValue = localStorage.getItem(input.id);
+                if (storedValue) {
+                    input.value = storedValue;
                 }
             });
+        });
 
-            botonContinuar.addEventListener('click', function() {
-                if (!checkbox.checked) {
-                    alert('Debes aceptar los términos y condiciones para continuar.');
-                    return;
-                }
-                window.location.href = "{% url 'carrito_accion' 'ordenar' %}";
+        document.querySelectorAll('.quantity-input').forEach(function(input) {
+            input.addEventListener('change', function() {
+                localStorage.setItem(this.id, this.value);
             });
         });
 
@@ -90,6 +86,7 @@
             value = isNaN(value) ? 0 : value;
             value++;
             input.value = value;
+            localStorage.setItem(input.id, value); 
         }
 
         function decrementValue(button) {
@@ -98,6 +95,7 @@
             value = isNaN(value) ? 0 : value;
             value > 1 ? value-- : value = 1;
             input.value = value;
+            localStorage.setItem(input.id, value); 
         }
     </script>
 {% endblock %}
