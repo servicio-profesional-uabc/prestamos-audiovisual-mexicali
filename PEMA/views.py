@@ -336,11 +336,9 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         articulo = get_object_or_404(Articulo, id=articulo_id)
         cantidad = int(request.POST.get('cantidad', 1))
         
-        #verificar si existe el articulo en el carrito y si existe eliminarlo, en caso contrario agregarlo
         if carrito.existe(articulo):
             carrito.eliminar_articulo(articulo)
         carrito.agregar(articulo, cantidad)
-        
         carrito.save()
 
         return redirect("catalogo")
