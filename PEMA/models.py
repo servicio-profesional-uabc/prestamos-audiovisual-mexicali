@@ -463,7 +463,6 @@ class Materia(models.Model):
         """
         return all([Perfil.user_data(maestro).email().strip() == "" for maestro in self.maestros()])
 
-
     def __str__(self):
         return f"{self.nombre} ({self.year}-{self.semestre})"
 
@@ -939,7 +938,6 @@ class Carrito(models.Model):
         """
         Crea una orden a partir de un carrito.
 
-        :param carrito: El carrito a convertir en orden.
         :returns: La orden creada.
         """
         orden = Orden.objects.create(
@@ -1195,7 +1193,7 @@ class CorresponsableOrden(Autorizacion):
     """
     Representa un corresponsable de una orden.
 
-    :ivar prestatario: Usuario que acepta ser corresponsable.
+    :ivar autorizador: Usuario que acepta ser corresponsable.
     :ivar orden: Orden de la que el prestatario es corresponsable.
     """
 
