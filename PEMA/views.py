@@ -127,7 +127,8 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
             template_name="carrito.html",
             context={
                 "articulos_carrito": carrito.articulos_carrito(),
-                "carrito": carrito
+                "carrito": carrito,
+                "numero_unidades": carrito.numero_unidades()
             }
         )
 
