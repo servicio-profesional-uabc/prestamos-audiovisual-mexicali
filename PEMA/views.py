@@ -15,7 +15,7 @@ from .forms import CorresponsableForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
 from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden
 from .models import Carrito, Prestatario
-from .models import Orden, EstadoOrden, Perfil
+from .models import Orden, EstadoOrden, Perfil, Unidad
 
 
 class IndexView(View):
@@ -265,6 +265,8 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         return redirect("historial_solicitudes")
 
 
+from django.db.models import Count
+
 class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
     """
     Vista donde el usuario agrega articulos a su carrito.
@@ -282,13 +284,24 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
 
+        # Filtrar las unidades disponibles para cada artículo
+        articulos_disponibles = []
+        for articulo in carrito.materia.articulos():
+            cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+            print(f'{articulo} - {cantidad_disponible} unidades disponibles')
+            if cantidad_disponible > 0:
+                articulos_disponibles.append(articulo)
+                articulo.num_unidades = cantidad_disponible
+            else:
+                articulo.num_unidades = 0
+
         return render(
             request=request,
             template_name="catalogo.html",
             context={
-                "articulos": carrito.materia.articulos(),
+                "articulos": articulos_disponibles,
                 "carrito": prestatario.carrito(),
-                "categorias": Categoria.objects.all()
+                "categorias": Categoria.objects.all(),
             },
         )
 
@@ -302,15 +315,35 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
             categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
             articulos = articulos.filter(id__in=categoria_instance.articulos())
 
+        articulos_disponibles = carrito.materia.articulos().annotate(
+            num_unidades=Count('unidad')
+        ).filter(
+            num_unidades__gt=0
+        )
+
+        # Filtrar las unidades activas para cada artículo
+        for articulo in articulos_disponibles:
+            unidades_activas = articulo.unidad_set.filter(estado=Unidad.Estado.ACTIVO).count()
+            if unidades_activas > 0:
+                articulo.num_unidades = unidades_activas
+            else:
+                articulo.num_unidades = 0
+
+        # Filtrar los artículos que tienen al menos una unidad activa
+        articulos_disponibles = [articulo for articulo in articulos_disponibles if articulo.num_unidades > 0]
+
+        print(articulos_disponibles)
+
         return render(
             request=request,
             template_name="catalogo.html",
             context={
-                "articulos": articulos,
+                "articulos": articulos_disponibles,
                 "carrito": prestatario.carrito(),
                 "categorias": Categoria.objects.all()
             },
         )
+
 
 
 class DetallesArticuloView(View):

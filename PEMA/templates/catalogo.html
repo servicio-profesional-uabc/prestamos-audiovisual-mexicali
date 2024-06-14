@@ -10,73 +10,50 @@
     <a class="btn btn-md ms-auto text-white bg-success rounded-pill" href="{% url 'carrito' %}">
         <i class="bi bi-cart"></i> {{carrito.numero_unidades}} 
     </a>
-
 {% endblock %}
 
-
 {% block content %}
-
     <div class="container text-center mt-3">
         <h3>Catálogo de Material Disponible</h3>
         <section class="py-5">
-
-
-            {# Lista de categorias #}
-            <form class="input-group" method="POST" action="{% url "catalogo" %}">
-
+            <form class="input-group" method="POST" action="{% url 'catalogo' %}">
                 {% csrf_token %}
-
                 <div class="form-floating">
                     <select type="text" class="form-select" name="categoria">
                         <option class="dropdown-item" value="todos">Todos</option>
                         {% for categoria in categorias %}
                             <option class="dropdown-item" value="{{ categoria.pk }}">{{ categoria }}</option>
                         {% endfor %}
-
                     </select>
                     <label for="floatingInputGroup2">Categorías</label>
                 </div>
-
                 <button class="btn btn-outline-secondary col-2 col-md-1" type="submit">
                     <i class="bi bi-search"></i>
                 </button>
             </form>
 
-
-            <div class="container px-4 px-lg-5 mt-3">
-                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-                    {% for articulo in articulos %}
-                        <div class="col mb-5">
-                            <div class="card h-100 d-flex flex-column">
-
-                                <!-- Imagen del artículo -->
-                                <a href="{% url 'detalles_articulo' articulo.id %}">
-                                    <img class="card-img-top img-fluid" src="{{ articulo.imagen.url }}"
-                                         alt="{{ articulo.nombre }}" style="height: 150px; object-fit: cover;">
-                                </a>
-
-                                <div class="card-body flex-grow-1">
-                                    <div class="text-center">
-                                        <!-- Nombre del artículo -->
-                                        <h5 class="fw-bolder">{{ articulo.nombre }}</h5>
-                                    </div>
-                                </div>
-
-                                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                    <div class="text-center">
-                                        <!-- Botón para agregar al carrito
-                                        <a href="{% url 'agregar_al_carrito' articulo.id %}" class="btn btn-primary">Agregar
-                                            al
-                                            Carrito</a> -->
-                                    </div>
-                                </div>
-
-                            </div>
+<div class="container px-4 px-lg-5 mt-3">
+    <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+        {% for articulo in articulos %}
+            <div class="col mb-5">
+                <div class="card h-100 d-flex flex-column">
+                    <a href="{% url 'detalles_articulo' articulo.id %}">
+                        <img class="card-img-top img-fluid" src="{{ articulo.imagen.url }}"
+                             alt="{{ articulo.nombre }}" style="height: 150px; object-fit: cover;">
+                    </a>
+                    <div class="card-body flex-grow-1">
+                        <div class="text-center">
+                            <h5 class="fw-bolder">{{ articulo.nombre }}</h5>
+                            <p>Cantidad de unidades disponibles: {{ articulo.num_unidades }}</p>
                         </div>
-                    {% endfor %}
+                    </div>
                 </div>
             </div>
-        </section>
+        {% endfor %}
+    </div>
+</div>
+
+
 
         <!-- Botones para regresar o continuar -->
         <div class="container mt-2 mb-5">
@@ -88,6 +65,4 @@
             </div>
         </div>
     </div>
-
-
 {% endblock %}
