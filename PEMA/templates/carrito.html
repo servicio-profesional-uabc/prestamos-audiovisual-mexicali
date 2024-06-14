@@ -8,6 +8,10 @@
 {% block content %}
     <div class="container-sm order-details-container">
         <h2>Carrito</h2>
+        <ul>
+        <li> Si el correo del maestro no aparece en la lista, no ha registrado su correo al sistema. </li>
+        <li> Si tu orden se considera préstamo extraordinario, tu coordinador será quien autorizará tu orden. </li>
+        </ul>
         <hr class="hr green-separator"/>
         <div class="order-items">
             <h4>Artículos en el carrito</h4>
@@ -38,29 +42,44 @@
             <h5>Total de artículos: {{ total_articulos }}</h5>
         </div>
 
+    <form class="" method="POST" action="{% url 'carrito_accion' 'ordenar' %}">
+        {# Lista de maestros cada vez que cambia la materia #}
+        <div class="form-floating mt-3" style="max-width:50%">
+            <select class="form-select" id="maestroSelect" name="maestro" > 
+            {% for maestro in carrito.materia.maestros %}
+                {% if maestro.email != "" and maestro.email != None %}
+                    <option class="dropdown-item" value="{{ maestro.id }}">{{ maestro.username }} - {{maestro.email}}</option>
+                {% endif %}
+            {% endfor %}
+            </select> 
+            <label for="maestroSelect">Maestro</label>
+        </div>
+
         <div class="text-center mt-4">
             <a href="{% url 'catalogo' %}" class="btn btn-warning me-3" style="background-color: #DD971A;">Regresar</a>
             <a href="{% url 'corresponsables' %}" class="btn btn-secondary me-3">Agregar Corresponsables</a>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Ordenar</button>
         </div>
-    </div>
+        </div>
 
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Reglamento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <embed id="pdfViewer" src="{% static 'img/Reglamento-Interno-de-la-Facultad-de-Artes-2022.pdf' %}" type="application/pdf" width="100%" height="600px">
-                    <input type="checkbox" id="cerrarPDF">
-                    <label for="cerrarPDF">He leído términos y condiciones</label><br><br>
-                    <button id="botonContinuar" class="btn btn-primary my-3" disabled>Continuar</button>
+        {% csrf_token %}
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Reglamento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <embed id="pdfViewer" src="{% static 'img/Reglamento-Interno-de-la-Facultad-de-Artes-2022.pdf' %}" type="application/pdf" width="100%" height="600px">
+                        <input type="checkbox" id="cerrarPDF">
+                        <label for="cerrarPDF">He leído términos y condiciones</label><br><br>
+                        <button id="botonContinuar" type="submit" class="btn btn-primary my-3" disabled>Continuar</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -80,7 +99,7 @@
                     alert('Debes aceptar los términos y condiciones para continuar.');
                     return;
                 }
-                window.location.href = "{% url 'carrito_accion' 'ordenar' %}";
+
             });
         });
 
