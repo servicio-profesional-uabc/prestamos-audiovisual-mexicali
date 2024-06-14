@@ -13,7 +13,7 @@ from django.views.generic.edit import UpdateView
 
 from .forms import CorresponsableForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden, Maestro, Materia
+from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
@@ -122,6 +122,13 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
 
+        if accion == 'ordenar':
+            # TODO: Mostrar que articulos esta ocupado
+            ordenado = carrito.ordenar()
+
+            if ordenado:
+                return redirect("historial_solicitudes")
+
         return render(
             request=request,
             template_name="carrito.html",
@@ -132,25 +139,7 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
             }
         )
 
-    def post(self, request, accion):
-        if accion == 'ordenar':
-            carrito = Prestatario.get_user(request.user).carrito()
-            maestro_id = request.POST.get('maestro')
-            if maestro_id:
-                maestro = get_object_or_404(Maestro, pk=maestro_id)
-                carrito.maestro = maestro
-                carrito.save()
 
-            if carrito.tiene_maestro():
-                # TODO: Mostrar que articulos esta ocupado
-                ordenado = carrito.ordenar()
-
-                if ordenado:
-                    return redirect("historial_solicitudes")
-        
-        return redirect("carrito")
-
-    
 class FiltrosView(LoginRequiredMixin, View):
 
     def get(self, request):
@@ -159,7 +148,7 @@ class FiltrosView(LoginRequiredMixin, View):
         if prestatario.tiene_carrito():
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
-
+        
 
         return render(
             request=request,
@@ -206,7 +195,7 @@ class FiltrosView(LoginRequiredMixin, View):
             context={
                 'prestatario': prestatario,
                 'form': form,
-                'materias': prestatario.materias(),
+                'materias': prestatario.materias()
             },
         )
 
@@ -341,28 +330,16 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         return prestatario.tiene_carrito()
 
     def post(self, request, articulo_id):
+        prestatario = Prestatario.get_user(self.request.user)
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
-
-        carrito.agregar(articulo, 1)
+        cantidad = int(request.POST.get('cantidad', 1))
+        
+        carrito.agregar(articulo, cantidad)
         carrito.save()
 
         return redirect("catalogo")
 
-class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
-
-    def test_func(self):
-        prestatario = Prestatario.get_user(self.request.user)
-        return prestatario.tiene_carrito()
-
-    def get(self, request, articulo_id):
-        carrito = get_object_or_404(Carrito, prestatario=request.user)
-        articulo = get_object_or_404(Articulo, id=articulo_id)
-
-        carrito.eliminar_articulo(articulo)
-        carrito.save()
-
-        return redirect("carrito")
 
 class CancelarOrdenView(View):
     def get(self, request):
@@ -381,10 +358,10 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
 
         match type:
             case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
             
             case "aprobacion":
-                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
+                solicitud = get_object_or_404(AutorizacionOrden, pk=id)
 
             case _:
                 raise Http404("No existe ese tipo de autorizacion")
@@ -403,13 +380,10 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
             match state:
                 case "aprobar":
                     # TODO : Solicitud es AutorizarOrden, hace falta que Orden ejecute aprobar
-                    print('here')
-                    solicitud.orden.aprobar()
-                    solicitud.orden.save()
+                    solicitud.aprobar()
                 
                 case "rechazar":
-                    solicitud.orden.cancelar()
-                    solicitud.orden.save()
+                    solicitud.cancelar()
 
                 case _:
                     raise Http404("No existe ese estado")
@@ -425,10 +399,11 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
     def get(self, request, type, id):
         match type:
             case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
+                    print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")
 
                 return render(
@@ -441,11 +416,11 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
                 )
 
             case "aprobacion":
-                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
+                solicitud = get_object_or_404(AutorizacionOrden, pk=id)
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
-                    print(solicitud.autorizador)
+                    # print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")
 
                 return render(
@@ -637,3 +612,18 @@ def estado_orden(request, tipo_estado):
         }
 
         return render(request, "principal.html", context)
+    
+class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
+
+    def test_func(self):
+        prestatario = Prestatario.get_user(self.request.user)
+        return prestatario.tiene_carrito()
+
+    def get(self, request, articulo_id):
+        carrito = get_object_or_404(Carrito, prestatario=request.user)
+        articulo = get_object_or_404(Articulo, id=articulo_id)
+
+        carrito.eliminar_articulo(articulo)
+        carrito.save()
+
+        return redirect("carrito")
