@@ -630,3 +630,5 @@ class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         carrito.save()
 
         return redirect("carrito")
+
+
