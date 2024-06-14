@@ -14,6 +14,12 @@
     <script src="{% static 'js/bootstrap.bundle.min.js' %}" defer></script>
     <script src="{% static 'js/bootstrap.bundle.min.js' %}" defer></script>
 
+    <style>
+        .navbar-brand-margin {
+            margin-right: 29rem;
+        }
+    </style>
+
     {% block head %}
     {% endblock %}
 </head>
@@ -26,8 +32,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-
-            <a class="navbar-brand justify-content-start ms-3 ms-xxl-0" href="{% url 'menu' %}">
+            <a class="navbar-brand justify-content-start ms-3 ms-xxl-0 navbar-brand-margin" href="{% url 'menu' %}">
 
                 <div class="d-none d-sm-inline">
                     <img class="" src="{% static 'img/LOGO-FACULTAD-RENOVADO-NO-BORDES-CEPA.png' %}" height="60px">

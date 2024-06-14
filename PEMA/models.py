@@ -208,9 +208,8 @@ class Maestro(User):
 
         :param orden: La orden para la cual se solicita autorización.
         """
-
-        maestro = orden.maestro
-        AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
+        for maestro in orden.materia.maestros():
+            AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -456,13 +455,6 @@ class Materia(models.Model):
         :param usuario: El usuario que se quiere agregar como alumno.
         """
         self._alumnos.add(usuario)
-    
-    def son_correos_vacios(self) -> bool:
-        """
-        Revisa si todos los correos de los maestros están completos.
-        """
-        return all([Perfil.user_data(maestro).email().strip() == "" for maestro in self.maestros()])
-
 
     def __str__(self):
         return f"{self.nombre} ({self.year}-{self.semestre})"
@@ -505,21 +497,11 @@ class Articulo(models.Model):
         :param final: Fecha y hora de finalización del rango.
         :returns: Unidades disponibles en el rango especificado.
         """
-        
-        """ print('Unidades:')
-        print(self.unidades())
-        print('estados:')
-        for u in self.unidades():
-            print(u.estado)
-            print(Unidad.Estado.ACTIVO)
-        print('Unidades activas:')
-        print(self.unidades().filter(estado=Unidad.Estado.ACTIVO)) """
         ordenes_reservadas = Orden.objects.filter(
             estado__in=[EstadoOrden.RESERVADA, EstadoOrden.APROBADA, EstadoOrden.ENTREGADA],
             _unidades__in=self.unidades().filter(estado=Unidad.Estado.ACTIVO)
         )
-        #print('Ordenes reservadas:')
-        #print(ordenes_reservadas)
+
         colisiones = ordenes_reservadas.filter(
             Q(inicio=inicio) |
             Q(final=final) |
@@ -527,11 +509,8 @@ class Articulo(models.Model):
             Q(inicio__lt=final, final__gt=final) |
             Q(inicio__gt=inicio, final__lt=final)
         )
-        #print('colisiones')
-        #print(colisiones)
+
         unidades_reservadas = Unidad.objects.filter(orden__in=colisiones)
-        #print('Unidades reservadas:')
-        #print(unidades_reservadas)
         return self.unidades().exclude(id__in=unidades_reservadas)
 
     def categorias(self) -> QuerySet['Categoria']:
@@ -655,7 +634,6 @@ class Orden(models.Model):
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="orden_maestro")
     _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables', verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
     emision = models.DateTimeField(auto_now_add=True)
@@ -664,11 +642,7 @@ class Orden(models.Model):
         """
         Cancela la orden cambiando su estado a CANCELADA.
         """
-        if self.estado in [EstadoOrden.ENTREGADA, EstadoOrden.DEVUELTA]:
-            return
-        
         self.estado = EstadoOrden.CANCELADA
-        self.save()
 
     def cancelada(self) -> bool:
         """
@@ -683,14 +657,6 @@ class Orden(models.Model):
         Aprueba la orden cambiando su estado a APROBADA.
         """
         self.estado = EstadoOrden.APROBADA
-    
-    def aprobada(self) -> bool:
-        """
-        Verifica si la orden está aprobada.
-
-        :returns: True si la orden está aprobada, False en caso contrario.
-        """
-        return self.estado == EstadoOrden.APROBADA
 
     def entregada(self) -> bool:
         """
@@ -706,25 +672,12 @@ class Orden(models.Model):
 
         :param entregador: El usuario que entrega la orden.
         """
-        if self.estado in [EstadoOrden.CANCELADA, EstadoOrden.DEVUELTA, EstadoOrden.RESERVADA]:
+        if self.estado in [EstadoOrden.CANCELADA, EstadoOrden.DEVUELTA]:
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
         self.estado = EstadoOrden.ENTREGADA
         self.save()
-
-    def devolver(self, almacen: 'Almacen'):
-
-        if self.estado in [EstadoOrden.APROBADA, EstadoOrden.CANCELADA, EstadoOrden.RESERVADA]:
-            return
-        
-        devolucion, _ = Devolucion.objects.get_or_create(almacen=almacen, orden=self)
-        self.estado = EstadoOrden.DEVUELTA
-        self.save()
-
-    def devuelta(self):
-        return self.estado == EstadoOrden.DEVUELTA        
-
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         """
@@ -743,10 +696,10 @@ class Orden(models.Model):
         self._corresponsables.add(prestatario)
 
     def asignar_tipo(self):
+        self.tipo == TipoOrden.ORDINARIA
         delta = self.final - self.inicio
         if(self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8):
             self.tipo = TipoOrden.EXTRAORDINARIA
-        self.save()
         return self.tipo
     
     def es_ordinaria(self) -> bool:
@@ -796,7 +749,7 @@ class Orden(models.Model):
         :param unidad: La unidad que se quiere agregar.
         """
         self._unidades.add(unidad)
-    
+
     def solicitar_autorizacion(self):
         """
         Solicita autorización para la orden acorde al tipo.
@@ -863,13 +816,11 @@ class Carrito(models.Model):
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='carrito_maestro')
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
     _corresponsables = models.ManyToManyField(to=User, blank=True, related_name='corresponsables_carrito')
-        
-        
+
     def eliminar_articulo(self, articulo: 'Articulo', unidades: int = None):
         """
         Elimina un artículo del carrito o reduce su cantidad.
@@ -950,14 +901,13 @@ class Carrito(models.Model):
                     lugar=self.lugar,
                     descripcion_lugar=self.descripcion_lugar,
                     materia=self.materia,
-                    maestro=self.maestro,
                     inicio=self.inicio,
                     final=self.final,
                     descripcion=self.descripcion
                 )
 
-                orden.tipo = orden.asignar_tipo()
-                orden.save()
+                # TODO: asignar_tipo() no está asignando el tipo de orden
+                orden.asignar_tipo()
 
                 orden.agregar_corresponsable(self.prestatario)
 
@@ -970,8 +920,7 @@ class Carrito(models.Model):
                 for articulo_carrito in self.articulos_carrito():
                     unidades = articulo_carrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)
-                    #print(len_unidades)
-                    #print(articulo_carrito.unidades)
+
                     if len_unidades < articulo_carrito.unidades:
                         raise Exception("No hay suficientes unidades disponibles")
 
@@ -1001,14 +950,21 @@ class Carrito(models.Model):
         """
         self._corresponsables.add(prestatario)
     
-    def tiene_maestro(self) -> bool:
+    def numero_unidades(self) -> int:
         """
-        Verifica si el carrito tiene un maestro asignado.
+        Obtiene el número total de unidades en el carrito.
 
-        :returns: True si el carrito tiene un maestro asignado, False en caso contrario.
+        :returns: Número total de unidades en el carrito.
         """
-        return self.maestro is not None
+        return sum(articulo_carrito.unidades for articulo_carrito in ArticuloCarrito.objects.filter(propietario=self))
 
+    def existe(self, articulo):
+        """
+        Verifica si el artículo dado ya existe en el carrito.
+        :param articulo: El artículo que se está verificando
+        :return: True si el artículo existe en el carrito, False de lo contrario
+        """
+        return self._articulos.filter(id=articulo.id).exists()
 
 class Reporte(models.Model):
     """
@@ -1095,7 +1051,7 @@ class Devolucion(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
+    almacen = models.OneToOneField(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 

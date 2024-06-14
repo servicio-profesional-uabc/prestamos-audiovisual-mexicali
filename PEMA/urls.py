@@ -186,13 +186,11 @@ urlpatterns = [
         name='detalles_orden_devuelta',
 
     ),
-
-    path(
+     path(
         route='eliminar_del_carrito/<int:articulo_id>/',
         view=EliminarDelCarritoView.as_view(),
         name='eliminar_del_carrito'
     ),
-
     path(
         route='corresponsables',
         view=AgregarCorresponsablesView.as_view(),
