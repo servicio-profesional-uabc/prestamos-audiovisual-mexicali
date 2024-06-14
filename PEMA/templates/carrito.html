@@ -8,10 +8,12 @@
 {% block content %}
     <div class="container-sm order-details-container">
         <h2>Carrito</h2>
+
         <ul>
             <li> Si el correo del maestro no aparece en la lista, no ha registrado su correo al sistema. </li>
             <li> Si tu orden se considera préstamo extraordinario, tu coordinador será quien autorizará tu orden. </li>
         </ul>
+
         <hr class="hr green-separator"/>
         <div class="order-items">
             <h4>Artículos en el carrito</h4>
@@ -23,9 +25,7 @@
                             <span class="text-dark">{{ articuloCarrito.articulo.nombre }}</span>
                         </div>
                         <div class="ms-auto">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="decrementValue(this)">-</button>
-                            <input type="text" class="form-control d-inline text-center" value="{{ articuloCarrito.unidades }}" min="1" max="99" style="width: 50px; height: 40px; background-color: #f9f9f9; border: none;">&nbsp;
-                            <button class="btn btn-outline-secondary btn-sm" onclick="incrementValue(this)">+</button>
+                            <input type="text" class="form-control d-inline text-center" value="{{ articuloCarrito.unidades }}" min="1" max="99" style="width: 50px; height: 40px; background-color: #f9f9f9; border: none;" >&nbsp;
                             <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}" class="btn btn-danger btn-sm">Eliminar</a>
                         </div>
                     </li>
@@ -71,30 +71,27 @@
             </div>
         </form>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var checkbox = document.getElementById('cerrarPDF');
             var botonContinuar = document.getElementById('botonContinuar');
 
             checkbox.addEventListener('change', function() {
-                botonContinuar.disabled = !this.checked;
+                if (this.checked) {
+                    botonContinuar.disabled = false;
+                } else {
+                    botonContinuar.disabled = true;
+                }
+            });
+
+            botonContinuar.addEventListener('click', function() {
+                if (!checkbox.checked) {
+                    alert('Debes aceptar los términos y condiciones para continuar.');
+                    return;
+                }
+                window.location.href = "{% url 'carrito_accion' 'ordenar' %}";
             });
         });
-
-        function incrementValue(button) {
-            var input = button.previousElementSibling;
-            var value = parseInt(input.value, 10);
-            value = isNaN(value) ? 0 : value;
-            value++;
-            input.value = value;
-        }
-
-        function decrementValue(button) {
-            var input = button.nextElementSibling;
-            var value = parseInt(input.value, 10);
-            value = isNaN(value) ? 0 : value;
-            value = value > 1 ? value - 1 : 1;
-            input.value = value;
-        }
     </script>
 {% endblock %}

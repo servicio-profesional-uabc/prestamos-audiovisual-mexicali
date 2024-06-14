@@ -57,7 +57,7 @@ class CorresponsableForm(forms.ModelForm):
             self.fields['corresponsables'].initial = carrito._corresponsables.all()
 
 
-# Forms para Filtro (asigna los datos al modelo Carrito, primera parte seccion del carrito)
+# Forms para Filtros/Carrito
 class FiltrosForm(forms.ModelForm):
     """
     Form para filtrar catalogo/carrito
@@ -71,7 +71,7 @@ class FiltrosForm(forms.ModelForm):
 
     class Meta:
         model = Carrito
-        fields = ['inicio', 'nombre', 'materia', 'lugar', 'descripcion', 'lugar', 'descripcion_lugar', 'maestro',
+        fields = ['inicio', 'nombre', 'materia', 'lugar', 'descripcion', 'lugar', 'descripcion_lugar',
                   '_corresponsables']
 
     descripcion = forms.CharField(widget=forms.Textarea)
@@ -128,7 +128,7 @@ class FiltrosForm(forms.ModelForm):
 
     def clean_hora_inicio(self):
         """
-        Limpia y valida la hora de inicio capturada por el usuario, este regresa str entonces convierte a objeto time
+        El form capturado por usuario regresa str entonces convierte a objeto time
         :return: Objeto time de datetime
         """
         hora_inicio = self.cleaned_data.get('hora_inicio')
@@ -136,20 +136,16 @@ class FiltrosForm(forms.ModelForm):
         return datetime.strptime(hora_inicio, '%H:%M:%S').time()
 
     def clean_inicio(self):
-        """
-        Limpia y valida la fecha de inicio capturado por el usuario.
-        :return: Objeto datetime
-        """
         inicio = self.cleaned_data.get('inicio')
         if inicio.date().weekday() >= 5:
-            raise forms.ValidationError("Elige fecha de inicio de préstamo entre semana.")
+            raise forms.ValidationError("Elija fecha de inicio de préstamo entre semana.")
 
         if inicio.date() < (date.today() + timedelta(days=3)):
-            raise forms.ValidationError("Elige una fecha tres días a partir de hoy.")
+            raise forms.ValidationError("Elija una fecha tres días a partir de hoy.")
 
         # print(f'clean inicio {inicio}')
         return inicio
-    
+
     def clean(self):
         cleaned_data = super().clean()
         inicio = cleaned_data.get('inicio')

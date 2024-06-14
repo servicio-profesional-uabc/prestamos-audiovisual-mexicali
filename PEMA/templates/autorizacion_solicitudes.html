@@ -8,9 +8,8 @@
     <h4>Ordenes de Préstamos para Autorizar</h4>
 
     <h3>{{ solicitud.nombre }}</h3>
-    <p>Nombre produccion: {{ solicitud.orden.nombre }} </p>
-    <p>Prestatario: {{ solicitud.orden.prestatario.username }} {{ solicitud.orden.prestatario.first_name }}</p>
-    <p>Solicitud a: {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
+    <p>Nombre produccion: {{ orden.nombre }} </p>
+    <p>Prestatario: {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
     <p>Fecha de solicitud: {{ solicitud.orden.inicio }}</p>
     <p>Estado: {{ solicitud.get_estado_display }}</p>
 
