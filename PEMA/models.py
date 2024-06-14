@@ -424,7 +424,7 @@ class Materia(models.Model):
         :returns: Lista de profesores asociados a la materia.
         """
         return self._maestros.all()
-    
+
     def articulos(self) -> QuerySet['Articulo']:
         """
         Obtiene la lista de artículos disponibles para la materia.
@@ -456,7 +456,7 @@ class Materia(models.Model):
         :param usuario: El usuario que se quiere agregar como alumno.
         """
         self._alumnos.add(usuario)
-    
+
     def son_correos_vacios(self) -> bool:
         """
         Revisa si todos los correos de los maestros están completos.
@@ -505,7 +505,7 @@ class Articulo(models.Model):
         :param final: Fecha y hora de finalización del rango.
         :returns: Unidades disponibles en el rango especificado.
         """
-        
+
         """ print('Unidades:')
         print(self.unidades())
         print('estados:')
@@ -666,7 +666,7 @@ class Orden(models.Model):
         """
         if self.estado in [EstadoOrden.ENTREGADA, EstadoOrden.DEVUELTA]:
             return
-        
+
         self.estado = EstadoOrden.CANCELADA
         self.save()
 
@@ -683,7 +683,7 @@ class Orden(models.Model):
         Aprueba la orden cambiando su estado a APROBADA.
         """
         self.estado = EstadoOrden.APROBADA
-    
+
     def aprobada(self) -> bool:
         """
         Verifica si la orden está aprobada.
@@ -717,14 +717,13 @@ class Orden(models.Model):
 
         if self.estado in [EstadoOrden.APROBADA, EstadoOrden.CANCELADA, EstadoOrden.RESERVADA]:
             return
-        
+
         devolucion, _ = Devolucion.objects.get_or_create(almacen=almacen, orden=self)
         self.estado = EstadoOrden.DEVUELTA
         self.save()
 
     def devuelta(self):
-        return self.estado == EstadoOrden.DEVUELTA        
-
+        return self.estado == EstadoOrden.DEVUELTA
 
     def corresponsables(self) -> QuerySet['Prestatario']:
         """
@@ -734,7 +733,7 @@ class Orden(models.Model):
         """
         return self._corresponsables.all()
 
-    def agregar_corresponsable(self, prestatario: 'Prestatario'):
+    def agregar_corresponsable(self, prestatario: 'User'):
         """
         Agrega un corresponsable a la orden.
 
@@ -748,7 +747,7 @@ class Orden(models.Model):
             self.tipo = TipoOrden.EXTRAORDINARIA
         self.save()
         return self.tipo
-    
+
     def es_ordinaria(self) -> bool:
         """
         Verifica si una orden es ordinaria.
@@ -796,12 +795,12 @@ class Orden(models.Model):
         :param unidad: La unidad que se quiere agregar.
         """
         self._unidades.add(unidad)
-    
+
     def solicitar_autorizacion(self):
         """
         Solicita autorización para la orden acorde al tipo.
         """
-        
+
         if self.es_ordinaria():
             Maestro.solicitar_autorizacion(self)
         elif self.es_extraordinaria():
@@ -868,8 +867,8 @@ class Carrito(models.Model):
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
     _corresponsables = models.ManyToManyField(to=User, blank=True, related_name='corresponsables_carrito')
-        
-        
+
+
     def eliminar_articulo(self, articulo: 'Articulo', unidades: int = None):
         """
         Elimina un artículo del carrito o reduce su cantidad.
@@ -936,6 +935,26 @@ class Carrito(models.Model):
         """
         return self._articulos.all()
 
+    def crear_orden_desde_carrito(self) -> Orden:
+        """
+        Crea una orden a partir de un carrito.
+
+        :param carrito: El carrito a convertir en orden.
+        :returns: La orden creada.
+        """
+        orden = Orden.objects.create(
+            nombre=self.nombre,
+            prestatario=self.prestatario,
+            lugar=self.lugar,
+            descripcion_lugar=self.descripcion_lugar,
+            materia=self.materia,
+            maestro=self.maestro,
+            inicio=self.inicio,
+            final=self.final,
+            descripcion=self.descripcion
+        )
+        return orden
+
     def ordenar(self) -> bool:
         """
         Convierte el carrito en una orden (transacción).
@@ -944,17 +963,7 @@ class Carrito(models.Model):
         """
         try:
             with transaction.atomic():
-                orden = Orden.objects.create(
-                    nombre=self.nombre,
-                    prestatario=self.prestatario,
-                    lugar=self.lugar,
-                    descripcion_lugar=self.descripcion_lugar,
-                    materia=self.materia,
-                    maestro=self.maestro,
-                    inicio=self.inicio,
-                    final=self.final,
-                    descripcion=self.descripcion
-                )
+                orden = self.crear_orden_desde_carrito()
 
                 orden.tipo = orden.asignar_tipo()
                 orden.save()
@@ -965,8 +974,8 @@ class Carrito(models.Model):
                     orden.agregar_corresponsable(corresponsable)
 
                 if self.vacio():
-                        raise Exception("No selecciono ningún artículo")
-                    
+                    raise Exception("No selecciono ningún artículo")
+
                 for articulo_carrito in self.articulos_carrito():
                     unidades = articulo_carrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)
@@ -1000,7 +1009,7 @@ class Carrito(models.Model):
         :param prestatario: El prestatario que se quiere agregar como corresponsable.
         """
         self._corresponsables.add(prestatario)
-    
+
     def tiene_maestro(self) -> bool:
         """
         Verifica si el carrito tiene un maestro asignado.
