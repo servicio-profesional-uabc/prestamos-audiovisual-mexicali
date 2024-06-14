@@ -659,6 +659,16 @@ class Orden(models.Model):
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
     emision = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        self.tipo = self.__tipo_de_orden()
+        super().save(*args, **kwargs)
+
+    def __tipo_de_orden(self):
+        delta = self.final - self.inicio
+        if self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8:
+            return TipoOrden.EXTRAORDINARIA
+        return TipoOrden.ORDINARIA
+
     def cancelar(self):
         """
         Cancela la orden cambiando su estado a CANCELADA.
@@ -739,13 +749,6 @@ class Orden(models.Model):
         :param prestatario: El prestatario que se quiere agregar como corresponsable.
         """
         self._corresponsables.add(prestatario)
-
-    def asignar_tipo(self):
-        delta = self.final - self.inicio
-        if(self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8):
-            self.tipo = TipoOrden.EXTRAORDINARIA
-        self.save()
-        return self.tipo
 
     def es_ordinaria(self) -> bool:
         """
@@ -962,8 +965,6 @@ class Carrito(models.Model):
         try:
             with transaction.atomic():
                 orden = self.crear_orden_desde_carrito()
-
-                orden.tipo = orden.asignar_tipo()
                 orden.save()
 
                 orden.agregar_corresponsable(self.prestatario)
