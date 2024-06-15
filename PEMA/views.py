@@ -45,9 +45,7 @@ class AgregarCorresponsablesView(UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        # Limpiamos los corresponsables actuales
         form.instance._corresponsables.clear()
-        # Agregamos los nuevos corresponsables
         for corresponsable in form.cleaned_data['corresponsables']:
             form.instance._corresponsables.add(corresponsable)
         return response
@@ -121,13 +119,20 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, request, accion=None):
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
+        articulos_no_disponibles = []
+
+        for articulo_carrito in carrito.articulos_carrito():
+            # mostrar mensajes sobre el estado del articulo
+            if not articulo_carrito.articulo.disponible(carrito.inicio, carrito.final).exists():
+                articulos_no_disponibles.append(articulo_carrito)
+                messages.add_message(request, messages.WARNING, f'El artículo {articulo_carrito.articulo.nombre} no está disponible.')
 
         return render(
             request=request,
             template_name="carrito.html",
             context={
                 "articulos_carrito": carrito.articulos_carrito(),
-                "carrito": carrito
+                "carrito": carrito,
             }
         )
 
@@ -141,15 +146,14 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
                 carrito.save()
 
             if carrito.tiene_maestro():
-                # TODO: Mostrar que articulos esta ocupado
                 ordenado = carrito.ordenar()
 
                 if ordenado:
                     return redirect("historial_solicitudes")
-        
+
         return redirect("carrito")
 
-    
+
 class FiltrosView(LoginRequiredMixin, View):
 
     def get(self, request):
@@ -381,7 +385,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
         match type:
             case "corresponsable":
                 solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
-            
+
             case "aprobacion":
                 solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
 
@@ -405,7 +409,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
                     print('here')
                     solicitud.orden.aprobar()
                     solicitud.orden.save()
-                
+
                 case "rechazar":
                     solicitud.orden.cancelar()
                     solicitud.orden.save()

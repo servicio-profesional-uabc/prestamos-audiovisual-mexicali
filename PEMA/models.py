@@ -513,6 +513,7 @@ class Articulo(models.Model):
             print(Unidad.Estado.ACTIVO)
         print('Unidades activas:')
         print(self.unidades().filter(estado=Unidad.Estado.ACTIVO)) """
+
         ordenes_reservadas = Orden.objects.filter(
             estado__in=[EstadoOrden.RESERVADA, EstadoOrden.APROBADA, EstadoOrden.ENTREGADA],
             _unidades__in=self.unidades().filter(estado=Unidad.Estado.ACTIVO)
