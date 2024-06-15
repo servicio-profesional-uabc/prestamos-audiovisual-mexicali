@@ -133,6 +133,7 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
             context={
                 "articulos_carrito": carrito.articulos_carrito(),
                 "carrito": carrito,
+                "numero_unidades": carrito.numero_unidades()
             }
         )
 
@@ -346,8 +347,11 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
     def post(self, request, articulo_id):
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
+        cantidad = int(request.POST.get('cantidad', 1))
 
-        carrito.agregar(articulo, 1)
+        if carrito.existe(articulo):
+            carrito.eliminar_articulo(articulo)
+        carrito.agregar(articulo, cantidad)
         carrito.save()
 
         return redirect("catalogo")
