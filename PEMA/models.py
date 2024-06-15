@@ -1018,6 +1018,21 @@ class Carrito(models.Model):
         """
         return self.maestro is not None
 
+    def numero_unidades(self) -> int:
+        """
+        Obtiene el número total de unidades en el carrito.
+
+        :returns: Número total de unidades en el carrito.
+        """
+        return sum(articulo_carrito.unidades for articulo_carrito in ArticuloCarrito.objects.filter(propietario=self))
+
+    def existe(self, articulo):
+        """
+        Verifica si el artículo dado ya existe en el carrito.
+        :param articulo: El artículo que se está verificando
+        :return: True si el artículo existe en el carrito, False de lo contrario
+        """
+        return self._articulos.filter(id=articulo.id).exists()
 
 class Reporte(models.Model):
     """
