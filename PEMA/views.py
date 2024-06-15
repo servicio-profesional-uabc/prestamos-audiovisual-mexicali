@@ -296,11 +296,22 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
 
+        # Filtrar las unidades disponibles para cada artículo
+        articulos_disponibles = []
+        for articulo in carrito.materia.articulos():
+            cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+            print(f'{articulo} - {cantidad_disponible} unidades disponibles')
+            if cantidad_disponible > 0:
+                articulos_disponibles.append(articulo)
+                articulo.num_unidades = cantidad_disponible
+            else:
+                articulo.num_unidades = 0
+
         return render(
             request=request,
             template_name="catalogo.html",
             context={
-                "articulos": carrito.materia.articulos(),
+                "articulos": articulos_disponibles,
                 "carrito": prestatario.carrito(),
                 "categorias": Categoria.objects.all()
             },
