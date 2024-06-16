@@ -1058,7 +1058,7 @@ class Categoria(models.Model):
     :ivar nombre: Nombre de la categoría.
     """
 
-    nombre = models.CharField(primary_key=True, max_length=250)
+    nombre = models.CharField(unique=True, max_length=250)
 
     def articulos(self) -> QuerySet['Articulo']:
         """

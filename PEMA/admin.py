@@ -120,9 +120,20 @@ class PerfilAdmin(admin.ModelAdmin):
     search_fields = ['numero_telefono']
 
 
+class ArticuloInline(admin.TabularInline):
+    model = Articulo._categorias.through
+    extra = 1
+
+
+@admin.register(Categoria)
+class CategoriaAdmin(admin.ModelAdmin):
+    list_display = ('nombre',)
+    search_fields = ['nombre']
+    inlines = [ArticuloInline]
+
+
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
-admin.site.register(Categoria)
 admin.site.register(AutorizacionOrden)
 # admin.site.register(ArticuloCarrito)
 # admin.site.register(CorresponsableOrden)
