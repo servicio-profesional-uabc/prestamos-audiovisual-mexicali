@@ -133,6 +133,7 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
             context={
                 "articulos_carrito": carrito.articulos_carrito(),
                 "carrito": carrito,
+                "numero_unidades": carrito.numero_unidades()
             }
         )
 
@@ -295,11 +296,22 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
 
+        # Filtrar las unidades disponibles para cada artículo
+        articulos_disponibles = []
+        for articulo in carrito.materia.articulos():
+            cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+            print(f'{articulo} - {cantidad_disponible} unidades disponibles')
+            if cantidad_disponible > 0:
+                articulos_disponibles.append(articulo)
+                articulo.num_unidades = cantidad_disponible
+            else:
+                articulo.num_unidades = 0
+
         return render(
             request=request,
             template_name="catalogo.html",
             context={
-                "articulos": carrito.materia.articulos(),
+                "articulos": articulos_disponibles,
                 "carrito": prestatario.carrito(),
                 "categorias": Categoria.objects.all()
             },
@@ -346,8 +358,11 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
     def post(self, request, articulo_id):
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
+        cantidad = int(request.POST.get('cantidad', 1))
 
-        carrito.agregar(articulo, 1)
+        if carrito.existe(articulo):
+            carrito.eliminar_articulo(articulo)
+        carrito.agregar(articulo, cantidad)
         carrito.save()
 
         return redirect("catalogo")
