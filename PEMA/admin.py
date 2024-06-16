@@ -14,7 +14,7 @@ class MateriaAdmin(admin.ModelAdmin):
 
 @admin.register(Orden)
 class OrdenAdmin(admin.ModelAdmin):
-    exclude = ('estado',)  #
+    exclude = ('estado',)
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
     list_display = ('__str__', 'tipo', 'estado')
@@ -135,5 +135,3 @@ class CategoriaAdmin(admin.ModelAdmin):
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
 admin.site.register(AutorizacionOrden)
-# admin.site.register(ArticuloCarrito)
-# admin.site.register(CorresponsableOrden)
