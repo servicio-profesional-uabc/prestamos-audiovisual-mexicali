@@ -29,23 +29,45 @@
 
             <ul class="list-group">
                 {% for articuloCarrito in articulos_carrito %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center"
+
+                    <div class="card mb-3" style="max-width: 540px;">
+                        <div class="row g-0">
+                            <div class="col-4 d-flex align-items-center">
+                                <img src="https://via.placeholder.com/150" class="img-fluid w-100" alt="Producto">
+                            </div>
+                            <div class="col-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">Nombre del Producto</h5>
+                                    <p class="card-text">Unidades: 2</p>
+                                    <a href="#" class="btn btn-danger">Eliminar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {% comment %}
+                    <li class="list-group-item col justify-content-between align-items-center"
                         style="background-color: #f9f9f9;">
                         <div class="d-flex align-items-center">
-                            <img src="{{ articuloCarrito.articulo.imagen.url }}"
-                                 alt="{{ articuloCarrito.articulo.nombre }}"
-                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;"
-                                 class="me-3">
-                            <a class="text-dark" href="{% url 'detalles_articulo' articuloCarrito.articulo.id %}">{{ articuloCarrito.articulo.nombre }}</a>
-                        </div>
-                        <div class="ms-auto">
-                            <input type="text" class="form-control d-inline text-center"
-                                   value="{{ articuloCarrito.unidades }}" min="1" max="99"
-                                   style="width: 50px; height: 40px; background-color: #f9f9f9; border: none;">&nbsp;
-                            <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}"
-                               class="btn btn-danger btn-sm">Eliminar</a>
+                            <img
+                                    class="col-1 me-3 rounded">
+
+                            <a class="text-dark h6 link-underline-opacity-0"
+                               href="{% url 'detalles_articulo' articuloCarrito.articulo.id %}">{{ articuloCarrito.articulo.nombre }}</a>
+
+                            <div class="col">
+                                <input type="text" class="form-control d-inline text-center"
+                                       value="{{ articuloCarrito.unidades }}" min="1" max="99"
+                                       style="width: 50px; height: 40px; background-color: #f9f9f9; border: none;">&nbsp;
+                                <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}"
+                                   class="btn btn-danger btn-sm">Eliminar</a>
+                            </div>
                         </div>
                     </li>
+{% endcomment %}
+
+
                 {% endfor %}
             </ul>
         </div>
@@ -85,11 +107,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <embed id="pdfViewer" src="{% static 'img/Reglamento-Interno-de-la-Facultad-de-Artes-2022.pdf' %}"
+                    <embed id="pdfViewer"
+                           src="{% static 'img/Reglamento-Interno-de-la-Facultad-de-Artes-2022.pdf' %}"
                            type="application/pdf" width="100%" height="600px">
                     <input type="checkbox" id="cerrarPDF">
                     <label for="cerrarPDF">He leído términos y condiciones</label><br><br>
-                    <button id="botonContinuar" type="submit" class="btn btn-primary my-3" disabled>Continuar</button>
+                    <button id="botonContinuar" type="submit" class="btn btn-primary my-3" disabled>Continuar
+                    </button>
                 </div>
             </div>
         </div>
