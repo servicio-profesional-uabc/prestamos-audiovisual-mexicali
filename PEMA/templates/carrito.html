@@ -23,21 +23,21 @@
 
                 <!-- Shopping cart table -->
                 <div class="table-responsive rounded">
-                  <table class="table">
+                    <table class="table">
 
-                    <thead>
-                      <tr class="">
-                        <th scope="col" class="border-0 bg-light">
-                          <div class="p-2 px-3 h2">Carrito</div>
-                        </th>
+                        <thead>
+                        <tr class="">
+                            <th scope="col" class="border-0 bg-light">
+                                <div class="p-2 px-3 h2">Carrito</div>
+                            </th>
 
-                        <th scope="col" class="border-0 text-center bg-light">
-                          <div class="py-2">Eliminar</div>
-                        </th>
-                      </tr>
-                    </thead>
+                            <th scope="col" class="border-0 text-center bg-light">
+                                <div class="py-2">Eliminar</div>
+                            </th>
+                        </tr>
+                        </thead>
 
-                    <tbody>
+                        <tbody>
 
                         {% for articuloCarrito in articulos_carrito %}
 
@@ -46,10 +46,10 @@
                                     <div class="p-2">
 
                                         <img class="img-fluid rounded"
-                                            width="70" 
-                                            src="{{ articuloCarrito.articulo.imagen.url }}"
-                                            alt="{{ articuloCarrito.articulo.nombre }}">
-                                        
+                                             width="70"
+                                             src="{{ articuloCarrito.articulo.imagen.url }}"
+                                             alt="{{ articuloCarrito.articulo.nombre }}">
+
                                         <div class="col-12 col-sm-8 my-2 m-sm-2 d-inline-block align-middle">
 
                                             <h5 class="mb-0">
@@ -63,26 +63,27 @@
                                                 Unidades: {{ articuloCarrito.unidades }}
                                             </span>
 
-                                        </div>        
+                                        </div>
                                     </div>
                                 </th>
 
                                 <td class="border-0 align-middle text-center">
-                                    <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}" href="#" class="fs-5 text-danger">
+                                    <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}" href="#"
+                                       class="fs-5 text-danger">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </td>
                             </tr>
 
-                            
+
 
                         {% endfor %}
 
-                    </tbody>
-                  </table>
+                        </tbody>
+                    </table>
                 </div>
                 <!-- End -->
-              </div>
+            </div>
 
 
         </div>
@@ -97,18 +98,21 @@
                 <select class="form-select" id="maestroSelect" name="maestro">
                     {% for maestro in carrito.materia.maestros %}
                         {% if maestro.email != "" and maestro.email != None %}
-                            <option class="dropdown-item" value="{{ maestro.id }}">{{ maestro.username }}
-                                - {{ maestro.email }}</option>
+                            <option class="dropdown-item" value="{{ maestro.id }}">
+                                {{ maestro.username }} - {{ maestro.email }}
+                            </option>
                         {% endif %}
                     {% endfor %}
                 </select>
                 <label for="maestroSelect">Maestro</label>
 
-                        
-        <ul>
-            <li> Si el correo del maestro no aparece en la lista, no ha registrado su correo al sistema.</li>
-            <li> Si tu orden se considera préstamo extraordinario, tu coordinador será quien autorizará tu orden.</li>
-        </ul>
+
+                <ul>
+                    <li> Si el correo del maestro no aparece en la lista, no ha registrado su correo al sistema.</li>
+                    <li> Si tu orden se considera préstamo extraordinario, tu coordinador será quien autorizará tu
+                        orden.
+                    </li>
+                </ul>
             </div>
 
             <div class="text-center mt-4">
@@ -133,7 +137,8 @@
                            type="application/pdf" width="100%" height="600px">
                     <input type="checkbox" id="cerrarPDF">
                     <label for="cerrarPDF">He leído términos y condiciones</label><br><br>
-                    <button id="botonContinuar" type="submit" class="btn btn-primary my-3" disabled>Continuar
+                    <button id="botonContinuar" type="submit" class="btn btn-primary my-3" disabled>
+                        Continuar
                     </button>
                 </div>
             </div>
