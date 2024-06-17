@@ -1,0 +1,27 @@
+# Esto Es indispensable
+## basico para django
+asgiref==3.7.2
+Django==5.0.3
+django-phonenumber-field==7.3.0
+phonenumbers==8.13.30
+PyMySQL==1.1.0
+sqlparse==0.4.4
+typing_extensions==4.8.0
+pillow==10.2.0
+django-widget-tweaks==1.4.12
+django-extra-settings==0.12.0
+
+# archivos
+pandas==2.2.1
+openpyxl==3.1.2
+xlrd==2.0.1
+django-import-export==3.3.8
+
+# Esto se puede desactivar si da problemas
+## Documentacion automatica
+Sphinx==7.2.6
+sphinx-markdown-builder==0.6.6
+sphinx-rtd-theme==2.0.0
+
+## Mejor página de Admin
+django-admin-interface==0.28.6
