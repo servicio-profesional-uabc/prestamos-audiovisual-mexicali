@@ -88,3 +88,19 @@ class TestCarrito(TestCase):
         self.assertEqual(orden.inicio, carrito.inicio)
         self.assertEqual(orden.final, carrito.final)
         self.assertEqual(orden.descripcion, carrito.descripcion)
+
+    def test_numero_total_unidades(self):
+        carrito = Carrito.objects.create(prestatario=self.user, materia=self.materia,
+                                         inicio=make_aware(datetime(2024, 3, 16, 12)),
+                                         final=make_aware(datetime(2024, 3, 16, 18)))
+
+        # Inicialmente el carrito está vacío
+        self.assertEqual(carrito.numero_total_unidades(), 0)
+
+        # Agregar artículos al carrito
+        carrito.agregar(articulo=self.articulo, unidades=2)
+        self.assertEqual(carrito.numero_total_unidades(), 2)
+
+        otro_articulo = Articulo.objects.create(nombre="Otro artículo de prueba", codigo="0000-0001")
+        carrito.agregar(articulo=otro_articulo, unidades=3)
+        self.assertEqual(carrito.numero_total_unidades(), 5)

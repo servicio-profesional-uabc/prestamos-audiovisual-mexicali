@@ -518,8 +518,8 @@ class Articulo(models.Model):
             estado__in=[EstadoOrden.RESERVADA, EstadoOrden.APROBADA, EstadoOrden.ENTREGADA],
             _unidades__in=self.unidades().filter(estado=Unidad.Estado.ACTIVO)
         )
-        #print('Ordenes reservadas:')
-        #print(ordenes_reservadas)
+        # print('Ordenes reservadas:')
+        # print(ordenes_reservadas)
         colisiones = ordenes_reservadas.filter(
             Q(inicio=inicio) |
             Q(final=final) |
@@ -527,11 +527,11 @@ class Articulo(models.Model):
             Q(inicio__lt=final, final__gt=final) |
             Q(inicio__gt=inicio, final__lt=final)
         )
-        #print('colisiones')
-        #print(colisiones)
+        # print('colisiones')
+        # print(colisiones)
         unidades_reservadas = Unidad.objects.filter(orden__in=colisiones)
-        #print('Unidades reservadas:')
-        #print(unidades_reservadas)
+        # print('Unidades reservadas:')
+        # print(unidades_reservadas)
         return self.unidades().exclude(id__in=unidades_reservadas)
 
     def categorias(self) -> QuerySet['Categoria']:
@@ -648,14 +648,17 @@ class Orden(models.Model):
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Emisor')
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2, verbose_name="Tipo de la Solicitud")
-    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2, verbose_name='Lugar de la Producción')
+    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2,
+                            verbose_name="Tipo de la Solicitud")
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
+                             verbose_name='Lugar de la Producción')
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     estado = models.CharField(default=EstadoOrden.RESERVADA, choices=EstadoOrden.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="orden_maestro")
+    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True,
+                                related_name="orden_maestro")
     _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables', verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
     emision = models.DateTimeField(auto_now_add=True)
@@ -666,7 +669,7 @@ class Orden(models.Model):
 
     def __tipo_de_orden(self):
         delta = self.final - self.inicio
-        if self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60*60)) > 8:
+        if self.lugar == Ubicacion.EXTERNO or (delta.total_seconds() / (60 * 60)) > 8:
             return TipoOrden.EXTRAORDINARIA
         return TipoOrden.ORDINARIA
 
@@ -861,16 +864,17 @@ class Carrito(models.Model):
 
     nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.OneToOneField(to=User, on_delete=models.CASCADE)
-    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2, verbose_name='Lugar de la Producción')
+    lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
+                             verbose_name='Lugar de la Producción')
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='carrito_maestro')
+    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True,
+                                related_name='carrito_maestro')
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
     _corresponsables = models.ManyToManyField(to=User, blank=True, related_name='corresponsables_carrito')
-
 
     def eliminar_articulo(self, articulo: 'Articulo', unidades: int = None):
         """
@@ -930,6 +934,14 @@ class Carrito(models.Model):
         """
         return ArticuloCarrito.objects.filter(propietario=self).count()
 
+    def numero_total_unidades(self) -> int:
+        """
+        Devuelve el número total de unidades en el carrito.
+
+        :returns: Número total de unidades en el carrito.
+        """
+        return sum(articulo_carrito.unidades for articulo_carrito in ArticuloCarrito.objects.filter(propietario=self))
+
     def articulos(self) -> QuerySet['Articulo']:
         """
         Obtiene los objetos Articulo que hay en el carrito.
@@ -979,8 +991,8 @@ class Carrito(models.Model):
                 for articulo_carrito in self.articulos_carrito():
                     unidades = articulo_carrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)
-                    #print(len_unidades)
-                    #print(articulo_carrito.unidades)
+                    # print(len_unidades)
+                    # print(articulo_carrito.unidades)
                     if len_unidades < articulo_carrito.unidades:
                         raise Exception("No hay suficientes unidades disponibles")
 
@@ -1033,6 +1045,7 @@ class Carrito(models.Model):
         :return: True si el artículo existe en el carrito, False de lo contrario
         """
         return self._articulos.filter(id=articulo.id).exists()
+
 
 class Reporte(models.Model):
     """

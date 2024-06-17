@@ -300,7 +300,6 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         articulos_disponibles = []
         for articulo in carrito.materia.articulos():
             cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
-            print(f'{articulo} - {cantidad_disponible} unidades disponibles')
             if cantidad_disponible > 0:
                 articulos_disponibles.append(articulo)
                 articulo.num_unidades = cantidad_disponible

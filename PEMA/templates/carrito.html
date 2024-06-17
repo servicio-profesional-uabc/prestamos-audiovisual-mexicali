@@ -5,6 +5,13 @@
     <title>Carrito</title>
 {% endblock %}
 
+{% block first-nav-items %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'catalogo' %}">Regresar al Catálogo</a>
+    </li>
+    <hr>
+{% endblock %}
+
 {% block content %}
     <div class="container-sm order-details-container">
 
@@ -23,15 +30,15 @@
 
                 <!-- Shopping cart table -->
                 <div class="table-responsive rounded">
-                    <table class="table">
+                    <table class="table rounded">
 
                         <thead>
                         <tr class="">
-                            <th scope="col" class="border-0 bg-light">
-                                <div class="p-2 px-3 h2">Carrito</div>
+                            <th scope="col" class=" bg-light">
+                                <div class="p-2 px-3">Artículos</div>
                             </th>
 
-                            <th scope="col" class="border-0 text-center bg-light">
+                            <th scope="col" class="text-center bg-light">
                                 <div class="py-2">Eliminar</div>
                             </th>
                         </tr>
@@ -41,8 +48,8 @@
 
                         {% for articuloCarrito in articulos_carrito %}
 
-                            <tr class="border-bottom">
-                                <th scope="row" class="border-0">
+                            <tr class="border">
+                                <th scope="row" class="">
                                     <div class="p-2">
 
                                         <img class="img-fluid rounded"
@@ -67,15 +74,13 @@
                                     </div>
                                 </th>
 
-                                <td class="border-0 align-middle text-center">
+                                <td class="align-middle text-center">
                                     <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}" href="#"
                                        class="fs-5 text-danger">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </td>
                             </tr>
-
-
 
                         {% endfor %}
 
@@ -84,13 +89,8 @@
                 </div>
                 <!-- End -->
             </div>
-
-
         </div>
 
-        <div class="mt-3">
-            <h5>Total de artículos: {{ carrito.numero_unidades }}</h5>
-        </div>
 
         <form class="" method="POST" action="{% url 'carrito_accion' 'ordenar' %}">
             {# Lista de maestros cada vez que cambia la materia #}
@@ -116,8 +116,6 @@
             </div>
 
             <div class="text-center mt-4">
-                <a href="{% url 'catalogo' %}" class="btn btn-warning me-3"
-                   style="background-color: #DD971A;">Regresar</a>
                 <a href="{% url 'corresponsables' %}" class="btn btn-secondary me-3">Agregar Corresponsables</a>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Ordenar</button>
             </div>
