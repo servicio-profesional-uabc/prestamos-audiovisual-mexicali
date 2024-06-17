@@ -13,15 +13,21 @@
 
 {% endblock %}
 
+{% block first-nav-items %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'carrito' %}">Ver Carrito</a>
+    </li>
+    <hr>
+{% endblock %}
 
 {% block content %}
 
     <div class="container text-center mt-3">
-        <h3>Catálogo de Material Disponible</h3>
+
         <form class="input-group" method="POST" action="{% url 'catalogo' %}">
             {% csrf_token %}
             <div class="form-floating">
-                <select type="text" class="form-select" name="categoria">
+                <select type="text" class="form-select rounded-start" name="categoria">
                     <option class="dropdown-item" value="todos">Todos</option>
                     {% for categoria in categorias %}
                         <option class="dropdown-item" value="{{ categoria.pk }}">{{ categoria }}</option>
@@ -34,26 +40,26 @@
             </button>
         </form>
 
-    <div class="container px-4 px-lg-5 mt-3">
-        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-            {% for articulo in articulos %}
-                <div class="col mb-5">
-                    <div class="card h-100 d-flex flex-column">
-                        <a href="{% url 'detalles_articulo' articulo.id %}">
-                            <img class="card-img-top img-fluid" src="{{ articulo.imagen.url }}"
-                                alt="{{ articulo.nombre }}" style="height: 150px; object-fit: cover;">
-                        </a>
-                        <div class="card-body flex-grow-1">
-                            <div class="text-center">
-                                <h5 class="fw-bolder">{{ articulo.nombre }}</h5>
-                                <p>Unidades disponibles: {{ articulo.num_unidades }}</p>
+        <div class="mt-4">
+            <div class="row gy-4 gx-4 row-cols-2 row-cols-md-3 row-cols-xl-4">
+                {% for articulo in articulos %}
+                    <div class="col">
+                        <div class="card h-100 d-flex flex-column">
+                            <a href="{% url 'detalles_articulo' articulo.id %}">
+                                <img class="card-img-top img-fluid" src="{{ articulo.imagen.url }}"
+                                     alt="{{ articulo.nombre }}" style="height: 150px; object-fit: cover;">
+                            </a>
+                            <div class="card-body flex-grow-1">
+                                <div class="text-center">
+                                    <h5 class="fw-bolder">{{ articulo.nombre }}</h5>
+                                    <p>Unidades disponibles: {{ articulo.num_unidades }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
-    </div>
 
 
         <!-- Botones para regresar o continuar -->
@@ -61,7 +67,6 @@
             <div class="row">
                 <div class="col text-center">
                     <a href="{% url 'filtros' %}" class="btn btn me-3" style="background-color: #b38600; color: #fff;">Regresar</a>
-                    <a href="{% url 'carrito' %}" class="btn btn-success">Continuar</a>
                 </div>
             </div>
         </div>
