@@ -62,8 +62,6 @@
             </div>
         </div>
 
-        <label> {{orden.nombre}}</label>
-        <label> {{orden.estado}}</label>    
         {% if orden.estado == EstadoOrden.RESERVADA or orden.estado == EstadoOrden.APROBADA %}
             <div class="text-center mt-4">
                 <button id="boton_cancelar" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalCancelar">Cancelar Solicitud</button>
