@@ -6,7 +6,7 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
-from PEMA.models import AutorizacionEstado, Coordinador, Entrega, TipoOrden
+from PEMA.models import AutorizacionEstado, Coordinador, Devolucion, Entrega, TipoOrden
 from PEMA.models import AutorizacionOrden
 from PEMA.models import CorresponsableOrden
 from PEMA.models import EstadoOrden
@@ -152,7 +152,7 @@ def autorizacion_orden_created(sender, instance, created, **kwargs):
 def entrega_created(sender, instance, created, **kwargs):
     """
     Esta señal se ejecuta cada vez que el usuario Almacen crea una entrega en la vista de /admin modificado a permisos solo para un usuario Almacen.
-    Una entrega solo es posible si la orden esta en estado de APROBADA (Listo para iniciar para la fecha y hora de inicio).
+    Una entrega solo es posible si la orden esta en estado de APROBADA (Listo para iniciar para la fecha y hora de inicio). entregar() valida si dicho estado.
     """
     if not created:
         return
@@ -160,3 +160,16 @@ def entrega_created(sender, instance, created, **kwargs):
     orden = instance.orden
     entregador = instance.entregador
     orden.entregar(entregador)
+
+@receiver(post_save, sender=Devolucion)
+def devolucion_created(sender, instance, created, **kwargs):
+    """
+    Esta señal se ejecuta cada vez que el usuario Almacen crea una devolución en la vista de /admin modificado a permisos solo para un usuario Almacen.
+    Una devolución solo es posible si la orden esta en estado de ENTREGADA. devolver() valida si es dicho estado.
+    """
+    if not created:
+        return
+    
+    orden = instance.orden
+    almacen = instance.almacen
+    orden.devolver(almacen)

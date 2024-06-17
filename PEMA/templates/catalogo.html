@@ -43,6 +43,7 @@
         <div class="my-4">
             <div class="row gy-4 gx-4 row-cols-2 row-cols-md-3 row-cols-xl-4">
                 {% for articulo in articulos %}
+                    {% if articulo.num_unidades > 0 %}
                     <div class="col">
                         <div class="card h-100 d-flex flex-column">
                             <a href="{% url 'detalles_articulo' articulo.id %}">
@@ -57,6 +58,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
