@@ -721,7 +721,7 @@ class Orden(models.Model):
 
         :param entregador: El usuario que entrega la orden.
         """
-        if self.estado in [EstadoOrden.CANCELADA, EstadoOrden.DEVUELTA, EstadoOrden.RESERVADA]:
+        if self.estado in [EstadoOrden.CANCELADA, EstadoOrden.DEVUELTA, EstadoOrden.RESERVADA, EstadoOrden.ENTREGADA]:
             return
 
         entrega, _ = Entrega.objects.get_or_create(entregador=entregador, orden=self)
@@ -730,7 +730,7 @@ class Orden(models.Model):
 
     def devolver(self, almacen: 'Almacen'):
 
-        if self.estado in [EstadoOrden.APROBADA, EstadoOrden.CANCELADA, EstadoOrden.RESERVADA]:
+        if self.estado in [EstadoOrden.APROBADA, EstadoOrden.CANCELADA, EstadoOrden.RESERVADA, EstadoOrden.DEVUELTA]:
             return
 
         devolucion, _ = Devolucion.objects.get_or_create(almacen=almacen, orden=self)

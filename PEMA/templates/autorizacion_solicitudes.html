@@ -4,44 +4,49 @@
 
 {% block content %}
 
-<div class="container-prestamos">
-    <h4>Orden de Préstamo a Autorizar</h4>
+<div class="container my-5 p-4 bg-light shadow rounded">
+    <h4 class="mb-4 text-primary">Orden de Préstamo a Autorizar</h4>
 
-    <h3>{{ solicitud.nombre }}</h3>
-    <p>Nombre de producción: {{ solicitud.orden.nombre }} </p>
-    <p>Prestatario: {{ solicitud.orden.prestatario.username }} {{ solicitud.orden.prestatario.first_name }}</p>
-    <p>Solicitud a: {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
-    <p>Fecha de inicio: {{ solicitud.orden.inicio }}</p>
-    <p>Fecha de devolución: {{ solicitud.orden.final }}</p>
-    <p>Lugar: {{ solicitud.orden.get_lugar_display }}</p>
-    <p>Lugar específico: {{ solicitud.orden.descripcion_lugar }}</p>
-    <p>Unidades:</p>
-    <ul>
-    {% for unidad in solicitud.orden.unidades %}
-        <li> {{ unidad.articulo.nombre }} </li>
-    {% endfor %}
-    </ul>
-    <p>Estado: {{ solicitud.orden.get_estado_display }}</p>
+    <div class="mb-3">
+        <h3 class="text-secondary">{{ solicitud.nombre }}</h3>
+        <p><strong>Nombre de producción:</strong> {{ solicitud.orden.nombre }}</p>
+        <p><strong>Prestatario:</strong> {{ solicitud.orden.prestatario.username }} {{ solicitud.orden.prestatario.first_name }}</p>
+        <p><strong>Solicitud a:</strong> {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
+        <p><strong>Fecha de inicio:</strong> {{ solicitud.orden.inicio }}</p>
+        <p><strong>Fecha de devolución:</strong> {{ solicitud.orden.final }}</p>
+        <p><strong>Lugar: {{ solicitud.orden.get_lugar_display }}</p>
+        <p><strong>Lugar específico: {{ solicitud.orden.descripcion_lugar }}</p>
+        <p><strong>Unidades:</strong></p>
+        <ul class="list-group mb-3">
+            {% for unidad in solicitud.orden.unidades %}
+                <li class="list-group-item">{{ unidad.articulo.nombre }}</li>
+            {% endfor %}
+        </ul>
+        <p><strong>Estado:</strong> {{ solicitud.orden.get_estado_display }}</p>
+    </div>
 
     {% if request.user.is_authenticated %}
-
         {% if solicitud.esta_pendiente %}
-            <a href="{% url "actualizar_autorizacion" "corresponsable" "aceptar" solicitud.id %}" class="btn btn-primary">Autorizar</a>
-            <a href="{% url "actualizar_autorizacion" "corresponsable" "rechazar" solicitud.id %}" class="btn btn-danger">Rechazar</a>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'actualizar_autorizacion' 'corresponsable' 'aceptar' solicitud.id %}" class="btn btn-success">Autorizar</a>
+                <a href="{% url 'actualizar_autorizacion' 'corresponsable' 'rechazar' solicitud.id %}" class="btn btn-danger">Rechazar</a>
+            </div>
         {% endif %}
 
         {% if solicitud.rechazada %}
-            <h1>La orden fue rechazada</h1>
+            <div class="alert alert-danger mt-3" role="alert">
+                La orden fue rechazada
+            </div>
         {% endif %}
 
         {% if solicitud.aceptada %}
-            <h1>La orden fue aceptada</h1>
+            <div class="alert alert-success mt-3" role="alert">
+                La orden fue aceptada
+            </div>
         {% endif %}
-
-
     {% else %}
-        <a href="{% url "login" %}" class="btn btn-primary">Inicia sesion para confirmar!</a>
+        <a href="{% url 'login' %}" class="btn btn-primary mt-3">Inicia sesión para confirmar!</a>
     {% endif %}
-
 </div>
+
 {% endblock %}
