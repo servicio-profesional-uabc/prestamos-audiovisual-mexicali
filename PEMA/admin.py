@@ -1,16 +1,29 @@
 from django.contrib import admin
 from django.contrib import messages
 from import_export.admin import ImportExportModelAdmin
-
 from .models import *
 
+class ReportedOrdersFilter(admin.SimpleListFilter):
+    title = 'Reportadas'
+    parameter_name = 'reportadas'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('Si', 'Si'),
+            ('No', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'Si':
+            return queryset.filter(reportes__isnull=False).distinct()
+        if self.value() == 'No':
+            return queryset.filter(reportes__isnull=True)
 
 @admin.register(Materia)
 class MateriaAdmin(admin.ModelAdmin):
     search_fields = ('nombre', 'year')
     list_display = ('nombre', 'year', 'semestre')
     filter_horizontal = ('_alumnos', '_maestros', '_articulos')
-
 
 @admin.register(Orden)
 class OrdenAdmin(admin.ModelAdmin):
@@ -19,18 +32,14 @@ class OrdenAdmin(admin.ModelAdmin):
     filter_horizontal = ('_unidades', '_corresponsables')
     list_display = ('__str__', 'tipo', 'estado')
     search_fields = ['nombre']
-    list_filter = ('estado', 'tipo')
+    list_filter = ('estado', 'tipo', ReportedOrdersFilter)
 
     actions = ['entregar', 'devolver', 'cancelar']
-
-    # TODO: implementar estos metodos
 
     @admin.action(description='Marcar como entregado')
     def entregar(self, request, queryset):
         for orden in queryset:
-
             orden.entregar(request.user)
-
             if orden.entregada():
                 messages.success(request, f'Orden {orden} entregada')
             else:
@@ -49,18 +58,15 @@ class OrdenAdmin(admin.ModelAdmin):
     def cancelar(self, request, queryset):
         for orden in queryset:
             orden.cancelar()
-
             if orden.cancelada():
                 messages.success(request, f'Orden {orden} cancelada')
             else:
                 messages.warning(request, f'No se pudo cancelar la orden {orden}')
 
-
 class ArticuloUnidadInline(admin.TabularInline):
     autocomplete_fields = ['articulo']
     model = Unidad
     extra = 0
-
 
 @admin.register(Articulo)
 class ArticuloAdmin(ImportExportModelAdmin):
@@ -69,12 +75,10 @@ class ArticuloAdmin(ImportExportModelAdmin):
     filter_horizontal = ('_categorias',)
     inlines = [ArticuloUnidadInline]
 
-
 class ArticuloCarritoInline(admin.TabularInline):
     autocomplete_fields = ['articulo']
     model = ArticuloCarrito
     extra = 1
-
 
 @admin.register(Carrito)
 class CarritoAdmin(admin.ModelAdmin):
@@ -87,8 +91,6 @@ class CarritoAdmin(admin.ModelAdmin):
     def ordenar(self, request, queryset):
         for obj in queryset:
             obj.ordenar()
-            # messages.success(request, "Successfully made uppercase!")
-
 
 @admin.register(Reporte)
 class ReporteAdmin(admin.ModelAdmin):
@@ -99,8 +101,6 @@ class ReporteAdmin(admin.ModelAdmin):
     actions = ['desactivar_reportes']
 
     def save_model(self, request, obj, form, change):
-        # Registrar el usuario que está usando el admin como el emisor
-        # del reporte
         obj.emisor = request.user
         super().save_model(request, obj, form, change)
 
@@ -113,24 +113,20 @@ class ReporteAdmin(admin.ModelAdmin):
                 updated += 1
         self.message_user(request, f'{updated} reporte(s) desactivado(s) exitosamente.', messages.SUCCESS)
 
-
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
     list_display = ('numero_telefono',)
     search_fields = ['numero_telefono']
 
-
 class ArticuloInline(admin.TabularInline):
     model = Articulo._categorias.through
     extra = 1
-
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
     list_display = ('nombre',)
     search_fields = ['nombre']
     inlines = [ArticuloInline]
-
 
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
