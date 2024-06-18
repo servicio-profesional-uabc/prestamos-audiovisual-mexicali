@@ -13,6 +13,8 @@
     <p>Autorizador: {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
     <p>Fecha de inicio: {{ solicitud.orden.inicio }}</p>
     <p>Fecha de devolución: {{ solicitud.orden.final }}</p>
+    <p>Lugar: {{ solicitud.orden.get_lugar_display }}</p>
+    <p>Lugar específico: {{ solicitud.orden.descripcion_lugar }}</p>
     <p>Unidades:</p>
     <ul>
     {% for unidad in solicitud.orden.unidades %}
