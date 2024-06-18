@@ -5,15 +5,21 @@
 {% block content %}
 
 <div class="container-prestamos">
-    <h4>Ordenes de Préstamos para Autorizar</h4>
+    <h4>Orden de Préstamo a Autorizar</h4>
 
     <h3>{{ solicitud.nombre }}</h3>
-    <p>Nombre produccion: {{ solicitud.orden.nombre }} </p>
+    <p>Nombre de producción: {{ solicitud.orden.nombre }} </p>
     <p>Prestatario: {{ solicitud.orden.prestatario.username }} {{ solicitud.orden.prestatario.first_name }}</p>
     <p>Solicitud a: {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
-    <p>Fecha de solicitud: {{ solicitud.orden.inicio }}</p>
-    <p>Estado: {{ solicitud.get_estado_display }}</p>
-
+    <p>Fecha de inicio: {{ solicitud.orden.inicio }}</p>
+    <p>Fecha de devolución: {{ solicitud.orden.final }}</p>
+    <p>Unidades:</p>
+    <ul>
+    {% for unidad in solicitud.orden.unidades %}
+        <li> {{ unidad.articulo.nombre }} </li>
+    {% endfor %}
+    </ul>
+    <p>Estado: {{ solicitud.orden.get_estado_display }}</p>
 
     {% if request.user.is_authenticated %}
 

@@ -23,7 +23,7 @@ from .views import MenuView, ActualizarPerfilView
 from .views import OrdenesDevueltasView
 from .views import OrdenesPrestadasView
 from .views import OrdenesReportadasView
-from .views import PrincipalAlmacenView
+#from .views import PrincipalAlmacenView
 from .views import SolicitudView
 from .views import EliminarDelCarritoView
 
@@ -134,11 +134,11 @@ urlpatterns = [
         view=ActualizarPerfilView.as_view()
     ),
 
-    path(
-        route='principal',
-        view=PrincipalAlmacenView.as_view(),
-        name='principal',
-    ),
+    # path(
+    #     route='principal',
+    #     view=PrincipalAlmacenView.as_view(),
+    #     name='principal',
+    # ),
 
     path(
         route='detalles_orden_autorizada',

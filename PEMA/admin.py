@@ -14,7 +14,7 @@ class MateriaAdmin(admin.ModelAdmin):
 
 @admin.register(Orden)
 class OrdenAdmin(admin.ModelAdmin):
-    exclude = ('estado',)  #
+    exclude = ('estado',)
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
     list_display = ('__str__', 'tipo', 'estado')
@@ -54,8 +54,12 @@ class OrdenAdmin(admin.ModelAdmin):
                 messages.success(request, f'Orden {orden} cancelada')
             else:
                 messages.warning(request, f'No se pudo cancelar la orden {orden}')
-            
-    
+
+
+class ArticuloUnidadInline(admin.TabularInline):
+    autocomplete_fields = ['articulo']
+    model = Unidad
+    extra = 0
 
 
 @admin.register(Articulo)
@@ -63,6 +67,7 @@ class ArticuloAdmin(ImportExportModelAdmin):
     list_display = ('nombre', 'codigo', 'descripcion')
     search_fields = ['nombre', 'codigo']
     filter_horizontal = ('_categorias',)
+    inlines = [ArticuloUnidadInline]
 
 
 class ArticuloCarritoInline(admin.TabularInline):
@@ -85,14 +90,6 @@ class CarritoAdmin(admin.ModelAdmin):
             # messages.success(request, "Successfully made uppercase!")
 
 
-@admin.register(Unidad)
-class UnidadAdmin(admin.ModelAdmin):
-    autocomplete_fields = ('articulo',)
-    list_display = ('num_control', 'num_serie', 'articulo', 'estado')
-    list_filter = ('estado',)
-    search_fields = ['num_control', 'num_serie', 'articulo']
-
-
 @admin.register(Reporte)
 class ReporteAdmin(admin.ModelAdmin):
     search_fields = ['orden']
@@ -106,7 +103,7 @@ class ReporteAdmin(admin.ModelAdmin):
         # del reporte
         obj.emisor = request.user
         super().save_model(request, obj, form, change)
-    
+
     @admin.action(description='Desactivar reportes')
     def desactivar_reportes(self, request, queryset):
         updated = 0
@@ -117,16 +114,24 @@ class ReporteAdmin(admin.ModelAdmin):
         self.message_user(request, f'{updated} reporte(s) desactivado(s) exitosamente.', messages.SUCCESS)
 
 
-
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
     list_display = ('numero_telefono',)
     search_fields = ['numero_telefono']
 
 
+class ArticuloInline(admin.TabularInline):
+    model = Articulo._categorias.through
+    extra = 1
+
+
+@admin.register(Categoria)
+class CategoriaAdmin(admin.ModelAdmin):
+    list_display = ('nombre',)
+    search_fields = ['nombre']
+    inlines = [ArticuloInline]
+
+
 admin.site.register(Entrega)
 admin.site.register(Devolucion)
-admin.site.register(Categoria)
 admin.site.register(AutorizacionOrden)
-# admin.site.register(ArticuloCarrito)
-# admin.site.register(CorresponsableOrden)

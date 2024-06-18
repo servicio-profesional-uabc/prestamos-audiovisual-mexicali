@@ -227,28 +227,19 @@ class HistorialSolicitudesView(View):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
-        ordenes = prestatario.ordenes()
+        ordenes_pendientes = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.RESERVADA)
+        ordenes_listas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.APROBADA)
+        ordenes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.CANCELADA)
+        ordenes_entregadas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.ENTREGADA)
+        ordenes_devueltas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.DEVUELTA)
 
-        solicitudes_reservadas = ordenes.filter(estado=EstadoOrden.RESERVADA)
-        solicitudes_reservadas.order_by('emision')
-
-        solicitudes_entregadas = ordenes.filter(estado=EstadoOrden.ENTREGADA)
-        solicitudes_entregadas.order_by('emision')
-
-        solicitudes_canceladas = ordenes.filter(estado=EstadoOrden.CANCELADA)
-        solicitudes_canceladas.order_by('emision')
-
-        solicitudes_aprobadas = ordenes.filter(estado=EstadoOrden.APROBADA)
-        solicitudes_aprobadas.order_by('emision')
-
-        solicitudes_devueltas = ordenes.filter(estado=EstadoOrden.DEVUELTA)
-        solicitudes_devueltas.order_by('emision')
-
-        context = {'solicitudes_reservadas': solicitudes_reservadas,
-                   'solicitudes_entregadas': solicitudes_entregadas,
-                   'solicitudes_canceladas': solicitudes_canceladas,
-                   'solicitudes_aprobadas': solicitudes_aprobadas,
-                   'solicitudes_devueltas': solicitudes_devueltas, }
+        context = {
+            "ordenes_pendientes": ordenes_pendientes,
+            "ordenes_listas": ordenes_listas,
+            "ordenes_canceladas": ordenes_canceladas,
+            "ordenes_entregadas": ordenes_entregadas,
+            "ordenes_devueltas": ordenes_devueltas,
+        }
 
         return render(
             request=request,
@@ -268,7 +259,8 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         return render(
             request=request,
             template_name="detalles_orden.html",
-            context={"orden": orden}
+            context={"orden": orden,
+                     "EstadoOrden": EstadoOrden}
         )
 
     def post(self, request, id):
@@ -300,7 +292,6 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         articulos_disponibles = []
         for articulo in carrito.materia.articulos():
             cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
-            print(f'{articulo} - {cantidad_disponible} unidades disponibles')
             if cantidad_disponible > 0:
                 articulos_disponibles.append(articulo)
                 articulo.num_unidades = cantidad_disponible
@@ -399,7 +390,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
 
         match type:
             case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
             case "aprobacion":
                 solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
@@ -443,7 +434,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
     def get(self, request, type, id):
         match type:
             case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
@@ -463,7 +454,6 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
-                    print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")
 
                 return render(
@@ -481,29 +471,29 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
 
 #######################VISTA PRINCIPAL#########################
 
-class PrincipalAlmacenView(LoginRequiredMixin, View):
-    def get(self, request):
-        user = request.user
+# class PrincipalAlmacenView(LoginRequiredMixin, View):
+#     def get(self, request):
+#         user = request.user
 
-        ordenes_pendientes = Orden.objects.filter(prestatario=user, estado=EstadoOrden.RESERVADA)
-        ordenes_listas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.APROBADA)
-        ordenes_canceladas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.CANCELADA)
-        ordenes_entregadas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.ENTREGADA)
-        ordenes_devueltas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.DEVUELTA)
+#         ordenes_pendientes = Orden.objects.filter(prestatario=user, estado=EstadoOrden.RESERVADA)
+#         ordenes_listas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.APROBADA)
+#         ordenes_canceladas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.CANCELADA)
+#         ordenes_entregadas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.ENTREGADA)
+#         ordenes_devueltas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.DEVUELTA)
 
-        context = {
-            "ordenes_pendientes": ordenes_pendientes,
-            "ordenes_listas": ordenes_listas,
-            "ordenes_canceladas": ordenes_canceladas,
-            "ordenes_entregadas": ordenes_entregadas,
-            "ordenes_devueltas": ordenes_devueltas,
-        }
+#         context = {
+#             "ordenes_pendientes": ordenes_pendientes,
+#             "ordenes_listas": ordenes_listas,
+#             "ordenes_canceladas": ordenes_canceladas,
+#             "ordenes_entregadas": ordenes_entregadas,
+#             "ordenes_devueltas": ordenes_devueltas,
+#         }
 
-        return render(
-            request=request,
-            template_name="principal.html",
-            context=context,
-        )
+#         return render(
+#             request=request,
+#             template_name="principal.html",
+#             context=context,
+#         )
 
 
 #########ORDENES AUTORIZADAS#############

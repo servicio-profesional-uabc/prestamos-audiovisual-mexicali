@@ -3,7 +3,6 @@
 
 {% block head %}
     <title>Detalles de orden</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -63,7 +62,7 @@
             </div>
         </div>
 
-        {% if orden.estado != EstadoOrden.CANCELADA and orden.estado != EstadoOrden.RECHAZADA %}
+        {% if orden.estado == EstadoOrden.RESERVADA or orden.estado == EstadoOrden.APROBADA %}
             <div class="text-center mt-4">
                 <button id="boton_cancelar" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalCancelar">Cancelar Solicitud</button>
             </div>
@@ -90,7 +89,7 @@
         {% endif %}
 
         <div class="text-center mt-4">
-            <a href="{% url 'principal' %}" class="btn btn-secondary">Regresar</a>
+            <a href="{% url 'historial_solicitudes' %}" class="btn btn-secondary">Regresar</a>
         </div>
     </main>
 {% endblock %}
