@@ -211,8 +211,9 @@ class Maestro(User):
         :param orden: La orden para la cual se solicita autorización.
         """
 
-        maestro = orden.maestro
-        AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
+        maestros = orden.materia.maestros()
+        for maestro in maestros:
+            AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -659,8 +660,6 @@ class Orden(models.Model):
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True,
-                                related_name="orden_maestro")
     _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables', verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
     emision = models.DateTimeField(auto_now_add=True)
@@ -871,8 +870,6 @@ class Carrito(models.Model):
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True,
-                                related_name='carrito_maestro')
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
@@ -964,7 +961,6 @@ class Carrito(models.Model):
             lugar=self.lugar,
             descripcion_lugar=self.descripcion_lugar,
             materia=self.materia,
-            maestro=self.maestro,
             inicio=self.inicio,
             final=self.final,
             descripcion=self.descripcion
@@ -1023,14 +1019,6 @@ class Carrito(models.Model):
         :param prestatario: El prestatario que se quiere agregar como corresponsable.
         """
         self._corresponsables.add(prestatario)
-
-    def tiene_maestro(self) -> bool:
-        """
-        Verifica si el carrito tiene un maestro asignado.
-
-        :returns: True si el carrito tiene un maestro asignado, False en caso contrario.
-        """
-        return self.maestro is not None
 
     def numero_unidades(self) -> int:
         """
