@@ -390,7 +390,7 @@ class ActualizarAutorizacion(LoginRequiredMixin, View):
 
         match type:
             case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
             case "aprobacion":
                 solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
@@ -434,7 +434,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
     def get(self, request, type, id):
         match type:
             case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, orden_id=id)
+                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
@@ -454,7 +454,6 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
-                    print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")
 
                 return render(

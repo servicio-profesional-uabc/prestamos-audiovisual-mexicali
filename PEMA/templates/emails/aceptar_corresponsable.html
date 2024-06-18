@@ -1,9 +1,12 @@
 
-Produccion: {{ orden.nombre }}
+Nombre de producción: {{ orden.nombre }}
 Solicitador: {{ orden.prestatario }}
 Materia: {{ orden.materia }}
 Nombre: {{ user.first_name }} ({{ user.username }})
+Fecha de inicio: {{ orden.inicio }}
+Fecha de devolución: {{ orden.final }}
 
-Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'corresponsable' invitacion.orden.id %}
+Para ver más detalles de la solicitud de préstamo, aceptar o rechazar la solicitud, visita el siguiente enlace e inicie sesión:
+{{ host }}{% url 'autorizacion_solicitudes' 'corresponsable' invitacion.id %}
 
 {{ request.scheme }}
