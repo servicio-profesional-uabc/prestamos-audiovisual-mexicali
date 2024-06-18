@@ -454,7 +454,6 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
 
                 # si el usuario no es la presona solicitada no lo puede ver
                 if solicitud.autorizador != request.user:
-                    print(solicitud.autorizador)
                     raise Http404("No tienes permiso de ver esta Orden")
 
                 return render(

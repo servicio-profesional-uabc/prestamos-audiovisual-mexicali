@@ -8,10 +8,17 @@
     <h4>Ordenes de Préstamos para Aprobar</h4>
 
     <h3>{{ solicitud.nombre }}</h3>
-    <p>Nombre produccion: {{ solicitud.orden.nombre }} </p>
+    <p>Nombre de producción: {{ solicitud.orden.nombre }} </p>
     <p>Prestatario: {{ solicitud.orden.prestatario.username }} {{ solicitud.orden.prestatario.first_name }}</p>
     <p>Autorizador: {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
-    <p>Fecha de solicitud: {{ solicitud.orden.inicio }}</p>
+    <p>Fecha de inicio: {{ solicitud.orden.inicio }}</p>
+    <p>Fecha de devolución: {{ solicitud.orden.final }}</p>
+    <p>Unidades:</p>
+    <ul>
+    {% for unidad in solicitud.orden.unidades %}
+        <li> {{ unidad.articulo.nombre }} </li>
+    {% endfor %}
+    </ul>
     <p>Estado: {{ solicitud.orden.get_estado_display }}</p>
 
 

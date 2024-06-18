@@ -1,5 +1,10 @@
-Produccion: {{ orden }}
+Nombre de producción: {{ orden.nombre }}
 Solicitador: {{ orden.prestatario }}
-Autorización: {{ host }}{% url 'autorizacion_solicitudes' 'aprobacion' orden.id %}
+Materia: {{ orden.materia }}
+Fecha de inicio: {{ orden.inicio }}
+Fecha de devolución: {{ orden.final }}
+
+Para ver más detalles, aprobar o rechazar la solicitud, visita el siguiente enlace e inicie sesión:
+{{ host }}{% url 'autorizacion_solicitudes' 'aprobacion' orden.id %}
 
 {{ request.scheme }}
