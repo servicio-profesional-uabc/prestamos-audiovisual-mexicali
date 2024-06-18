@@ -10,8 +10,8 @@ Ejecuta este comando para generarla: `sphinx-build ./docs ./docs/_build/html`. l
 `./docs/_build/html` 
 
 ### Pruebas
-Se usan herramientas de Django para pruebas unitarias. Mantén las pruebas actualizadas para asegurar la calidad del 
-código:
+Se usan herramientas de Django para pruebas unitarias. **Mantén las pruebas actualizadas para asegurar la calidad del 
+código**:
 
 - Pruebas unitarias: 
   - `python manage.py test PEMA/tests`
