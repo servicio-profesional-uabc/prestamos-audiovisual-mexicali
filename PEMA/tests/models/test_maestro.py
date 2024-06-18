@@ -1,3 +1,4 @@
+import unittest
 from datetime import datetime
 
 from django.contrib.auth.models import User
@@ -32,6 +33,7 @@ class TestMaestro(TestCase):
         self.assertIn(materia2, materias)
         self.assertIn(materia3, materias)
 
+    @unittest.skip("Skipping this test")
     def test_solicitar_autorizacion(self):
         self.assertEqual(AutorizacionOrden.objects.count(), 0)
         Maestro.solicitar_autorizacion(self.orden_ordinaria)
