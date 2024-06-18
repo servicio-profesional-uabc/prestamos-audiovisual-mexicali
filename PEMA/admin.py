@@ -4,19 +4,19 @@ from import_export.admin import ImportExportModelAdmin
 from .models import *
 
 class ReportedOrdersFilter(admin.SimpleListFilter):
-    title = 'Reportadas'
+    title = 'Estado de Reporte'
     parameter_name = 'reportadas'
 
     def lookups(self, request, model_admin):
         return (
-            ('Si', 'Si'),
-            ('No', 'No'),
+            ('reportadas', 'Reportadas'),
+            ('no_reportadas', 'No Reportadas'),
         )
 
     def queryset(self, request, queryset):
-        if self.value() == 'Si':
+        if self.value() == 'reportadas':
             return queryset.filter(reportes__isnull=False).distinct()
-        if self.value() == 'No':
+        if self.value() == 'no_reportadas':
             return queryset.filter(reportes__isnull=True)
 
 @admin.register(Materia)
