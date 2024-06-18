@@ -17,9 +17,11 @@ class OrdenAdmin(admin.ModelAdmin):
     exclude = ('estado',)
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
-    list_display = ('__str__', 'tipo', 'estado')
+    list_display = ('prestatario', 'nombre', 'tipo', 'estado')
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo')
+    ordering = ('estado',)
+    
 
     actions = ['entregar', 'devolver', 'cancelar']
 
@@ -28,32 +30,40 @@ class OrdenAdmin(admin.ModelAdmin):
     @admin.action(description='Marcar como entregado')
     def entregar(self, request, queryset):
         for orden in queryset:
-
+            if(orden.entregada()):
+                messages.warning(request, f'La orden {orden.nombre} ya se encuentra entregada.')
+                continue
             orden.entregar(request.user)
 
             if orden.entregada():
-                messages.success(request, f'Orden {orden} entregada')
+                messages.success(request, f'Orden {orden.nombre} entregada.')
             else:
-                messages.warning(request, f'No se pudo entregar la orden {orden}')
+                messages.warning(request, f'No se pudo entregar la orden {orden.nombre}.')
 
     @admin.action(description='Marcar como devuelto')
     def devolver(self, request, queryset):
         for orden in queryset:
+            if(orden.devuelta()):
+                messages.warning(request, f'La orden {orden.nombre} ya se encuentra devuelta.')
+                continue
             orden.devolver(request.user)
             if orden.devuelta():
-                messages.success(request, f'Orden {orden} devuelta')
+                messages.success(request, f'Orden {orden.nombre} devuelta')
             else:
-                messages.warning(request, f'No se pudo devolver la orden {orden}')
+                messages.warning(request, f'No se pudo devolver la orden {orden.nombre}')
 
     @admin.action(description='Marcar como cancelado')
     def cancelar(self, request, queryset):
         for orden in queryset:
+            if(orden.cancelada()):
+                messages.warning(request, f'La orden {orden.nombre} ya se encuentra cancelada.')
+                continue
             orden.cancelar()
 
             if orden.cancelada():
-                messages.success(request, f'Orden {orden} cancelada')
+                messages.success(request, f'Orden {orden.nombre} cancelada')
             else:
-                messages.warning(request, f'No se pudo cancelar la orden {orden}')
+                messages.warning(request, f'No se pudo cancelar la orden {orden.nombre}')
 
 
 class ArticuloUnidadInline(admin.TabularInline):
@@ -61,6 +71,26 @@ class ArticuloUnidadInline(admin.TabularInline):
     model = Unidad
     extra = 0
 
+
+@admin.register(Entrega)
+class EntregaAdmin(admin.ModelAdmin):
+    list_display = ('get_orden_nombre', 'emision')
+    list_filter = ('orden', )
+    def get_orden_nombre(self, obj):
+        if (obj.orden.estado == EstadoOrden.ENTREGADA):
+            return obj.orden.nombre
+    
+    get_orden_nombre.short_description = 'Nombre producción'
+
+@admin.register(Devolucion)
+class DevolucionAdmin(admin.ModelAdmin):
+    list_display = ('get_orden_nombre', 'emision')
+    list_filter = ('orden', )
+    def get_orden_nombre(self, obj):
+        if (obj.orden.estado == EstadoOrden.ENTREGADA):
+            return obj.orden.nombre
+    
+    get_orden_nombre.short_description = 'Nombre producción'
 
 @admin.register(Articulo)
 class ArticuloAdmin(ImportExportModelAdmin):
@@ -132,6 +162,6 @@ class CategoriaAdmin(admin.ModelAdmin):
     inlines = [ArticuloInline]
 
 
-admin.site.register(Entrega)
-admin.site.register(Devolucion)
+#admin.site.register(Entrega)
+#admin.site.register(Devolucion)
 admin.site.register(AutorizacionOrden)
