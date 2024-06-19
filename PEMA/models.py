@@ -123,6 +123,8 @@ class Coordinador(User):
     """
     Un tipo de usuario con permisos específicos para autorizar órdenes,
     eliminar órdenes de prestatarios y desactivar reportes de prestatarios.
+
+    El sistema actual solo debe permitir un único coordinador.
     """
 
     class CoordinadorManager(models.Manager):
@@ -142,8 +144,8 @@ class Coordinador(User):
 
         :param orden: La orden para la cual se solicita autorización.
         """
-        for coordinador in Coordinador.objects.all():
-            AutorizacionOrden.objects.create(autorizador=coordinador, orden=orden, tipo=orden.tipo)
+        coordinador = Coordinador.objects.first()
+        AutorizacionOrden.objects.create(autorizador=coordinador, orden=orden, tipo=orden.tipo)
 
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
@@ -1118,7 +1120,7 @@ class Entrega(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    entregador = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    entregador = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 
@@ -1130,7 +1132,9 @@ class Devolucion(models.Model):
     :ivar almacen: Usuario responsable del Almacén.
     :ivar emision: Fecha de emisión de la devolución.
     """
-
+    class Meta:
+        verbose_name_plural = 'Devoluciones'
+        
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
     almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
