@@ -176,6 +176,7 @@ def autorizacion_orden_created(sender, instance, created, **kwargs):
         recipient_list=[autorizador.email]
     )
 
+
 @receiver(post_save, sender=Entrega)
 def entrega_created(sender, instance, created, **kwargs):
     """
@@ -213,7 +214,7 @@ def devolucion_created(sender, instance, created, **kwargs):
     """
     if not created:
         return
-    
+
     orden = instance.orden
     almacen = instance.almacen
     orden.devolver(almacen)
