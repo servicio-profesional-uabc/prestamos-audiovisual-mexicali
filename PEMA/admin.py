@@ -30,7 +30,7 @@ class OrdenAdmin(admin.ModelAdmin):
     exclude = ('estado',)
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
-    list_display = ('prestatario', 'nombre', 'tipo', 'estado')
+    list_display = ('nombre', 'prestatario',  'tipo', 'estado')
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo', ReportedOrdersFilter)
     ordering = ('estado',)
@@ -85,10 +85,15 @@ class EntregaAdmin(admin.ModelAdmin):
     list_display = ('get_orden_nombre', 'emision')
     list_filter = ('orden', )
     def get_orden_nombre(self, obj):
-        if (obj.orden.estado == EstadoOrden.ENTREGADA):
+        if (obj.orden.estado == EstadoOrden.APROBADA):
             return obj.orden.nombre
     
     get_orden_nombre.short_description = 'Nombre producción'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "orden":
+            kwargs["queryset"] = Orden.objects.filter(estado=EstadoOrden.APROBADA)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 @admin.register(Devolucion)
 class DevolucionAdmin(admin.ModelAdmin):
@@ -99,6 +104,11 @@ class DevolucionAdmin(admin.ModelAdmin):
             return obj.orden.nombre
     
     get_orden_nombre.short_description = 'Nombre producción'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "orden":
+            kwargs["queryset"] = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 @admin.register(Articulo)
 class ArticuloAdmin(ImportExportModelAdmin):
