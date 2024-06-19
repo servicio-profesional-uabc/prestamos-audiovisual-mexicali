@@ -479,11 +479,8 @@ class Articulo(models.Model):
     :param imagen: Imagen del artículo.
     """
 
-    class Meta:
-        unique_together = ('nombre', 'codigo')
-
     imagen = models.ImageField(default='default.png')
-    nombre = models.CharField(blank=False, null=False, max_length=250)
+    nombre = models.CharField(blank=False, null=False, max_length=250, unique=True)
     codigo = models.CharField(blank=True, null=False, max_length=250)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     _categorias = models.ManyToManyField(to='Categoria', blank=True)
