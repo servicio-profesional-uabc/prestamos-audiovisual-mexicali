@@ -10,8 +10,8 @@ Ejecuta este comando para generarla: `sphinx-build ./docs ./docs/_build/html`. l
 `./docs/_build/html` 
 
 ### Pruebas
-Se usan herramientas de Django para pruebas unitarias. Mantén las pruebas actualizadas para asegurar la calidad del 
-código:
+Se usan herramientas de Django para pruebas unitarias. **Mantén las pruebas actualizadas para asegurar la calidad del 
+código**:
 
 - Pruebas unitarias: 
   - `python manage.py test PEMA/tests`
@@ -38,3 +38,9 @@ código:
   - `python manage.py importar_personal data/personal.xlsx`
 - Materia (lista de asistencia) de prueba: 
   - `python manage.py importar_listas data/lista.xls`
+
+### Cargar tema de admin
+- Comando para cargar tema de admin: 
+  - `python manage.py loaddata tema_cepa.json`
+- Comando para guardar tema de admin: 
+  - `python manage.py dumpdata admin_interface.Theme --pks=1 > tema_cepa.json`
