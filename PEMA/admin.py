@@ -128,6 +128,12 @@ class CategoriaAdmin(admin.ModelAdmin):
     search_fields = ['nombre']
     inlines = [ArticuloInline]
 
-admin.site.register(Entrega)
+@admin.register(Entrega)
+class EntregaAdmin(admin.ModelAdmin):
+    autocomplete_fields = ['orden']
+    list_display = ('orden',)
+
+
 admin.site.register(Devolucion)
 admin.site.register(AutorizacionOrden)
+admin.site.register(CorresponsableOrden)
