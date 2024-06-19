@@ -164,6 +164,9 @@ class FiltrosView(LoginRequiredMixin, View):
             # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
+        for materia in prestatario.materias():
+            if materia.son_correos_vacios():
+                messages.add_message(request, messages.WARNING, f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Porfavor contacta al maestro para que actualice sus datos.')
 
         return render(
             request=request,
