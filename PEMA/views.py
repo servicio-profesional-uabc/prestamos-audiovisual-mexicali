@@ -140,17 +140,10 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request, accion):
         if accion == 'ordenar':
             carrito = Prestatario.get_user(request.user).carrito()
-            maestro_id = request.POST.get('maestro')
-            if maestro_id:
-                maestro = get_object_or_404(Maestro, pk=maestro_id)
-                carrito.maestro = maestro
-                carrito.save()
+            ordenado = carrito.ordenar()
 
-            if carrito.tiene_maestro():
-                ordenado = carrito.ordenar()
-
-                if ordenado:
-                    return redirect("historial_solicitudes")
+            if ordenado:
+                return redirect("historial_solicitudes")
 
         return redirect("carrito")
 

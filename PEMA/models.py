@@ -849,7 +849,7 @@ class Orden(models.Model):
         return Reporte.objects.get_or_create(emisor=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
-        return f"{self.prestatario}"
+        return f"({self.get_estado_display()}) {self.prestatario}"
 
 
 class Carrito(models.Model):
@@ -1200,7 +1200,7 @@ class AutorizacionOrden(Autorizacion):
     """
 
     class Meta:
-        verbose_name_plural = "Autorizaciones"
+        verbose_name_plural = "Autorizaciones Ordenes"
         unique_together = ('orden', 'autorizador')
 
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
@@ -1218,6 +1218,7 @@ class CorresponsableOrden(Autorizacion):
     """
 
     class Meta:
+        verbose_name_plural = "Autorizacion Corresponsables"
         unique_together = ('orden', 'autorizador')
 
 

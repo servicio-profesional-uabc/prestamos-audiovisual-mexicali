@@ -75,22 +75,6 @@
             </div>
 
             <form method="POST" action="{% url 'carrito_accion' 'ordenar' %}" id="ordenForm" style="max-width: 50%; margin: auto;">
-                <div class="form-floating mt-3">
-                    <select class="form-select" id="maestroSelect" name="maestro">
-                        {% for maestro in carrito.materia.maestros %}
-                            {% if maestro.email %}
-                                <option value="{{ maestro.id }}">
-                                    {{ maestro.username }} - {{ maestro.email }}
-                                </option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                    <label for="maestroSelect">Maestro</label>
-                    <ul>
-                        <li>Si el correo del maestro no aparece en la lista, no ha registrado su correo al sistema.</li>
-                        <li>Si tu orden se considera préstamo extraordinario, tu coordinador será quien autorizará tu orden.</li>
-                    </ul>
-                </div>
 
                 <div class="text-center mt-4">
                     <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">Ordenar</button>
