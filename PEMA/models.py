@@ -1120,7 +1120,7 @@ class Entrega(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    entregador = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    entregador = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 
@@ -1132,7 +1132,9 @@ class Devolucion(models.Model):
     :ivar almacen: Usuario responsable del Almacén.
     :ivar emision: Fecha de emisión de la devolución.
     """
-
+    class Meta:
+        verbose_name_plural = 'Devoluciones'
+        
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
     almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
