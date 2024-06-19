@@ -480,11 +480,8 @@ class Articulo(models.Model):
     :param imagen: Imagen del artículo.
     """
 
-    class Meta:
-        unique_together = ('nombre', 'codigo')
-
     imagen = models.ImageField(default='default.png')
-    nombre = models.CharField(blank=False, null=False, max_length=250)
+    nombre = models.CharField(blank=False, null=False, max_length=250, unique=True)
     codigo = models.CharField(blank=True, null=False, max_length=250)
     descripcion = models.TextField(null=True, blank=True, max_length=250)
     _categorias = models.ManyToManyField(to='Categoria', blank=True)
@@ -1108,7 +1105,7 @@ class Entrega(models.Model):
     """
 
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
-    entregador = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    entregador = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
 
 
@@ -1120,7 +1117,9 @@ class Devolucion(models.Model):
     :ivar almacen: Usuario responsable del Almacén.
     :ivar emision: Fecha de emisión de la devolución.
     """
-
+    class Meta:
+        verbose_name_plural = 'Devoluciones'
+        
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
     almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)

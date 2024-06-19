@@ -14,15 +14,25 @@ from PEMA.models import Orden
 from PEMA.models import Perfil
 from prestamos import settings
 
+#sender: The model class which the signal was called with.
+#instance: The instance of a User, whether this was created or updated.
+#created: A Boolean to determine if the User was updated or created.
+#When the signal is called, none of the parameters will be empty.
 
 @receiver(post_save, sender=User)
 def user_post_save(sender, instance, created, **kwargs):
     """
-    Esta señal se ejecuta cada vez que se guarda un usuario.
+    Crea un perfil asociado a un usuario cada vez que se guarda un usuario nuevo.
 
-    Crea un perfil asociado a ese usuario, el cual contiene información
-    adicional para el modelo estándar de usuario de Django.
+    Args:
+
+        sender (Model): User
+        instance (User): La instancia de usuario que se está guardando.
+        created (bool): Indica si el usuario fue recién creado.
+        **kwargs: Parámetros adicionales.
+
     """
+
     if not created:
         return
 
@@ -32,8 +42,14 @@ def user_post_save(sender, instance, created, **kwargs):
 @receiver(m2m_changed, sender=Orden._corresponsables.through)
 def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     """
-    Esta señal se ejecuta cada vez que un corresponsable se actualiza la
-    lista de corresponsables de una orden.
+    Actualiza las instancias de CorresponsableOrden cuando cambia la lista de corresponsables de una orden.
+
+    Args:
+        sender (Model): Orden corresponsable.
+        instance (Orden): La instancia de orden que está siendo modificada.
+        action (str): La acción que disparó la señal ('post_remove' o 'post_add').
+        *args: Argumentos adicionales.
+        **kwargs: Parámetros adicionales.
     """
 
     if action == 'post_remove':
@@ -68,13 +84,17 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
 @receiver(post_save, sender=CorresponsableOrden)
 def corresponsable_orden_updated(sender, instance, created, **kwargs):
     """
-    Esta función se ejecuta cada vez que se actualiza un CorresponsableOrden.
+    Esta función se activa cuando se modifica un registro de CorresponsableOrden.
+    Verifica si todos los corresponsables han aceptado la orden y ninguno la ha rechazado para que pueda ser aprobada.
+    En caso de ser aprobada, se envía una solicitud de autorización al profesor (si la orden es ordinaria) o al coordinador
+    (si es extraordinaria). Además, actualiza el estado de la orden según los cambios en CorresponsableOrden.
 
-    Durante esta actualización, se verifica el estado de la orden. Para
-    que la orden sea aprobada, todos los corresponsables deben aceptarla
-    y ninguno debe haberla rechazado. Si la orden es aceptada, se envía
-    una solicitud de autorización al profesor si la orden es de tipo
-    ordinaria, o al coordinador si es de tipo extraordinaria.
+    Args:
+        sender (Model): CorresponsableOrden
+        instance (CorresponsableOrden): La instancia de CorresponsableOrden que está siendo modificada.
+        created (bool): Indica si la CorresponsableOrden fue recién creada.
+        **kwargs: Parámetros adicionales.
+
     """
 
     # TODO: faltan pruebas unitarias para este trigger
@@ -121,8 +141,16 @@ def autorizacion_orden_updated(sender, instance, created, **kwargs):
 @receiver(post_save, sender=AutorizacionOrden)
 def autorizacion_orden_created(sender, instance, created, **kwargs):
     """
-    Esta señal se ejecuta cada vez que se crea una autorización, este envía un correo al usuario maestro o coordinador para aprobar o cancelar dicha orden.
-    orden.solicitar_autorizacion() se crean dichos objetos de AutorizacionOrden (esto sucede en la señal corresponsable_orden_updated)
+    Esta señal se activa al crear una AutorizacionOrden y envía un correo electrónico al maestro o coordinador para que aprueben
+    o cancelen la orden correspondiente. Además, se crean los objetos de AutorizacionOrden mediante la llamada
+    a orden.solicitar_autorizacion() dentro de la señal corresponsable_orden_updated.
+
+
+    Args:
+        sender (Model): AutorizacionOrden
+        instance (AutorizacionOrden): La instancia de AutorizacionOrden que está siendo modificada.
+        created (bool): Indica si la AutorizacionOrden fue recién creada.
+        **kwargs: Parámetros adicionales.
     """
     if not created:  # se crea una autorización
         return
@@ -148,11 +176,20 @@ def autorizacion_orden_created(sender, instance, created, **kwargs):
         recipient_list=[autorizador.email]
     )
 
+
 @receiver(post_save, sender=Entrega)
 def entrega_created(sender, instance, created, **kwargs):
     """
-    Esta señal se ejecuta cada vez que el usuario Almacen crea una entrega en la vista de /admin modificado a permisos solo para un usuario Almacen.
-    Una entrega solo es posible si la orden esta en estado de APROBADA (Listo para iniciar para la fecha y hora de inicio). entregar() valida si dicho estado.
+    Esta señal se dispara cuando un usuario del almacén crea una entrega desde la interfaz de administración,
+    restringida solo a usuarios del almacén. Para que la entrega sea válida, la orden debe estar en estado APROBADA,
+     lo que indica que está lista para comenzar en la fecha y hora programadas. La función entregar() verifica este estado antes
+    de crear la instancia de Entrega.
+
+    Args:
+        sender (Model): Entrega
+        instance (Entrega): La instancia de Entrega que está siendo creada.
+        created (bool): Indica si la Entrega fue recién creada.
+        **kwargs: Parámetros adicionales.
     """
     if not created:
         return
@@ -164,12 +201,20 @@ def entrega_created(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Devolucion)
 def devolucion_created(sender, instance, created, **kwargs):
     """
-    Esta señal se ejecuta cada vez que el usuario Almacen crea una devolución en la vista de /admin modificado a permisos solo para un usuario Almacen.
-    Una devolución solo es posible si la orden esta en estado de ENTREGADA. devolver() valida si es dicho estado.
+    Esta señal se activa cuando un usuario del almacén crea una devolución desde la interfaz de administración,
+    con acceso restringido exclusivamente a usuarios del almacén. Para que la devolución pueda realizarse, la orden debe estar
+    en estado ENTREGADA. La función devolver() verifica este estado antes de crear la instancia de Devolución.
+
+
+    Args:
+        sender (Model): Devolucion
+        instance (Devolucion): La instancia de Devolucion que está siendo creada.
+        created (bool): Indica si la Devolucion fue recién creada.
+        **kwargs: Parámetros adicionales.
     """
     if not created:
         return
-    
+
     orden = instance.orden
     almacen = instance.almacen
     orden.devolver(almacen)
