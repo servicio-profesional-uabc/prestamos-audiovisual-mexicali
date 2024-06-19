@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.contrib import messages
 from import_export.admin import ImportExportModelAdmin
+
 from .models import *
+
 
 class ReportedOrdersFilter(admin.SimpleListFilter):
     """
@@ -39,6 +41,7 @@ class ReportedOrdersFilter(admin.SimpleListFilter):
         if self.value() == 'no_reportadas':
             return queryset.filter(reportes__isnull=True)
 
+
 @admin.register(Materia)
 class MateriaAdmin(admin.ModelAdmin):
     """
@@ -54,6 +57,7 @@ class MateriaAdmin(admin.ModelAdmin):
     search_fields = ('nombre', 'year')
     list_display = ('nombre', 'year', 'semestre')
     filter_horizontal = ('_alumnos', '_maestros', '_articulos')
+
 
 @admin.register(Orden)
 class OrdenAdmin(admin.ModelAdmin):
@@ -78,11 +82,10 @@ class OrdenAdmin(admin.ModelAdmin):
     exclude = ('estado',)
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
-    list_display = ('nombre', 'prestatario',  'tipo', 'estado')
+    list_display = ('nombre', 'prestatario', 'tipo', 'estado')
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo', ReportedOrdersFilter)
     ordering = ('estado',)
-
 
     actions = ['entregar', 'devolver', 'cancelar']
 
@@ -99,7 +102,7 @@ class OrdenAdmin(admin.ModelAdmin):
             Se muestra un mensaje de éxito o advertencia según el resultado de la operación.
         """
         for orden in queryset:
-            if(orden.entregada()):
+            if (orden.entregada()):
                 messages.warning(request, f'La orden {orden.nombre} ya se encuentra entregada.')
                 continue
             orden.entregar(request.user)
@@ -122,7 +125,7 @@ class OrdenAdmin(admin.ModelAdmin):
         """
 
         for orden in queryset:
-            if(orden.devuelta()):
+            if (orden.devuelta()):
                 messages.warning(request, f'La orden {orden.nombre} ya se encuentra devuelta.')
                 continue
             orden.devolver(request.user)
@@ -144,7 +147,7 @@ class OrdenAdmin(admin.ModelAdmin):
             Se muestra un mensaje de éxito o advertencia según el resultado de la operación.
         """
         for orden in queryset:
-            if(orden.cancelada()):
+            if (orden.cancelada()):
                 messages.warning(request, f'La orden {orden.nombre} ya se encuentra cancelada.')
                 continue
             orden.cancelar()
@@ -152,6 +155,7 @@ class OrdenAdmin(admin.ModelAdmin):
                 messages.success(request, f'Orden {orden.nombre} cancelada')
             else:
                 messages.warning(request, f'No se pudo cancelar la orden {orden.nombre}')
+
 
 class ArticuloUnidadInline(admin.TabularInline):
     """
@@ -179,7 +183,8 @@ class EntregaAdmin(admin.ModelAdmin):
         list_filter: Filtro para las entregas por orden.
     """
     list_display = ('get_orden_nombre', 'emision')
-    list_filter = ('orden', )
+    list_filter = ('orden',)
+
     def get_orden_nombre(self, obj):
         """
         Obtiene el nombre de la orden asociada a la entrega si la orden está en estado APROBADA.
@@ -210,6 +215,7 @@ class EntregaAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Orden.objects.filter(estado=EstadoOrden.APROBADA)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
 @admin.register(Devolucion)
 class DevolucionAdmin(admin.ModelAdmin):
     """
@@ -220,7 +226,8 @@ class DevolucionAdmin(admin.ModelAdmin):
         list_filter : Se filtran las devoluciones por orden.
     """
     list_display = ('get_orden_nombre', 'emision')
-    list_filter = ('orden', )
+    list_filter = ('orden',)
+
     def get_orden_nombre(self, obj):
         """
         Obtiene el nombre de la orden asociada a la devolución si la orden está en estado ENTREGADA.
@@ -252,6 +259,7 @@ class DevolucionAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
 @admin.register(Articulo)
 class ArticuloAdmin(ImportExportModelAdmin):
     """
@@ -268,6 +276,7 @@ class ArticuloAdmin(ImportExportModelAdmin):
     filter_horizontal = ('_categorias',)
     inlines = [ArticuloUnidadInline]
 
+
 class ArticuloCarritoInline(admin.TabularInline):
     """
     Gestiona los artículos relacionados con un carrito en línea dentro del panel de administración de Django.
@@ -280,6 +289,7 @@ class ArticuloCarritoInline(admin.TabularInline):
     autocomplete_fields = ['articulo']
     model = ArticuloCarrito
     extra = 1
+
 
 @admin.register(Carrito)
 class CarritoAdmin(admin.ModelAdmin):
@@ -308,6 +318,7 @@ class CarritoAdmin(admin.ModelAdmin):
         """
         for obj in queryset:
             obj.ordenar()
+
 
 @admin.register(Reporte)
 class ReporteAdmin(admin.ModelAdmin):
@@ -356,6 +367,7 @@ class ReporteAdmin(admin.ModelAdmin):
                 updated += 1
         self.message_user(request, f'{updated} reporte(s) desactivado(s) exitosamente.', messages.SUCCESS)
 
+
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
     """
@@ -368,6 +380,7 @@ class PerfilAdmin(admin.ModelAdmin):
     list_display = ('numero_telefono',)
     search_fields = ['numero_telefono']
 
+
 class ArticuloInline(admin.TabularInline):
     """
     Define la configuración para mostrar la relación entre Artículo y Categoría en línea dentro del panel de administración de Django.
@@ -378,6 +391,7 @@ class ArticuloInline(admin.TabularInline):
     """
     model = Articulo._categorias.through
     extra = 1
+
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
@@ -393,12 +407,6 @@ class CategoriaAdmin(admin.ModelAdmin):
     search_fields = ['nombre']
     inlines = [ArticuloInline]
 
-@admin.register(Entrega)
-class EntregaAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['orden']
-    list_display = ('orden',)
 
-
-admin.site.register(Devolucion)
 admin.site.register(AutorizacionOrden)
 admin.site.register(CorresponsableOrden)
