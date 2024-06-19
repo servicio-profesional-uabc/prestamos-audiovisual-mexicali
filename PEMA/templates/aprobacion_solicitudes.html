@@ -14,6 +14,8 @@
         <p><strong>Autorizador:</strong> {{ solicitud.autorizador.username }} {{ solicitud.autorizador.first_name }}</p>
         <p><strong>Fecha de inicio:</strong> {{ solicitud.orden.inicio }}</p>
         <p><strong>Fecha de devolución:</strong> {{ solicitud.orden.final }}</p>
+        <p><strong>Lugar: {{ solicitud.orden.get_lugar_display }}</p>
+        <p><strong>Lugar específico: {{ solicitud.orden.descripcion_lugar }}</p>
         <p><strong>Unidades:</strong></p>
         <ul class="list-group mb-3">
             {% for unidad in solicitud.orden.unidades %}

@@ -48,6 +48,16 @@
 
 
     {% if not prestatario.suspendido %}
+        {% if messages %}
+            <div class="alert alert-warning" role="alert">
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
         <div class="container col-12 mb-3 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4">
             <div class="container py-2 border border-1 rounded bg-white">
                 <h4 class="my-3 text-center">Detalles de la Producción</h4>
