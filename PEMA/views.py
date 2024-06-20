@@ -11,7 +11,7 @@ from django.utils.timezone import make_aware
 from django.views import View
 from django.views.generic.edit import UpdateView
 
-from .forms import CorresponsableForm
+from .forms import CorresponsableForm, CambiarEstadoOrdenForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
 from .models import Articulo, Categoria, CorresponsableOrden, Maestro, Materia
 from .models import Carrito, Prestatario
@@ -634,6 +634,34 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         carrito.save()
 
         return redirect("catalogo")
+
+
+class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        orden = get_object_or_404(Orden, id=self.kwargs['id'])
+        print(orden)
+        materia = orden.materia
+        return self.request.user in materia._maestros.all()
+
+    def get(self, request, id):
+        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
+        form = CambiarEstadoOrdenForm(instance=orden)
+        return render(
+            request,
+            'cambiar_estado_orden.html',
+            {'form': form, 'orden': orden}
+        )
+
+    def post(self, request, id):
+        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
+        action = request.POST.get('action')
+        if action == 'aprobar':
+            orden.estado = EstadoOrden.APROBADA
+        elif action == 'cancelar':
+            orden.estado = EstadoOrden.CANCELADA
+        orden.save()
+        messages.success(request, 'El estado de la orden ha sido actualizado.')
+        return redirect('historial_solicitudes')  # Cambiar por la URL adecuada
 
 
 class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):

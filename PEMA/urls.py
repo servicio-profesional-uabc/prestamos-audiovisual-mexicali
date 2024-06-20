@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import AutorizacionSolicitudView
+from .views import AutorizacionSolicitudView, CambiarEstadoOrdenView
 from .views import AgregarAlCarritoView
 from .views import AgregarCorresponsablesView
 from .views import CancelarOrdenView
@@ -115,6 +115,7 @@ urlpatterns = [
         name='cancelar_orden'
     ),
 
+    # TODO: Eliminar estas 2
     path(
         route='autorizacion_solicitudes/<int:id>/',
         view=AutorizacionSolicitudView.as_view(),
@@ -125,6 +126,12 @@ urlpatterns = [
         route='autorizacion_solicitudes/<int:id>/<str:action>',
         view=AutorizacionSolicitudView.as_view(),
         name='autorizacion_solicitudes'
+    ),
+
+    path(
+        route='cambiar_estado_orden/<int:id>/',
+        view=CambiarEstadoOrdenView.as_view(),
+        name='cambiar_estado_orden'
     ),
 
     path(

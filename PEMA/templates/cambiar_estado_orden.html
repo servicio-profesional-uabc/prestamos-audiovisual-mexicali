@@ -1,0 +1,19 @@
+<!-- cambiar_estado_orden.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cambiar Estado de la Orden</title>
+</head>
+<body>
+    <h1>Cambiar Estado de la Orden</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" name="action" value="aprobar">Aprobar</button>
+        <button type="submit" name="action" value="cancelar">Cancelar</button>
+    </form>
+    <a href="{% url 'historial_solicitudes' %}">Volver al Historial</a> <!-- Cambiar por la URL adecuada -->
+</body>
+</html>
