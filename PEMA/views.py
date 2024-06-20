@@ -13,7 +13,7 @@ from django.views.generic.edit import UpdateView
 
 from .forms import CorresponsableForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden, Maestro, Materia
+from .models import Articulo, Categoria, CorresponsableOrden, Maestro, Materia
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 

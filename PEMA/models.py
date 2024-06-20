@@ -144,8 +144,7 @@ class Coordinador(User):
 
         :param orden: La orden para la cual se solicita autorización.
         """
-        coordinador = Coordinador.objects.first()
-        AutorizacionOrden.objects.create(autorizador=coordinador, orden=orden, tipo=orden.tipo)
+        pass
 
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
@@ -210,10 +209,7 @@ class Maestro(User):
 
         :param orden: La orden para la cual se solicita autorización.
         """
-
-        maestros = orden.materia.maestros()
-        for maestro in maestros:
-            AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
+        pass
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -1117,9 +1113,10 @@ class Devolucion(models.Model):
     :ivar almacen: Usuario responsable del Almacén.
     :ivar emision: Fecha de emisión de la devolución.
     """
+
     class Meta:
         verbose_name_plural = 'Devoluciones'
-        
+
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
     almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
@@ -1136,17 +1133,17 @@ class AutorizacionEstado(models.TextChoices):
     ACEPTADA = "AC", _("Aceptada")
 
 
-class Autorizacion(models.Model):
+class CorresponsableOrden(models.Model):
     """
-    Clase abstracta para representar una autorización.
+    Representa un corresponsable de una orden.
 
-    :ivar orden: Orden asociada a la autorización.
-    :ivar autorizador: Usuario que autoriza la orden.
-    :ivar estado: Estado de la autorización.
+    :ivar autorizador: Usuario que acepta ser corresponsable.
+    :ivar orden: Orden de la que el prestatario es corresponsable.
     """
 
     class Meta:
-        abstract = True
+        verbose_name_plural = "Autorizacion Corresponsables"
+        unique_together = ('orden', 'autorizador')
 
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
@@ -1189,36 +1186,6 @@ class Autorizacion(models.Model):
         """
         self.estado = AutorizacionEstado.RECHAZADA
         self.save()
-
-
-class AutorizacionOrden(Autorizacion):
-    """
-    Representa una autorización de orden.
-
-    :ivar tipo: Tipo de la orden.
-    """
-
-    class Meta:
-        verbose_name_plural = "Autorizaciones Ordenes"
-        unique_together = ('orden', 'autorizador')
-
-    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
-
-    def __str__(self):
-        return f"({self.get_tipo_display()}) {self.orden}"
-
-
-class CorresponsableOrden(Autorizacion):
-    """
-    Representa un corresponsable de una orden.
-
-    :ivar autorizador: Usuario que acepta ser corresponsable.
-    :ivar orden: Orden de la que el prestatario es corresponsable.
-    """
-
-    class Meta:
-        verbose_name_plural = "Autorizacion Corresponsables"
-        unique_together = ('orden', 'autorizador')
 
 
 # Clases de relación
