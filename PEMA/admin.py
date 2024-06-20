@@ -408,5 +408,4 @@ class CategoriaAdmin(admin.ModelAdmin):
     inlines = [ArticuloInline]
 
 
-admin.site.register(AutorizacionOrden)
 admin.site.register(CorresponsableOrden)
