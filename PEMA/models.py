@@ -144,8 +144,7 @@ class Coordinador(User):
 
         :param orden: La orden para la cual se solicita autorización.
         """
-        coordinador = Coordinador.objects.first()
-        AutorizacionOrden.objects.create(autorizador=coordinador, orden=orden, tipo=orden.tipo)
+        pass
 
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
@@ -210,9 +209,7 @@ class Maestro(User):
 
         :param orden: La orden para la cual se solicita autorización.
         """
-
-        maestro = orden.maestro
-        AutorizacionOrden.objects.create(autorizador=maestro, orden=orden, tipo=orden.tipo)
+        pass
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -609,9 +606,9 @@ class EstadoOrden(models.TextChoices):
     Define los posibles estados de una orden en el sistema.
     """
     RESERVADA = "RS", _("Pendiente")
-    ENTREGADA = "EN", _("Entregada")
     CANCELADA = "CN", _("Cancelada")
     APROBADA = "AP", _("Listo para iniciar")
+    ENTREGADA = "EN", _("Entregada")
     DEVUELTA = "DE", _("Devuelta")
 
 
@@ -648,16 +645,14 @@ class Orden(models.Model):
     prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Emisor')
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2,
-                            verbose_name="Tipo de la Solicitud")
+                            verbose_name="Tipo de Solicitud")
     lugar = models.CharField(default=Ubicacion.CAMPUS, choices=Ubicacion.choices, max_length=2,
-                             verbose_name='Lugar de la Producción')
+                             verbose_name='Lugar de Producción')
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     estado = models.CharField(default=EstadoOrden.RESERVADA, choices=EstadoOrden.choices, max_length=2)
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True,
-                                related_name="orden_maestro")
     _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables', verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
     emision = models.DateTimeField(auto_now_add=True)
@@ -847,7 +842,7 @@ class Orden(models.Model):
         return Reporte.objects.get_or_create(emisor=almacen, orden=self, descripcion=descripcion)
 
     def __str__(self):
-        return f"{self.prestatario}"
+        return f"({self.get_estado_display()}) {self.prestatario}"
 
 
 class Carrito(models.Model):
@@ -868,8 +863,6 @@ class Carrito(models.Model):
     descripcion_lugar = models.CharField(blank=False, null=True, max_length=125, verbose_name='Lugar Específico')
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción', default="")
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
-    maestro = models.ForeignKey(to=Maestro, on_delete=models.DO_NOTHING, null=True, blank=True,
-                                related_name='carrito_maestro')
     inicio = models.DateTimeField(default=timezone.now, null=False)
     final = models.DateTimeField(default=timezone.now, null=False)
     _articulos = models.ManyToManyField(to='Articulo', through='ArticuloCarrito', blank=True)
@@ -961,7 +954,6 @@ class Carrito(models.Model):
             lugar=self.lugar,
             descripcion_lugar=self.descripcion_lugar,
             materia=self.materia,
-            maestro=self.maestro,
             inicio=self.inicio,
             final=self.final,
             descripcion=self.descripcion
@@ -1020,14 +1012,6 @@ class Carrito(models.Model):
         :param prestatario: El prestatario que se quiere agregar como corresponsable.
         """
         self._corresponsables.add(prestatario)
-
-    def tiene_maestro(self) -> bool:
-        """
-        Verifica si el carrito tiene un maestro asignado.
-
-        :returns: True si el carrito tiene un maestro asignado, False en caso contrario.
-        """
-        return self.maestro is not None
 
     def numero_unidades(self) -> int:
         """
@@ -1129,9 +1113,10 @@ class Devolucion(models.Model):
     :ivar almacen: Usuario responsable del Almacén.
     :ivar emision: Fecha de emisión de la devolución.
     """
+
     class Meta:
         verbose_name_plural = 'Devoluciones'
-        
+
     orden = models.OneToOneField(to=Orden, on_delete=models.CASCADE, primary_key=True)
     almacen = models.ForeignKey(to=Almacen, on_delete=models.CASCADE)
     emision = models.DateTimeField(auto_now_add=True)
@@ -1148,17 +1133,17 @@ class AutorizacionEstado(models.TextChoices):
     ACEPTADA = "AC", _("Aceptada")
 
 
-class Autorizacion(models.Model):
+class CorresponsableOrden(models.Model):
     """
-    Clase abstracta para representar una autorización.
+    Representa un corresponsable de una orden.
 
-    :ivar orden: Orden asociada a la autorización.
-    :ivar autorizador: Usuario que autoriza la orden.
-    :ivar estado: Estado de la autorización.
+    :ivar autorizador: Usuario que acepta ser corresponsable.
+    :ivar orden: Orden de la que el prestatario es corresponsable.
     """
 
     class Meta:
-        abstract = True
+        verbose_name_plural = "Autorizacion Corresponsables"
+        unique_together = ('orden', 'autorizador')
 
     orden = models.ForeignKey(to=Orden, on_delete=models.CASCADE)
     autorizador = models.ForeignKey(to=User, on_delete=models.CASCADE)
@@ -1201,35 +1186,6 @@ class Autorizacion(models.Model):
         """
         self.estado = AutorizacionEstado.RECHAZADA
         self.save()
-
-
-class AutorizacionOrden(Autorizacion):
-    """
-    Representa una autorización de orden.
-
-    :ivar tipo: Tipo de la orden.
-    """
-
-    class Meta:
-        verbose_name_plural = "Autorizaciones"
-        unique_together = ('orden', 'autorizador')
-
-    tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2)
-
-    def __str__(self):
-        return f"({self.get_tipo_display()}) {self.orden}"
-
-
-class CorresponsableOrden(Autorizacion):
-    """
-    Representa un corresponsable de una orden.
-
-    :ivar autorizador: Usuario que acepta ser corresponsable.
-    :ivar orden: Orden de la que el prestatario es corresponsable.
-    """
-
-    class Meta:
-        unique_together = ('orden', 'autorizador')
 
 
 # Clases de relación

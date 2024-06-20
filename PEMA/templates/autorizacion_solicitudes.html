@@ -28,8 +28,8 @@
     {% if request.user.is_authenticated %}
         {% if solicitud.esta_pendiente %}
             <div class="d-flex justify-content-center gap-2">
-                <a href="{% url 'actualizar_autorizacion' 'corresponsable' 'aceptar' solicitud.id %}" class="btn btn-success">Autorizar</a>
-                <a href="{% url 'actualizar_autorizacion' 'corresponsable' 'rechazar' solicitud.id %}" class="btn btn-danger">Rechazar</a>
+                <a href="{% url 'autorizacion_solicitudes' solicitud.id 'aceptar' %}" class="btn btn-success">Autorizar</a>
+                <a href="{% url 'autorizacion_solicitudes' solicitud.id 'rechazar' %}" class="btn btn-danger">Rechazar</a>
             </div>
         {% endif %}
 
