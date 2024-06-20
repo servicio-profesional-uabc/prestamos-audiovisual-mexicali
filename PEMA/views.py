@@ -698,64 +698,6 @@ class CancelarOrdenView(View):
             template_name="cancelar_orden.html"
         )
 
-class ActualizarAutorizacion(LoginRequiredMixin, View):
-    """
-    Vista para actualizar la autorización de una orden por parte de un corresponsable o aprobador.
-
-    Métodos:
-        get(request, type, state, id): Maneja la aceptación o rechazo de una orden.
-    """
-
-    def get(self, request, type, state, id):
-        """
-        Corresponsable puede aceptar o rechazar una orden de otro prestatario.
-        Aprobador es Maestro o Coordinador quien puede aprobar o cancelar la orden de un prestatario o propia en caso de ser Maestro.
-
-        Args:
-            request (HttpRequest): La solicitud HTTP.
-            type (str): El tipo de autorización ('corresponsable' o 'aprobacion').
-            state (str): El estado de la autorización ('aceptar', 'rechazar', 'aprobar' o 'rechazar').
-            id (int): El ID de la solicitud de autorización.
-
-        Returns:
-            HttpResponse: Redirección a la página de autorizaciones.
-        """
-        match type:
-            case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
-
-            case "aprobacion":
-                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
-
-            case _:
-                raise Http404("No existe ese tipo de autorización")
-
-        if type == "corresponsable":
-            match state:
-                case "aceptar":
-                    solicitud.aceptar()
-
-                case "rechazar":
-                    solicitud.rechazar()
-
-                case _:
-                    raise Http404("No existe ese estado")
-        else:
-            match state:
-                case "aprobar":
-                    solicitud.orden.aprobar()
-                    solicitud.orden.save()
-
-                case "rechazar":
-                    solicitud.orden.cancelar()
-                    solicitud.orden.save()
-
-                case _:
-                    raise Http404("No existe ese estado")
-
-        return redirect("autorizacion_solicitudes", type, id)
-
-
 class AutorizacionSolicitudView(LoginRequiredMixin, View):
     """
     Vista para mostrar las solicitudes de autorización.
@@ -763,53 +705,27 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
     Métodos:
         get(request, type, id): Renderiza la plantilla correspondiente según el tipo de solicitud.
     """
-    autorizacion_template = "autorizacion_solicitudes.html"
-    aprobacion_template = "aprobacion_solicitudes.html"
 
-    def get(self, request, type, id):
-        """
-        Renderiza la plantilla correspondiente según el tipo de solicitud.
+    def get(self, request, id, action=None):
+        solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
-        Args:
-            request (HttpRequest): La solicitud HTTP.
-            type (str): El tipo de autorización ('corresponsable' o 'aprobacion').
-            id (int): El ID de la solicitud de autorización.
+        if action == "aceptar":
+            solicitud.aceptar()
 
-        Returns:
-            HttpResponse: La respuesta HTTP con la plantilla renderizada.
-        """
-        match type:
-            case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+        if action == "rechazar":
+            solicitud.rechazar()
 
-                if solicitud.autorizador != request.user:
-                    raise Http404("No tienes permiso de ver esta Orden")
+        if solicitud.autorizador != request.user:
+            raise Http404("No tienes permiso de ver esta Orden")
 
-                return render(
-                    request=request,
-                    template_name=self.autorizacion_template,
-                    context={
-                        "solicitud": solicitud,
-                        "orden": solicitud.orden
-                    }
-                )
-
-            case "aprobacion":
-                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
-
-                if solicitud.autorizador != request.user:
-                    raise Http404("No tienes permiso de ver esta Orden")
-
-                return render(
-                    request=request,
-                    template_name=self.aprobacion_template,
-                    context={
-                        "solicitud": solicitud,
-                        "orden": solicitud.orden
-                    }
-                )
-
-        raise Http404("No existe ese tipo de autorización")
+        return render(
+            request=request,
+            template_name="autorizacion_solicitudes.html",
+            context={
+                "solicitud": solicitud,
+                "orden": solicitud.orden
+            }
+        )
 
 
 class DetallesOrdenAutorizadaView(View):

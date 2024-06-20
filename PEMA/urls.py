@@ -4,7 +4,6 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import ActualizarAutorizacion
 from .views import AutorizacionSolicitudView
 from .views import AgregarAlCarritoView
 from .views import AgregarCorresponsablesView
@@ -117,15 +116,15 @@ urlpatterns = [
     ),
 
     path(
-        route='autorizacion_solicitudes/<str:type>/<int:id>/',
+        route='autorizacion_solicitudes/<int:id>/',
         view=AutorizacionSolicitudView.as_view(),
         name='autorizacion_solicitudes'
     ),
 
     path(
-        route='actualizar_autorizacion/<str:type>/<str:state>/<int:id>',
-        view=ActualizarAutorizacion.as_view(),
-        name='actualizar_autorizacion'
+        route='autorizacion_solicitudes/<int:id>/<str:action>',
+        view=AutorizacionSolicitudView.as_view(),
+        name='autorizacion_solicitudes'
     ),
 
     path(
