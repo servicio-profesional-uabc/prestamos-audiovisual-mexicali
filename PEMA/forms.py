@@ -71,7 +71,7 @@ class FiltrosForm(forms.ModelForm):
 
     class Meta:
         model = Carrito
-        fields = ['inicio', 'nombre', 'materia', 'lugar', 'descripcion', 'lugar', 'descripcion_lugar', 'maestro',
+        fields = ['inicio', 'nombre', 'materia', 'lugar', 'descripcion', 'lugar', 'descripcion_lugar',
                   '_corresponsables']
 
     descripcion = forms.CharField(widget=forms.Textarea)
