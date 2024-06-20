@@ -21,14 +21,6 @@ from prestamos import settings
 def user_post_save(sender, instance, created, **kwargs):
     """
     Crea un perfil asociado a un usuario cada vez que se guarda un usuario nuevo.
-
-    Args:
-
-        sender (Model): User
-        instance (User): La instancia de usuario que se está guardando.
-        created (bool): Indica si el usuario fue recién creado.
-        **kwargs: Parámetros adicionales.
-
     """
 
     if not created:
@@ -42,12 +34,6 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     """
     Actualiza las instancias de CorresponsableOrden cuando cambia la lista de corresponsables de una orden.
 
-    Args:
-        sender (Model): Orden corresponsable.
-        instance (Orden): La instancia de orden que está siendo modificada.
-        action (str): La acción que disparó la señal ('post_remove' o 'post_add').
-        *args: Argumentos adicionales.
-        **kwargs: Parámetros adicionales.
     """
 
     if action == 'post_remove':
@@ -88,12 +74,6 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
     En caso de ser aprobada, se envía una solicitud de autorización al profesor (si la orden es ordinaria) o al coordinador
     (si es extraordinaria). Además, actualiza el estado de la orden según los cambios en CorresponsableOrden.
 
-    Args:
-        sender (Model): CorresponsableOrden
-        instance (CorresponsableOrden): La instancia de CorresponsableOrden que está siendo modificada.
-        created (bool): Indica si la CorresponsableOrden fue recién creada.
-        **kwargs: Parámetros adicionales.
-
     """
 
     # TODO: faltan pruebas unitarias para este trigger
@@ -123,16 +103,14 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Entrega)
 def entrega_created(sender, instance, created, **kwargs):
     """
-    Esta señal se dispara cuando un usuario del almacén crea una entrega desde la interfaz de administración,
-    restringida solo a usuarios del almacén. Para que la entrega sea válida, la orden debe estar en estado APROBADA,
-     lo que indica que está lista para comenzar en la fecha y hora programadas. La función entregar() verifica este estado antes
-    de crear la instancia de Entrega.
+    Actualiza automáticamente el estado de la orden asociada a "Entregado" cada vez que se crea una nueva instancia de Entrega.
 
-    Args:
-        sender (Model): Entrega
-        instance (Entrega): La instancia de Entrega que está siendo creada.
-        created (bool): Indica si la Entrega fue recién creada.
-        **kwargs: Parámetros adicionales.
+    El sistema verifica si esta entrega es nueva o si es una actualización de una existente.
+    Si es una entrega nueva , se marcar la orden relacionada como entregada.
+    Utiliza la información del entregador que realizó la entrega para actualizar el estado de la orden,
+    indicando que ha sido entregada satisfactoriamente.
+
+
     """
     if not created:
         return
@@ -145,16 +123,11 @@ def entrega_created(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Devolucion)
 def devolucion_created(sender, instance, created, **kwargs):
     """
-    Esta señal se activa cuando un usuario del almacén crea una devolución desde la interfaz de administración,
-    con acceso restringido exclusivamente a usuarios del almacén. Para que la devolución pueda realizarse, la orden debe estar
-    en estado ENTREGADA. La función devolver() verifica este estado antes de crear la instancia de Devolución.
+    La señal devolucion_created se activa cada vez que se guarda una instancia del modelo Devolucion en el sistema.
 
-
-    Args:
-        sender (Model): Devolucion
-        instance (Devolucion): La instancia de Devolucion que está siendo creada.
-        created (bool): Indica si la Devolucion fue recién creada.
-        **kwargs: Parámetros adicionales.
+    Se verifica si la instancia de Devolucion acaba de ser creada.
+    Obtener la orden asociada a la devolución.
+    Realizar operaciones relacionadas con la devolución de la orden.
     """
     if not created:
         return
