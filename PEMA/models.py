@@ -7,9 +7,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
+
+from prestamos import settings
 
 
 # Roles de Usuario
@@ -670,6 +673,7 @@ class Orden(models.Model):
     def cancelar(self):
         """
         Cancela la orden cambiando su estado a CANCELADA.
+        No se puede cancelar una orden que ya se entregó o se devolvió.
         """
         if self.estado in [EstadoOrden.ENTREGADA, EstadoOrden.DEVUELTA]:
             return

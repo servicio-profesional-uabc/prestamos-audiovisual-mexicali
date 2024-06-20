@@ -699,13 +699,6 @@ class CancelarOrdenView(View):
         )
 
 class AutorizacionSolicitudView(LoginRequiredMixin, View):
-    """
-    Vista para mostrar las solicitudes de autorización.
-
-    Métodos:
-        get(request, type, id): Renderiza la plantilla correspondiente según el tipo de solicitud.
-    """
-
     def get(self, request, id, action=None):
         solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
@@ -726,7 +719,6 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
                 "orden": solicitud.orden
             }
         )
-
 
 class DetallesOrdenAutorizadaView(View):
     """
