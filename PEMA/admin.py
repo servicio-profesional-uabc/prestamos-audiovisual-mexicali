@@ -233,7 +233,7 @@ class PerfilAdmin(admin.ModelAdmin):
     Mostrando detalles como número de teléfono y permite búsqueda por este campo.
 
     """
-    list_display = ('numero_telefono',)
+    list_display = ('usuario',)
     search_fields = ['numero_telefono']
 
 

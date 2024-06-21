@@ -265,8 +265,10 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         return render(
             request=request,
             template_name="detalles_orden.html",
-            context={"orden": orden,
-                     "EstadoOrden": EstadoOrden}
+            context={
+                "orden": orden,
+                "EstadoOrden": EstadoOrden
+            }
         )
 
     def post(self, request, id):
@@ -504,7 +506,9 @@ class DetallesOrdenReportadaView(View):
         return render(
             request=request,
             template_name="almacen_permisos/detalles_orden_reportada.html",
-            context={"orden": orden}
+            context={
+                "orden": orden
+            }
         )
 
 
@@ -517,7 +521,9 @@ class OrdenesDevueltasView(View):
         return render(
             request=request,
             template_name="almacen_permisos/ordenes_devueltas.html",
-            context={'ordenes': ordenes_devueltas}
+            context={
+                'ordenes': ordenes_devueltas
+            }
         )
 
 
