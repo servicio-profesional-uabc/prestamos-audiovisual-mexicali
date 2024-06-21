@@ -50,10 +50,10 @@ class OrdenAdmin(admin.ModelAdmin):
     búsqueda por nombre de orden, filtros por estado y tipo de orden, y acciones para marcar órdenes como entregadas,
     devueltas o canceladas.
     """
-    exclude = ('estado',)
+    exclude = ('estado', 'tipo')
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
-    list_display = ('nombre', 'prestatario', 'tipo', 'estado')
+    list_display = ('nombre', 'prestatario', 'tipo', 'estado', 'id')
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo', ReportedOrdersFilter)
     ordering = ('estado',)

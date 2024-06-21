@@ -85,19 +85,16 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
         return
 
     # si el registro se modifica
-    # verificar las respuestas de los corresponsables
-    match orden.estado_corresponsables():
-        case AutorizacionEstado.ACEPTADA:
+    # Estado de los corresponsables, si aceptan la orden o no
+    estado_corresponsables = orden.estado_corresponsables()
 
-            orden.estado = EstadoOrden.RESERVADA  # esperando autorización
-            orden.solicitar_autorizacion()  # envia solicitud a maestro o coordinador dependiendo del tipo de orden
-            # orden.solicitar_autorizacion(orden)  # enviar solicitudes
+    if estado_corresponsables == AutorizacionEstado.ACEPTADA:
+        # si todos aceptan se envia la solicitud al maestro/coordinador
+        orden.solicitar_autorizacion()
 
-        case AutorizacionEstado.RECHAZADA:
-            orden.estado = EstadoOrden.CANCELADA
-
-    # guardar orden actualizada
-    orden.save()
+    if estado_corresponsables == AutorizacionEstado.RECHAZADA:
+        # si alguno cancela la solicitud se cancela
+        orden.cancelar()
 
 
 @receiver(post_save, sender=Entrega)

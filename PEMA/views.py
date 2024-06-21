@@ -11,21 +11,31 @@ from django.utils.timezone import make_aware
 from django.views import View
 from django.views.generic.edit import UpdateView
 
-from .forms import CorresponsableForm
+from .forms import CorresponsableForm, CambiarEstadoOrdenForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, Categoria, CorresponsableOrden, Maestro, Materia
+from .models import Articulo, Categoria, CorresponsableOrden
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
 
 class IndexView(View):
     """
-    Mostrar la página de inicio.
+    View para la página de inicio.
 
-    Renderiza la plantilla index.html al recibir una solicitud GET.
+    Métodos:
+        get(request): Renderiza la plantilla 'index.html'.
     """
 
     def get(self, request):
+        """
+        Maneja las solicitudes GET para la página de inicio.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         return render(
             request=request,
             template_name="index.html"
@@ -34,10 +44,13 @@ class IndexView(View):
 
 class AgregarCorresponsablesView(UpdateView):
     """
-    Agregar corresponsables a un carrito.
+    View para agregar corresponsables a un carrito.
 
-    Renderiza la plantilla agregar_corresponsables.html, obtiene el
-    carrito del usuario y actualiza los corresponsables seleccionados.
+    Atributos:
+        model (Model): Modelo a actualizar.
+        form_class (Form): Formulario a utilizar.
+        template_name (str): Nombre de la plantilla a renderizar.
+        success_url (str): URL a la que redirigir en caso de éxito.
     """
     model = Carrito
     form_class = CorresponsableForm
@@ -45,10 +58,25 @@ class AgregarCorresponsablesView(UpdateView):
     success_url = reverse_lazy('carrito')
 
     def get_object(self, queryset=None):
+        """
+        Obtiene el objeto Carrito del prestatario actual.
+
+        Args:
+            queryset (QuerySet, optional): Conjunto de consulta.
+
+        Returns:
+            Carrito: El objeto Carrito del prestatario.
+        """
         user = self.request.user
         return get_object_or_404(Carrito, prestatario=user)
 
     def get_form_kwargs(self):
+        """
+        Obtiene los argumentos para el formulario.
+
+        Returns:
+            dict: Argumentos del formulario.
+        """
         kwargs = super().get_form_kwargs()
         carrito = self.get_object()
         kwargs['instance'] = carrito
@@ -56,6 +84,15 @@ class AgregarCorresponsablesView(UpdateView):
         return kwargs
 
     def form_valid(self, form):
+        """
+        Maneja el formulario válido.
+
+        Args:
+            form (Form): El formulario validado.
+
+        Returns:
+            HttpResponse: La respuesta HTTP.
+        """
         response = super().form_valid(form)
         form.instance._corresponsables.clear()
         for corresponsable in form.cleaned_data['corresponsables']:
@@ -63,19 +100,34 @@ class AgregarCorresponsablesView(UpdateView):
         return response
 
     def get_success_url(self):
+        """
+        Obtiene la URL de éxito.
+
+        Returns:
+            str: URL de éxito.
+        """
         return reverse_lazy('carrito')
 
 
 class ActualizarPerfilView(LoginRequiredMixin, View):
     """
-    Completar y actualizar datos faltantes del usuario.
+    Vista para registrar los datos faltantes del usuario.
 
-    Muestra formularios para actualizar el perfil y los datos de usuario en
-    actualizar_perfil_y_usuario.html. Procesa y guarda los cambios al enviar los formularios.
-
+    Métodos:
+        get(request): Renderiza la plantilla para actualizar el perfil.
+        post(request): Procesa el formulario de actualización del perfil.
     """
 
     def get(self, request):
+        """
+        Renderiza la plantilla para actualizar el perfil.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         return render(
             request=request,
             template_name="actualizar_perfil_y_usuario.html",
@@ -86,6 +138,15 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
         )
 
     def post(self, request):
+        """
+        Procesa el formulario de actualización del perfil.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: Redirección o respuesta con errores de formulario.
+        """
         perfil = Perfil.user_data(user=request.user)
 
         perfil_form = ActualizarPerfil(request.POST, instance=perfil)
@@ -108,14 +169,23 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
 
 class MenuView(View, LoginRequiredMixin):
     """
-    Muestra  el menú principal del usuario.
+    Vista para mostrar el menú principal del usuario.
 
-    Verifica si el perfil del usuario está completo.
-    Si no lo está, redirige a la vista de actualización de perfil, caso contrario, si está completo,
-    muestra la plantilla menu/menu.html con información del usuario.
+    Métodos:
+        get(request): Renderiza la plantilla del menú.
+        post(request): Método POST vacío.
     """
 
     def get(self, request):
+        """
+        Renderiza la plantilla del menú.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         datos_usuario = Perfil.user_data(user=request.user)
 
         if datos_usuario.incompleto():
@@ -128,24 +198,47 @@ class MenuView(View, LoginRequiredMixin):
         )
 
     def post(self, request):
+        """
+        Método POST vacío.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        """
         pass
 
 
 class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
-    Gestionar el carrito de un prestatario.
+    Vista para gestionar el carrito de un prestatario.
 
-    Verifica si el usuario tiene un carrito.
-    Obtiene y muestra los artículos en el carrito, notificando si alguno no está disponible.
-    Maneja acciones específicas como ordenar el carrito y redirige según la acción realizada.
+    Métodos:
+        test_func(): Verifica si el usuario tiene un carrito.
+        get(request, accion=None): Maneja las solicitudes GET para el carrito.
+        post(request, accion): Maneja las solicitudes POST para el carrito.
     """
 
     def test_func(self):
+        """
+        Verifica si el usuario tiene un carrito.
+
+        Returns:
+            bool: True si el usuario tiene un carrito, False en caso contrario.
+        """
         prestatario = Prestatario.get_user(self.request.user)
         return prestatario.tiene_carrito()
 
     def get(self, request, accion=None):
+        """
+        Maneja las solicitudes GET para el carrito.
 
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            accion (str, optional): Acción a realizar.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
         articulos_no_disponibles = []
@@ -153,7 +246,8 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         for articulo_carrito in carrito.articulos_carrito():
             if not articulo_carrito.articulo.disponible(carrito.inicio, carrito.final).exists():
                 articulos_no_disponibles.append(articulo_carrito)
-                messages.add_message(request, messages.WARNING, f'El artículo {articulo_carrito.articulo.nombre} no está disponible.')
+                messages.add_message(request, messages.WARNING,
+                                     f'El artículo {articulo_carrito.articulo.nombre} no está disponible.')
 
         return render(
             request=request,
@@ -166,6 +260,16 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
     def post(self, request, accion):
+        """
+        Maneja las solicitudes POST para el carrito.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            accion (str): Acción a realizar.
+
+        Returns:
+            HttpResponse: Redirección según la acción realizada.
+        """
         if accion == 'ordenar':
             carrito = Prestatario.get_user(request.user).carrito()
             ordenado = carrito.ordenar()
@@ -178,14 +282,23 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class FiltrosView(LoginRequiredMixin, View):
     """
-    Gestionar los filtros de búsqueda de artículos.
+    Vista para gestionar los filtros de búsqueda de artículos.
 
-    Renderiza la plantilla de filtros y elimina el carrito existente del prestatario si lo tiene.
-    Procesa el formulario de filtros, crea y guarda un nuevo carrito con los datos proporcionados,
-    y redirige al catálogo si el formulario es válido.
+    Métodos:
+        get(request): Renderiza la plantilla de filtros.
+        post(request): Procesa el formulario de filtros.
     """
 
     def get(self, request):
+        """
+        Renderiza la plantilla de filtros.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         prestatario = Prestatario.get_user(request.user)
 
         if prestatario.tiene_carrito():
@@ -193,7 +306,8 @@ class FiltrosView(LoginRequiredMixin, View):
 
         for materia in prestatario.materias():
             if materia.son_correos_vacios():
-                messages.add_message(request, messages.WARNING, f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
+                messages.add_message(request, messages.WARNING,
+                                     f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
 
         return render(
             request=request,
@@ -206,6 +320,15 @@ class FiltrosView(LoginRequiredMixin, View):
         )
 
     def post(self, request):
+        """
+        Procesa el formulario de filtros.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: Redirección o respuesta con errores de formulario.
+        """
         prestatario = Prestatario.get_user(request.user)
         form = FiltrosForm(request.POST)
 
@@ -238,14 +361,26 @@ class FiltrosView(LoginRequiredMixin, View):
                 'materias': prestatario.materias(),
             },
         )
+
+
 class SolicitudView(View):
     """
-    Mostrar la página de solicitud.
+    Vista para mostrar la página de solicitud.
 
-    Renderiza la plantilla solicitud.html.
+    Métodos:
+        get(request): Renderiza la plantilla 'solicitud.html'.
     """
 
     def get(self, request):
+        """
+        Maneja las solicitudes GET para la página de solicitud.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         return render(
             request=request,
             template_name="solicitud.html"
@@ -254,14 +389,22 @@ class SolicitudView(View):
 
 class HistorialSolicitudesView(View):
     """
-    Mostrar el historial de solicitudes del prestatario.
+    Vista para mostrar el historial de solicitudes del prestatario.
 
-    Obtiene y muestra las solicitudes del prestatario clasificadas en pendientes,
-    listas para entregar, canceladas, entregadas y devueltas.
+    Métodos:
+        get(request): Renderiza la plantilla del historial de solicitudes.
     """
 
     def get(self, request):
+        """
+        Maneja las solicitudes GET para el historial de solicitudes.
 
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         prestatario = Prestatario.get_user(request.user)
 
         ordenes_pendientes = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.RESERVADA)
@@ -287,20 +430,36 @@ class HistorialSolicitudesView(View):
 
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
     """
-    Mostrar los detalles de una orden específica.
+    Vista para mostrar los detalles de una orden específica.
 
-
-    Primero verifica si el usuario es el prestatario de la orden.
-    Muestra los detalles de la orden.
-    Maneja la cancelación de una orden y guarda el cambio.
+    Métodos:
+        test_func(): Verifica si el usuario es el prestatario de la orden.
+        get(request, id): Renderiza la plantilla de detalles de la orden.
+        post(request, id): Maneja la cancelación de una orden.
     """
 
     def test_func(self):
+        """
+        Verifica si el usuario es el prestatario de la orden.
+
+        Returns:
+            bool: True si el usuario es el prestatario de la orden, False en caso contrario.
+        """
         prestatario = Prestatario.get_user(self.request.user)
         orden = get_object_or_404(Orden, id=self.kwargs['id'])
         return prestatario == orden.prestatario
 
     def get(self, request, id):
+        """
+        Renderiza la plantilla de detalles de la orden.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            id (int): El ID de la orden.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         orden = Orden.objects.get(id=id)
         return render(
             request=request,
@@ -310,6 +469,16 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
     def post(self, request, id):
+        """
+        Maneja la cancelación de una orden.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            id (int): El ID de la orden.
+
+        Returns:
+            HttpResponse: Redirección al historial de solicitudes con un mensaje de éxito.
+        """
         orden = get_object_or_404(Orden, id=id)
         orden.cancelar()
         orden.save()
@@ -319,19 +488,35 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
     """
-    Permitir al usuario agregar artículos a su carrito.
+    Vista donde el usuario agrega artículos a su carrito.
 
-    Verifica si el prestatario ha comenzado el proceso de carrito.
-    Muestra los artículos disponibles en el catálogo.
-    Filtra los artículos según la categoría seleccionada.
+    Métodos:
+        test_func(): Verifica si el prestatario ha comenzado el proceso de carrito.
+        get(request): Renderiza la plantilla del catálogo con los artículos disponibles.
+        post(request): Filtra los artículos según la categoría seleccionada.
     """
 
     def test_func(self):
+        """
+        Verifica si el prestatario ha comenzado el proceso de carrito (debió haber completado Filtro).
+
+        Returns:
+            bool: True si el prestatario ha comenzado el proceso de carrito, False en caso contrario.
+        """
         prestatario = Prestatario.get_user(self.request.user)
         carrito = get_object_or_404(Carrito, prestatario=prestatario)
         return prestatario == carrito.prestatario
 
     def get(self, request):
+        """
+        Renderiza la plantilla del catálogo con los artículos disponibles.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
 
@@ -339,6 +524,7 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         articulos_disponibles = []
         for articulo in carrito.materia.articulos():
             cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+
             if cantidad_disponible > 0:
                 articulos_disponibles.append(articulo)
                 articulo.num_unidades = cantidad_disponible
@@ -356,6 +542,15 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         )
 
     def post(self, request):
+        """
+        Filtra los artículos según la categoría seleccionada.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada con los artículos filtrados.
+        """
         prestatario = Prestatario.get_user(request.user)
         carrito = prestatario.carrito()
         categoria = request.POST["categoria"]
@@ -378,12 +573,23 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
 
 class DetallesArticuloView(View):
     """
-    Mostrar los detalles de un artículo específico.
+    Vista para mostrar los detalles de un artículo específico.
 
-    Muestra los detalles de un artículo.
+    Métodos:
+        get(request, id): Renderiza la plantilla de detalles del artículo.
     """
 
     def get(self, request, id):
+        """
+        Renderiza la plantilla de detalles del artículo.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            id (int): El ID del artículo.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         articulo = get_object_or_404(Articulo, id=id)
 
         return render(
@@ -395,43 +601,105 @@ class DetallesArticuloView(View):
 
 class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
     """
-    Agregar un artículo al carrito del prestatario.
+    Vista para agregar un artículo al carrito del prestatario.
 
-    Verifica si el prestatario tiene un carrito.
-    Añade un artículo al carrito y guarda los cambios.
-
+    Métodos:
+        test_func(): Verifica si el prestatario tiene un carrito.
+        post(request, articulo_id): Maneja la adición de un artículo al carrito.
     """
 
     def test_func(self):
+        """
+        Verifica si el prestatario tiene un carrito.
+
+        Returns:
+            bool: True si el prestatario tiene un carrito, False en caso contrario.
+        """
         prestatario = Prestatario.get_user(self.request.user)
         return prestatario.tiene_carrito()
 
     def post(self, request, articulo_id):
+        """
+        Maneja la adición de un artículo al carrito.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            articulo_id (int): El ID del artículo a agregar.
+
+        Returns:
+            HttpResponse: Redirección al catálogo.
+        """
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
         cantidad = int(request.POST.get('cantidad', 1))
 
         if carrito.existe(articulo):
             carrito.eliminar_articulo(articulo)
+
         carrito.agregar(articulo, cantidad)
         carrito.save()
 
         return redirect("catalogo")
 
 
+class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        orden = get_object_or_404(Orden, id=self.kwargs['id'])
+        materia = orden.materia
+        if orden.es_extraordinaria():
+            print(self.request.user.groups.filter(name='coordinador'))
+            return self.request.user.groups.filter(name='coordinador').exists()
+        elif orden.es_ordinaria():
+            return self.request.user in materia._maestros.all()
+        return False
+
+    def get(self, request, id):
+        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
+        form = CambiarEstadoOrdenForm(instance=orden)
+        return render(request, 'cambiar_estado_orden.html', {'form': form, 'orden': orden})
+
+    def post(self, request, id):
+        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
+        action = request.POST.get('action')
+
+        if action == 'aprobar':
+            orden.aprobar()
+        elif action == 'cancelar':
+            orden.cancelar()
+
+        return redirect('cambiar_estado_orden', id=orden.id)
+
+
 class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
     """
-    Eliminar un artículo del carrito del prestatario.
+    Vista para eliminar un artículo del carrito del prestatario.
 
-    Verifica si el prestatario tiene un carrito.
-    Elimina un artículo del carrito y guarda los cambios.
+    Métodos:
+        test_func(): Verifica si el prestatario tiene un carrito.
+        get(request, articulo_id): Maneja la eliminación de un artículo del carrito.
     """
 
     def test_func(self):
+        """
+        Verifica si el prestatario tiene un carrito.
+
+        Returns:
+            bool: True si el prestatario tiene un carrito, False en caso contrario.
+        """
         prestatario = Prestatario.get_user(self.request.user)
         return prestatario.tiene_carrito()
 
     def get(self, request, articulo_id):
+        """
+        Maneja la eliminación de un artículo del carrito.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            articulo_id (int): El ID del artículo a eliminar.
+
+        Returns:
+            HttpResponse: Redirección al carrito.
+        """
         carrito = get_object_or_404(Carrito, prestatario=request.user)
         articulo = get_object_or_404(Articulo, id=articulo_id)
 
@@ -443,24 +711,29 @@ class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 
 class CancelarOrdenView(View):
     """
-    Muestra la página de cancelación de orden.
+    Vista para mostrar la página de cancelación de orden.
 
-    Renderiza la plantilla para la cancelación de una orden.
+    Métodos:
+        get(request): Renderiza la plantilla 'cancelar_orden.html'.
     """
 
     def get(self, request):
+        """
+        Maneja las solicitudes GET para la página de cancelación de orden.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         return render(
             request=request,
             template_name="cancelar_orden.html"
         )
 
-class AutorizacionSolicitudView(LoginRequiredMixin, View):
-    """
-    Muestra las solicitudes de autorización.
 
-    Muestra y maneja las acciones de aceptación o rechazo de una solicitud de autorización,
-    verificando los permisos del usuario.
-    """
+class AutorizacionSolicitudView(LoginRequiredMixin, View):
     def get(self, request, id, action=None):
         solicitud = get_object_or_404(CorresponsableOrden, pk=id)
 
@@ -485,10 +758,23 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
 
 class DetallesOrdenAutorizadaView(View):
     """
-    Muestra los detalles de una orden  que ha sido aprobada.
+    Vista para mostrar los detalles de una orden aprobada.
+
+    Métodos:
+        get(request, id): Renderiza la plantilla de detalles de la orden aprobada.
     """
 
     def get(self, request, id):
+        """
+        Renderiza la plantilla de detalles de la orden aprobada.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            id (int): El ID de la orden aprobada.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.APROBADA)
 
         return render(
@@ -500,14 +786,24 @@ class DetallesOrdenAutorizadaView(View):
 
 class OrdenesPrestadasView(View):
     """
-    Muetsra las órdenes que han sido prestadas.
+    Vista para mostrar las órdenes prestadas.
 
-    Renderiza la plantilla con la lista de órdenes que están en estado "ENTREGADA".
+    Métodos:
+        get(request): Renderiza la plantilla con la lista de órdenes prestadas.
     """
 
     def get(self, request):
+        """
+        Renderiza la plantilla con la lista de órdenes prestadas.
 
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         ordenes_prestadas = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
+        print("ESTOOO 2", ordenes_prestadas)
 
         return render(
             request=request,
@@ -518,13 +814,23 @@ class OrdenesPrestadasView(View):
 
 class DetallesOrdenPrestadaView(View):
     """
-    Muestra los detalles de una orden que ha sido prestada.
+    Vista para mostrar los detalles de una orden prestada.
 
-    Renderiza la plantilla con los detalles de una orden específica que está en estado "ENTREGADA".
-
+    Métodos:
+        get(request, id): Renderiza la plantilla de detalles de la orden prestada.
     """
 
     def get(self, request, id):
+        """
+        Renderiza la plantilla de detalles de la orden prestada.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            id (int): El ID de la orden prestada.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.ENTREGADA)
 
         return render(
@@ -536,12 +842,22 @@ class DetallesOrdenPrestadaView(View):
 
 class OrdenesReportadasView(View):
     """
-    Mostrar las órdenes que han sido reportadas.
+    Vista para mostrar las órdenes reportadas.
 
-    Renderiza la plantilla con la lista de órdenes que están en estado "RECHAZADA".
-"""
+    Métodos:
+        get(request): Renderiza la plantilla con la lista de órdenes reportadas.
+    """
 
     def get(self, request):
+        """
+        Renderiza la plantilla con la lista de órdenes reportadas.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.RECHAZADA)
 
         return render(
@@ -553,12 +869,23 @@ class OrdenesReportadasView(View):
 
 class ReportarOrdenView(View):
     """
-    Permitir al usuario regirigirse a una seccion para reportar una orden.
+    Vista para reportar una orden.
 
-    Renderiza la plantilla para reportar una orden específica.
+    Métodos:
+        get(request, id): Renderiza la plantilla para reportar una orden.
     """
 
     def get(self, request, id):
+        """
+        Renderiza la plantilla para reportar una orden.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            id (int): El ID de la orden a reportar.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         return render(
             request=request,
             template_name="reportar_orden.html"
@@ -567,13 +894,23 @@ class ReportarOrdenView(View):
 
 class DetallesOrdenReportadaView(View):
     """
-    Muetsra los detalles de una orden que ha sido reportada.
+    Vista para mostrar los detalles de una orden reportada.
 
-    Renderiza la plantilla con los detalles de una orden específica que está en estado "RECHAZADA".
-
+    Métodos:
+        get(request, id): Renderiza la plantilla de detalles de la orden reportada.
     """
 
     def get(self, request, id):
+        """
+        Renderiza la plantilla de detalles de la orden reportada.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            id (int): El ID de la orden reportada.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RECHAZADA)
 
         return render(
@@ -585,12 +922,22 @@ class DetallesOrdenReportadaView(View):
 
 class OrdenesDevueltasView(View):
     """
-    Muestra las órdenes que han sido devueltas.
+    Vista para mostrar las órdenes devueltas.
 
-    Renderiza la plantilla con la lista de órdenes que están en estado "DEVUELTA".
+    Métodos:
+        get(request): Renderiza la plantilla con la lista de órdenes devueltas.
     """
 
     def get(self, request):
+        """
+        Renderiza la plantilla con la lista de órdenes devueltas.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.DEVUELTA)
         print("EST 33", ordenes_devueltas)
 
@@ -603,12 +950,23 @@ class OrdenesDevueltasView(View):
 
 class DetallesOrdenDevueltaView(View):
     """
-    Mostrar los detalles de una orden que ha sido devuelta.
+    Vista para mostrar los detalles de una orden devuelta.
 
-    Renderiza la plantilla con los detalles de una orden específica que está en estado "DEVUELTA".
+    Métodos:
+        get(request, id): Renderiza la plantilla de detalles de la orden devuelta.
     """
 
     def get(self, request, id):
+        """
+        Renderiza la plantilla de detalles de la orden devuelta.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+            id (int): El ID de la orden devuelta.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.DEVUELTA)
 
         return render(
@@ -620,12 +978,22 @@ class DetallesOrdenDevueltaView(View):
 
 class OrdenesReportadasCordinadorView(View):
     """
-    Mostrar las órdenes que han sido reportadas al coordinador.
+    Vista para mostrar las órdenes reportadas al coordinador.
 
-    Renderiza la plantilla con la lista de órdenes reportadas al coordinador.
+    Métodos:
+        get(request): Renderiza la plantilla con la lista de órdenes reportadas.
     """
 
     def get(self, request):
+        """
+        Renderiza la plantilla con la lista de órdenes reportadas al coordinador.
+
+        Args:
+            request (HttpRequest): La solicitud HTTP.
+
+        Returns:
+            HttpResponse: La respuesta HTTP con la plantilla renderizada.
+        """
         return render(
             request=request,
             template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
@@ -634,10 +1002,15 @@ class OrdenesReportadasCordinadorView(View):
 
 def cambiar_estado_ENTREGADO(request, orden_id, estado):
     """
-    Funcion que cambia el estado de una orden a "ENTREGADA".
+    Cambia el estado de una orden a 'ENTREGADA'.
 
-    Cambia el estado de una orden específica a "ENTREGADA" y redirige a la página de órdenes prestadas.
-    Maneja errores si la orden no existe o si se utiliza un método HTTP no permitido.
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        orden_id (int): El ID de la orden.
+        estado (str): El nuevo estado de la orden.
+
+    Returns:
+        HttpResponse: Redirección a la página de órdenes prestadas.
     """
     if request.method == 'POST':
         orden_id = request.POST.get('orden_id')
@@ -654,9 +1027,15 @@ def cambiar_estado_ENTREGADO(request, orden_id, estado):
 
 def cambiar_estado_DEVUELTO(request, orden_id, estado):
     """
-    Funcion para cambiar el estado de una orden a "DEVUELTA".
+    Cambia el estado de una orden a 'DEVUELTA'.
 
-    Cambia el estado de una orden específica a "DEVUELTA" y redirige a la página de órdenes devueltas.
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        orden_id (int): El ID de la orden.
+        estado (str): El nuevo estado de la orden.
+
+    Returns:
+        HttpResponse: Redirección a la página de órdenes devueltas.
     """
     if request.method == 'POST':
         orden_id = request.POST.get('orden_id')
@@ -673,10 +1052,14 @@ def cambiar_estado_DEVUELTO(request, orden_id, estado):
 
 def estado_orden(request, tipo_estado):
     """
-    Funcion para mostrar las órdenes según su estado.
+    Vista para mostrar las órdenes según su estado.
 
-    Renderiza la plantilla principal con la lista de órdenes clasificadas por su
-    estado: pendientes, listas, canceladas, entregadas y devueltas.
+    Args:
+        request (HttpRequest): La solicitud HTTP.
+        tipo_estado (str): El tipo de estado de las órdenes a mostrar.
+
+    Returns:
+        HttpResponse: La respuesta HTTP con la plantilla renderizada.
     """
     ordenes_pendientes = Orden.objects.filter(estado="Pendiente")
     ordenes_listas = Orden.objects.filter(estado="Listo para iniciar")
