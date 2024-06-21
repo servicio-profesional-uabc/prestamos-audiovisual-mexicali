@@ -1,10 +1,9 @@
 import pandas as pd
 import re
 from django.core.management.base import BaseCommand
-from PEMA.models import Maestro
-from PEMA.models import Materia
-from PEMA.models import Prestatario
-
+from django.db import IntegrityError
+from PEMA.models import Maestro, Materia, Prestatario
+from django.contrib.auth.models import User
 
 class Command(BaseCommand):
     help = 'Importa datos desde un archivo xls (2003)'
@@ -14,72 +13,98 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         file_path = options['file_path']
-        self.importar_listas(file_path)
-
-    def importar_listas(self, file_path):
-        # Cargar el archivo una vez
         df = pd.read_excel(file_path)
+        maestro_data = self.parse_maestro(df)
+        materia_data = self.parse_materia(df)
+        prestatarios_data = self.parse_prestatarios(file_path)
 
-        """Parsear maestro"""
-        # Obtener el num de empleado y nombre
+        self.save_data(maestro_data, materia_data, prestatarios_data)
+
+    def parse_maestro(self, df):
         no_empleado = df.iloc[17, 1]
         nombre_empleado = df.iloc[17, 3]
+        return {
+            'no_empleado': no_empleado,
+            'nombre_empleado': nombre_empleado
+        }
 
-        """Parsear materia"""
-        # Obtener el nombre de la materia y la fecha
+    def parse_materia(self, df):
         nombre_materia = df.iloc[13, 3]
         fecha = df.iloc[5, 38]
+        anno, semestre = self.parse_fecha(fecha)
+        return {
+            'nombre_materia': nombre_materia,
+            'anno': anno,
+            'semestre': semestre
+        }
 
-        # dividir la fecha utilizando "/"
+    def parse_fecha(self, fecha):
         partes_fecha = fecha.split("/")
-        # obtener el anno (la tercera parte)
         anno = int(partes_fecha[2])
-        if int(partes_fecha[1]) < 7:
-            semestre = 1
-        else:
-            semestre = 2
+        semestre = 1 if int(partes_fecha[1]) < 7 else 2
+        return anno, semestre
 
-        """Parsear prestatarios"""
-        # Para evitar que pandas detecte 'unnamed n' columnas, releemos el
-        # archivo para usar usecols en read_excel().
+    def parse_prestatarios(self, file_path):
         df = pd.read_excel(file_path, header=21, usecols=['NOMBRE DEL ALUMNO', 'MATRÍCULA'])
-
-        # Eliminar filas vacias o NAN
         df = df.dropna(subset=['NOMBRE DEL ALUMNO'], how='all')
 
-        # Definir patron de expresion regular para encontrar numeros seguidos de dos espacios
         patron = r'\d+\s\s'
-
-        # Encontrar el índice de la primera fila que contiene "Fecha/Hora"
         final = df[df['NOMBRE DEL ALUMNO'] == 'Fecha/Hora'].index[0]
 
         nombres = []
         matriculas = []
 
-        # Iterar sobre los datos completos
         for index, row in df.loc[:final - 1].iterrows():
-            nombre = row['NOMBRE DEL ALUMNO']
-            matricula = row['MATRÍCULA']
-
-            # Reemplazar el patron definido por una cadena vacia
-            nombre = re.sub(patron, '', nombre)
+            nombre = re.sub(patron, '', row['NOMBRE DEL ALUMNO'])
+            matricula = int(row['MATRÍCULA'])
             nombres.append(nombre)
-            matriculas.append(int(matricula))
+            matriculas.append(matricula)
 
-        self.parsear_listas(nombre_materia, anno, semestre, no_empleado, nombre_empleado, nombres, matriculas)
+        return list(zip(nombres, matriculas))
 
-    def parsear_listas(self, nombre_materia, anno, semestre, no_empleado, nombre_empleado, nombres, matriculas):
-        """Crear Materia"""
-        materia = Materia.objects.get_or_create(nombre=nombre_materia, year=anno, semestre=semestre)[0]
+    def save_data(self, maestro_data, materia_data, prestatarios_data):
+        materia = self.get_or_create_materia(materia_data)
+        maestro = self.get_or_create_maestro(maestro_data)
 
-        """Crear maestro"""
-        maestro = Maestro.crear_usuario(username=no_empleado, first_name=nombre_empleado, password=str(no_empleado))
-        # agregar maestro a la materia
-        materia.agregar_maestro(maestro)
+        if maestro:
+            materia.agregar_maestro(maestro)
 
-        """Crear Prestatarios"""
-        for nombre, matricula in zip(nombres, matriculas):
-            prestatario = Prestatario.crear_usuario(username=matricula, first_name=nombre,
-                                                    password=str(matricula))
-            # agregar prestatario a materia
-            materia.agregar_alumno(prestatario)
+        for nombre, matricula in prestatarios_data:
+            prestatario = self.get_or_create_prestatario(nombre, matricula)
+            if prestatario:
+                materia.agregar_alumno(prestatario)
+
+    def get_or_create_materia(self, materia_data):
+        return Materia.objects.get_or_create(
+            nombre=materia_data['nombre_materia'],
+            year=materia_data['anno'],
+            semestre=materia_data['semestre']
+        )[0]
+
+    def get_or_create_maestro(self, maestro_data):
+        try:
+            maestro, created = Maestro.objects.get_or_create(
+                username=maestro_data['no_empleado'],
+                defaults={
+                    'first_name': maestro_data['nombre_empleado'],
+                    'password': str(maestro_data['no_empleado']),
+                }
+            )
+            return maestro
+        except IntegrityError:
+            self.stdout.write(self.style.ERROR(f"Error: El maestro con número de empleado {maestro_data['no_empleado']} ya existe."))
+            return None
+
+    def get_or_create_prestatario(self, nombre, matricula):
+        try:
+            prestatario, created = Prestatario.objects.get_or_create(
+                username=matricula,
+                defaults={
+                    'first_name': nombre,
+                    'password': str(matricula),
+                }
+            )
+            return prestatario
+        except IntegrityError:
+            self.stdout.write(self.style.ERROR(f"Error: El prestatario con matrícula {matricula} ya existe."))
+            return None
