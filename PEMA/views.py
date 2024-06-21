@@ -13,7 +13,7 @@ from django.views.generic.edit import UpdateView
 
 from .forms import CorresponsableForm, CambiarEstadoOrdenForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, Categoria, CorresponsableOrden, Maestro, Materia
+from .models import Articulo, Categoria, CorresponsableOrden
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
@@ -246,7 +246,8 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         for articulo_carrito in carrito.articulos_carrito():
             if not articulo_carrito.articulo.disponible(carrito.inicio, carrito.final).exists():
                 articulos_no_disponibles.append(articulo_carrito)
-                messages.add_message(request, messages.WARNING, f'El artículo {articulo_carrito.articulo.nombre} no está disponible.')
+                messages.add_message(request, messages.WARNING,
+                                     f'El artículo {articulo_carrito.articulo.nombre} no está disponible.')
 
         return render(
             request=request,
@@ -305,7 +306,8 @@ class FiltrosView(LoginRequiredMixin, View):
 
         for materia in prestatario.materias():
             if materia.son_correos_vacios():
-                messages.add_message(request, messages.WARNING, f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
+                messages.add_message(request, messages.WARNING,
+                                     f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
 
         return render(
             request=request,
@@ -359,6 +361,8 @@ class FiltrosView(LoginRequiredMixin, View):
                 'materias': prestatario.materias(),
             },
         )
+
+
 class SolicitudView(View):
     """
     Vista para mostrar la página de solicitud.
@@ -520,6 +524,7 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         articulos_disponibles = []
         for articulo in carrito.materia.articulos():
             cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+
             if cantidad_disponible > 0:
                 articulos_disponibles.append(articulo)
                 articulo.num_unidades = cantidad_disponible
@@ -630,6 +635,7 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 
         if carrito.existe(articulo):
             carrito.eliminar_articulo(articulo)
+
         carrito.agregar(articulo, cantidad)
         carrito.save()
 
@@ -639,29 +645,29 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         orden = get_object_or_404(Orden, id=self.kwargs['id'])
-        print(orden)
         materia = orden.materia
-        return self.request.user in materia._maestros.all()
+        if orden.es_extraordinaria():
+            print(self.request.user.groups.filter(name='coordinador'))
+            return self.request.user.groups.filter(name='coordinador').exists()
+        elif orden.es_ordinaria():
+            return self.request.user in materia._maestros.all()
+        return False
 
     def get(self, request, id):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
         form = CambiarEstadoOrdenForm(instance=orden)
-        return render(
-            request,
-            'cambiar_estado_orden.html',
-            {'form': form, 'orden': orden}
-        )
+        return render(request, 'cambiar_estado_orden.html', {'form': form, 'orden': orden})
 
     def post(self, request, id):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
         action = request.POST.get('action')
+
         if action == 'aprobar':
-            orden.estado = EstadoOrden.APROBADA
+            orden.aprobar()
         elif action == 'cancelar':
-            orden.estado = EstadoOrden.CANCELADA
-        orden.save()
-        messages.success(request, 'El estado de la orden ha sido actualizado.')
-        return redirect('historial_solicitudes')  # Cambiar por la URL adecuada
+            orden.cancelar()
+
+        return redirect('cambiar_estado_orden', id=orden.id)
 
 
 class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
@@ -726,6 +732,7 @@ class CancelarOrdenView(View):
             template_name="cancelar_orden.html"
         )
 
+
 class AutorizacionSolicitudView(LoginRequiredMixin, View):
     def get(self, request, id, action=None):
         solicitud = get_object_or_404(CorresponsableOrden, pk=id)
@@ -747,6 +754,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
                 "orden": solicitud.orden
             }
         )
+
 
 class DetallesOrdenAutorizadaView(View):
     """

@@ -79,10 +79,10 @@ class OrdenAdmin(admin.ModelAdmin):
         devolver: Marca las órdenes seleccionadas como devueltas, si aún no lo están.
         cancelar: Cancela las órdenes seleccionadas, si aún no están canceladas.
     """
-    exclude = ('estado',)
+    exclude = ('estado', 'tipo')
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
-    list_display = ('nombre', 'prestatario', 'tipo', 'estado')
+    list_display = ('nombre', 'prestatario', 'tipo', 'estado', 'id')
     search_fields = ['nombre']
     list_filter = ('estado', 'tipo', ReportedOrdersFilter)
     ordering = ('estado',)
