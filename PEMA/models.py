@@ -4,10 +4,11 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.query import QuerySet
-from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
@@ -143,11 +144,24 @@ class Coordinador(User):
     @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
         """
-        Solicita autorización para una orden.
-
+        Solicita autorización para una orden extraordinaria.
         :param orden: La orden para la cual se solicita autorización.
         """
-        pass
+
+        subject = f'Solicitud de autorización para la orden {orden.nombre}'
+        message = (f'Se requiere autorización para la orden {orden.nombre}. Puede cambiar el estado de la orden en el siguiente enlace: '
+                   f'{settings.URL_BASE_PARA_EMAILS}{reverse("cambiar_estado_orden", args=[orden.id])}')
+
+        # Obtener correos de todos los coordinadores
+        recipient_list = [coordinador.email for coordinador in Coordinador.objects.all()]
+
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            recipient_list,
+            fail_silently=False,
+        )
 
     @classmethod
     def crear_grupo(cls) -> tuple[Any, bool]:
@@ -208,11 +222,24 @@ class Maestro(User):
     @staticmethod
     def solicitar_autorizacion(orden: 'Orden'):
         """
-        Solicita autorización para una orden.
-
+        Solicita autorización para una orden ordinaria.
         :param orden: La orden para la cual se solicita autorización.
         """
-        pass
+
+        subject = f'Solicitud de autorización para la orden {orden.nombre}'
+        message = (f'Se requiere autorización para la orden {orden.nombre}. Puede cambiar el estado de la orden en el '
+                   f'siguiente enlace: {settings.URL_BASE_PARA_EMAILS}{reverse("cambiar_estado_orden", args=[orden.id])}')
+
+        # Obtener correos de todos los maestros de la materia
+        recipient_list = [maestro.email for maestro in orden.materia.maestros()]
+
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            recipient_list,
+            fail_silently=False,
+        )
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -694,6 +721,7 @@ class Orden(models.Model):
         Aprueba la orden cambiando su estado a APROBADA.
         """
         self.estado = EstadoOrden.APROBADA
+        self.save()
 
     def aprobada(self) -> bool:
         """

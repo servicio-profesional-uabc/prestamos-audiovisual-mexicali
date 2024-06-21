@@ -173,12 +173,15 @@ class FiltrosView(LoginRequiredMixin, View):
             if materia.son_correos_vacios():
                 messages.add_message(request, messages.WARNING, f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
 
-        context = {
-            'prestatario': prestatario,
-            'form': FiltrosForm(),
-            'materias': prestatario.materias(),
-        }
-        return render(request, "filtros.html", context)
+        return render(
+            request=request,
+            template_name="filtros.html",
+            context={
+                'prestatario': prestatario,
+                'form': FiltrosForm(),
+                'materias': prestatario.materias(),
+            },
+        )
 
     def post(self, request):
         prestatario = Prestatario.get_user(request.user)
@@ -213,12 +216,16 @@ class FiltrosView(LoginRequiredMixin, View):
             carrito_nuevo.save()
             return redirect("catalogo")
 
-        context = {
-            'prestatario': prestatario,
-            'form': form,
-            'materias': prestatario.materias(),
-        }
-        return render(request, "filtros.html", context)
+        return render(
+            request=request,
+            template_name="filtros.html",
+            context={
+                'prestatario': prestatario,
+                'form': form,
+                'materias': prestatario.materias(),
+            },
+        )
+
 
 class SolicitudView(View):
 
@@ -235,25 +242,18 @@ class HistorialSolicitudesView(View):
     def get(self, request):
 
         prestatario = Prestatario.get_user(request.user)
-
-        ordenes_pendientes = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.RESERVADA)
-        ordenes_listas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.APROBADA)
-        ordenes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.CANCELADA)
-        ordenes_entregadas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.ENTREGADA)
-        ordenes_devueltas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.DEVUELTA)
-
-        context = {
-            "ordenes_pendientes": ordenes_pendientes,
-            "ordenes_listas": ordenes_listas,
-            "ordenes_canceladas": ordenes_canceladas,
-            "ordenes_entregadas": ordenes_entregadas,
-            "ordenes_devueltas": ordenes_devueltas,
-        }
+        ordenes = prestatario.ordenes()
 
         return render(
             request=request,
             template_name="historial_solicitudes.html",
-            context=context,
+            context={
+                "ordenes_pendientes": ordenes.filter(estado=EstadoOrden.RESERVADA),
+                "ordenes_listas": ordenes.filter(estado=EstadoOrden.APROBADA),
+                "ordenes_canceladas": ordenes.filter(estado=EstadoOrden.CANCELADA),
+                "ordenes_entregadas": ordenes.filter(estado=EstadoOrden.ENTREGADA),
+                "ordenes_devueltas": ordenes.filter(estado=EstadoOrden.DEVUELTA),
+            }
         )
 
 
