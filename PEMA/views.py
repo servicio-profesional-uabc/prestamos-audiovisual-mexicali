@@ -646,8 +646,11 @@ class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
         action = request.POST.get('action')
 
+        print(action)
+
         if action == 'aprobar':
             orden.aprobar()
+
         elif action == 'cancelar':
             orden.cancelar()
 
