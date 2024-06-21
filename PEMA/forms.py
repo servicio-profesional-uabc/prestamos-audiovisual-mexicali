@@ -9,6 +9,25 @@ from django.utils.timezone import make_aware
 
 from .models import Carrito, Perfil, Prestatario, Ubicacion
 
+# tests.py
+
+from django.test import TestCase
+from django.urls import reverse
+from django.contrib.auth.models import User
+from .models import Orden, Materia, EstadoOrden
+
+
+class CambiarEstadoOrdenForm(forms.ModelForm):
+    class Meta:
+        model = Orden
+        fields = ['estado']
+        widgets = {
+            'estado': forms.Select(choices=[
+                (EstadoOrden.CANCELADA, 'Cancelada'),
+                (EstadoOrden.APROBADA, 'Aprobada')
+            ])
+        }
+
 
 class UpdateUserForm(forms.ModelForm):
     email = forms.EmailField(required=True)
@@ -120,7 +139,6 @@ class FiltrosForm(forms.ModelForm):
         (time(hour=20, minute=0, second=0), '8:00 PM'),
     ))
 
-
     lugar = forms.ChoiceField(required=True, choices=(
         (Ubicacion.CAMPUS, "En el Campus"),
         (Ubicacion.EXTERNO, "Fuera del Campus"),
@@ -149,13 +167,13 @@ class FiltrosForm(forms.ModelForm):
 
         # print(f'clean inicio {inicio}')
         return inicio
-    
+
     def clean(self):
         cleaned_data = super().clean()
         inicio = cleaned_data.get('inicio')
         hora_inicio = cleaned_data.get('hora_inicio')
         duracion = cleaned_data.get('duracion')
-        
+
         if not inicio:
             return
 
@@ -170,9 +188,10 @@ class FiltrosForm(forms.ModelForm):
         fecha_final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
 
         if fecha_final.date().weekday() >= 5:
-            raise(forms.ValidationError("La fecha final del préstamo es en fin de semana. Intente de nuevo."))
-        
+            raise (forms.ValidationError("La fecha final del préstamo es en fin de semana. Intente de nuevo."))
+
         if fecha_final.hour > 20 or fecha_final.hour < 9:
-            raise(forms.ValidationError("La fecha final del préstamo es fuera del horario de atención. Intente de nuevo."))
+            raise (forms.ValidationError(
+                "La fecha final del préstamo es fuera del horario de atención. Intente de nuevo."))
 
         return cleaned_data
