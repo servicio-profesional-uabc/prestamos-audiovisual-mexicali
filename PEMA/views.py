@@ -20,9 +20,7 @@ from .models import Orden, EstadoOrden, Perfil
 
 class IndexView(View):
 
-
     def get(self, request):
-
         return render(
             request=request,
             template_name="index.html"
@@ -30,7 +28,6 @@ class IndexView(View):
 
 
 class AgregarCorresponsablesView(UpdateView):
-
     model = Carrito
     form_class = CorresponsableForm
     template_name = 'agregar_corresponsables.html'
@@ -71,7 +68,6 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
         )
 
     def post(self, request):
-
         perfil = Perfil.user_data(user=request.user)
 
         perfil_form = ActualizarPerfil(request.POST, instance=perfil)
@@ -150,28 +146,30 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         return redirect("carrito")
 
 
-
 class FiltrosView(LoginRequiredMixin, View):
 
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
         coordinador = Coordinador.objects.first()
-        #En caso que no exista ninguno registrado
+        # En caso que no exista ninguno registrado
         if coordinador is None:
-            messages.add_message(request, messages.WARNING, "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
-        #En caso que falta registrar sus datos
+            messages.add_message(request, messages.WARNING,
+                                 "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+        # En caso que falta registrar sus datos
         else:
             perfil = Perfil.objects.get(usuario=coordinador)
             if perfil.incompleto():
-                messages.add_message(request, messages.WARNING, "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+                messages.add_message(request, messages.WARNING,
+                                     "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
 
         if prestatario.tiene_carrito():
             prestatario.carrito().eliminar()
 
         for materia in prestatario.materias():
             if materia.son_correos_vacios():
-                messages.add_message(request, messages.WARNING, f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
+                messages.add_message(request, messages.WARNING,
+                                     f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
 
         return render(
             request=request,
@@ -195,8 +193,8 @@ class FiltrosView(LoginRequiredMixin, View):
             hora_inicio = form.cleaned_data.get('hora_inicio')
             duracion = int(form.cleaned_data.get('duracion'))
 
-                #HORARIO DE ORDENES EXTRAORDINARIAS
-            if duracion in [24,48, 72, 46]:
+            # HORARIO DE ORDENES EXTRAORDINARIAS
+            if duracion in [24, 48, 72, 46]:
                 messages.error(request, "Órdenes extraordinarias no permitidas actualmente. Contacte al coordinador.")
                 return render(request, "filtros.html", {
                     'prestatario': prestatario,
@@ -230,7 +228,6 @@ class FiltrosView(LoginRequiredMixin, View):
 class SolicitudView(View):
 
     def get(self, request):
-
         return render(
             request=request,
             template_name="solicitud.html"
@@ -240,7 +237,6 @@ class SolicitudView(View):
 class HistorialSolicitudesView(View):
 
     def get(self, request):
-
         prestatario = Prestatario.get_user(request.user)
         ordenes = prestatario.ordenes()
 
@@ -259,15 +255,12 @@ class HistorialSolicitudesView(View):
 
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
-
     def test_func(self):
-
         prestatario = Prestatario.get_user(self.request.user)
         orden = get_object_or_404(Orden, id=self.kwargs['id'])
         return prestatario == orden.prestatario
 
     def get(self, request, id):
-
         orden = Orden.objects.get(id=id)
         return render(
             request=request,
@@ -277,7 +270,6 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
     def post(self, request, id):
-
         orden = get_object_or_404(Orden, id=id)
         orden.cancelar()
         orden.save()
@@ -417,7 +409,6 @@ class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 class CancelarOrdenView(View):
 
     def get(self, request):
-
         return render(
             request=request,
             template_name="cancelar_orden.html"
@@ -450,7 +441,6 @@ class AutorizacionSolicitudView(LoginRequiredMixin, View):
 class DetallesOrdenAutorizadaView(View):
 
     def get(self, request, id):
-
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.APROBADA)
 
         return render(
@@ -461,7 +451,6 @@ class DetallesOrdenAutorizadaView(View):
 
 
 class OrdenesPrestadasView(View):
-
 
     def get(self, request):
         ordenes_prestadas = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
@@ -476,7 +465,6 @@ class OrdenesPrestadasView(View):
 
 class DetallesOrdenPrestadaView(View):
 
-
     def get(self, request, id):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.ENTREGADA)
 
@@ -488,7 +476,6 @@ class DetallesOrdenPrestadaView(View):
 
 
 class OrdenesReportadasView(View):
-
 
     def get(self, request):
         ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.RECHAZADA)
@@ -510,7 +497,6 @@ class ReportarOrdenView(View):
 
 
 class DetallesOrdenReportadaView(View):
-
 
     def get(self, request, id):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RECHAZADA)
@@ -538,7 +524,6 @@ class OrdenesDevueltasView(View):
 class DetallesOrdenDevueltaView(View):
 
     def get(self, request, id):
-
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.DEVUELTA)
 
         return render(
@@ -551,7 +536,6 @@ class DetallesOrdenDevueltaView(View):
 class OrdenesReportadasCordinadorView(View):
 
     def get(self, request):
-
         return render(
             request=request,
             template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
@@ -559,7 +543,6 @@ class OrdenesReportadasCordinadorView(View):
 
 
 def cambiar_estado_ENTREGADO(request, orden_id, estado):
-
     if request.method == 'POST':
         orden_id = request.POST.get('orden_id')
         try:
@@ -574,7 +557,6 @@ def cambiar_estado_ENTREGADO(request, orden_id, estado):
 
 
 def cambiar_estado_DEVUELTO(request, orden_id, estado):
-
     if request.method == 'POST':
         orden_id = request.POST.get('orden_id')
         try:
@@ -589,7 +571,6 @@ def cambiar_estado_DEVUELTO(request, orden_id, estado):
 
 
 def estado_orden(request, tipo_estado):
-
     ordenes_pendientes = Orden.objects.filter(estado="Pendiente")
     ordenes_listas = Orden.objects.filter(estado="Listo para iniciar")
     ordenes_canceladas = Orden.objects.filter(estado="Cancelada")
