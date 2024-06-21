@@ -4,7 +4,7 @@ from datetime import datetime
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
-from PEMA.models import Materia, Orden, TipoOrden, Maestro, AutorizacionOrden
+from PEMA.models import Materia, Orden, TipoOrden, Maestro
 from PEMA.models import Prestatario
 
 
@@ -29,9 +29,3 @@ class TestMaestro(TestCase):
         self.assertIn(materia1, materias)
         self.assertIn(materia2, materias)
         self.assertIn(materia3, materias)
-
-    @unittest.skip("Skipping this test")
-    def test_solicitar_autorizacion(self):
-        self.assertEqual(AutorizacionOrden.objects.count(), 0)
-        Maestro.solicitar_autorizacion(self.orden_ordinaria)
-        self.assertEqual(AutorizacionOrden.objects.count(), 1)
