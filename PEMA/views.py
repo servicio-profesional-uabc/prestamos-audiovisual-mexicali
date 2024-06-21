@@ -396,35 +396,19 @@ class HistorialSolicitudesView(View):
     """
 
     def get(self, request):
-        """
-        Maneja las solicitudes GET para el historial de solicitudes.
-
-        Args:
-            request (HttpRequest): La solicitud HTTP.
-
-        Returns:
-            HttpResponse: La respuesta HTTP con la plantilla renderizada.
-        """
         prestatario = Prestatario.get_user(request.user)
-
-        ordenes_pendientes = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.RESERVADA)
-        ordenes_listas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.APROBADA)
-        ordenes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.CANCELADA)
-        ordenes_entregadas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.ENTREGADA)
-        ordenes_devueltas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.DEVUELTA)
-
-        context = {
-            "ordenes_pendientes": ordenes_pendientes,
-            "ordenes_listas": ordenes_listas,
-            "ordenes_canceladas": ordenes_canceladas,
-            "ordenes_entregadas": ordenes_entregadas,
-            "ordenes_devueltas": ordenes_devueltas,
-        }
+        ordenes = prestatario.ordenes()
 
         return render(
             request=request,
             template_name="historial_solicitudes.html",
-            context=context,
+            context={
+                "ordenes_pendientes": ordenes.filter(estado=EstadoOrden.RESERVADA),
+                "ordenes_listas": ordenes.filter(estado=EstadoOrden.APROBADA),
+                "ordenes_canceladas": ordenes.filter(estado=EstadoOrden.CANCELADA),
+                "ordenes_entregadas": ordenes.filter(estado=EstadoOrden.ENTREGADA),
+                "ordenes_devueltas": ordenes.filter(estado=EstadoOrden.DEVUELTA),
+            }
         )
 
 
