@@ -171,7 +171,6 @@ class Coordinador(User):
         :returns: El grupo de Coordinadores y si se creó el grupo.
         """
         group, created = Group.objects.get_or_create(name='coordinador')
-        group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='view_orden'))
         group.permissions.add(Permission.objects.get(codename='change_reporte'))
@@ -249,8 +248,6 @@ class Maestro(User):
         :returns: El grupo creado y si se creó el grupo.
         """
         group, created = Group.objects.get_or_create(name='maestro')
-        group.permissions.add(Permission.objects.get(codename='add_autorizacionorden'))
-        group.permissions.add(Permission.objects.get(codename='change_autorizacionorden'))
         return group, created
 
     @classmethod
