@@ -447,17 +447,6 @@ class CancelarOrdenView(View):
             template_name="cancelar_orden.html"
         )
 
-class OrdenesReportadasView(View):
-
-    def get(self, request):
-        ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.RECHAZADA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_reportadas.html",
-            context={'ordenes': ordenes_devueltas}
-        )
-
 
 class ReportarOrdenView(View):
 
