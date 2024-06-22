@@ -73,6 +73,8 @@ class CorresponsableForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         carrito = kwargs.get('instance')
+
+        # TODO: reemplazar este por get_of_404 o similar
         materia = kwargs.pop('materia', None)
         super(CorresponsableForm, self).__init__(*args, **kwargs)
 

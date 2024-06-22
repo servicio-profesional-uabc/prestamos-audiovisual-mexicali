@@ -374,7 +374,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
         form = CambiarEstadoCorresponsableOrdenForm(instance=orden)
         return render(
             request=request,
-            template_name='cambiar_estado_orden.html',
+            template_name='autorizar_ordenes/cambiar_estado_orden.html',
             context={
                 'form': form,
                 'orden': orden
@@ -387,9 +387,11 @@ class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
 
         if action == 'aprobar':
             solicitud.aceptar()
+
         elif action == 'cancelar':
             solicitud.rechazar()
 
+        # TODO: mostrar mensaje si se aprobó o se canceló
         return redirect('cambiar_estado_orden', id=solicitud.id)
 
 
@@ -406,7 +408,7 @@ class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, request, id):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
         form = CambiarEstadoOrdenForm(instance=orden)
-        return render(request, 'cambiar_estado_orden.html', {'form': form, 'orden': orden})
+        return render(request, 'autorizar_ordenes/cambiar_estado_orden.html', {'form': form, 'orden': orden})
 
     def post(self, request, id):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
@@ -417,6 +419,7 @@ class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         elif action == 'cancelar':
             orden.cancelar()
 
+        # TODO: mostrar mensaje si se aprobó o se canceló
         return redirect('cambiar_estado_orden', id=orden.id)
 
 
@@ -443,157 +446,3 @@ class CancelarOrdenView(View):
             request=request,
             template_name="cancelar_orden.html"
         )
-
-
-class DetallesOrdenAutorizadaView(View):
-
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.APROBADA)
-
-        return render(
-            request=request,
-            template_name="detalles_orden_autorizada.html",
-            context={"orden": orden}
-        )
-
-
-class OrdenesPrestadasView(View):
-
-    def get(self, request):
-        ordenes_prestadas = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
-        print("ESTOOO 2", ordenes_prestadas)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_prestadas.html",
-            context={'ordenes': ordenes_prestadas}
-        )
-
-
-class DetallesOrdenPrestadaView(View):
-
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.ENTREGADA)
-
-        return render(
-            request=request,
-            template_name="detalles_orden_prestada.html",
-            context={"orden": orden}
-        )
-
-
-class OrdenesReportadasView(View):
-
-    def get(self, request):
-        ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.RECHAZADA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_reportadas.html",
-            context={'ordenes': ordenes_devueltas}
-        )
-
-
-class ReportarOrdenView(View):
-
-    def get(self, request, id):
-        return render(
-            request=request,
-            template_name="reportar_orden.html"
-        )
-
-
-class DetallesOrdenReportadaView(View):
-
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RECHAZADA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_reportada.html",
-            context={
-                "orden": orden
-            }
-        )
-
-
-class OrdenesDevueltasView(View):
-
-    def get(self, request):
-        ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.DEVUELTA)
-        print("EST 33", ordenes_devueltas)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_devueltas.html",
-            context={
-                'ordenes': ordenes_devueltas
-            }
-        )
-
-
-class DetallesOrdenDevueltaView(View):
-
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.DEVUELTA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_devuelta.html",
-            context={"orden": orden}
-        )
-
-
-class OrdenesReportadasCordinadorView(View):
-
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
-        )
-
-
-def cambiar_estado_ENTREGADO(request, orden_id, estado):
-    if request.method == 'POST':
-        orden_id = request.POST.get('orden_id')
-        try:
-            orden = Orden.objects.get(id=orden_id)
-            orden.estado = EstadoOrden.ENTREGADA
-            orden.save()
-            return redirect('ordenes_prestadas')
-        except Orden.DoesNotExist:
-            return render(request, 'error.html', {'mensaje': 'La orden no existe'})
-    else:
-        return render(request, 'error.html', {'mensaje': 'Método no permitido'})
-
-
-def cambiar_estado_DEVUELTO(request, orden_id, estado):
-    if request.method == 'POST':
-        orden_id = request.POST.get('orden_id')
-        try:
-            orden = Orden.objects.get(id=orden_id)
-            orden.estado = EstadoOrden.DEVUELTA
-            orden.save()
-            return redirect('ordenes_devueltas')
-        except Orden.DoesNotExist:
-            return render(request, 'error.html', {'mensaje': 'La orden no existe'})
-    else:
-        return render(request, 'error.html', {'mensaje': 'Método no permitido'})
-
-
-def estado_orden(request, tipo_estado):
-    ordenes_pendientes = Orden.objects.filter(estado="Pendiente")
-    ordenes_listas = Orden.objects.filter(estado="Listo para iniciar")
-    ordenes_canceladas = Orden.objects.filter(estado="Cancelada")
-    ordenes_entregadas = Orden.objects.filter(estado="Entregada")
-    ordenes_devueltas = Orden.objects.filter(estado="Devuelta")
-
-    context = {
-        "ordenes_pendientes": ordenes_pendientes,
-        "ordenes_listas": ordenes_listas,
-        "ordenes_canceladas": ordenes_canceladas,
-        "ordenes_entregadas": ordenes_entregadas,
-        "ordenes_devueltas": ordenes_devueltas,
-    }
-
-    return render(request, "principal.html", context)

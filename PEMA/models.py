@@ -149,8 +149,9 @@ class Coordinador(User):
         """
 
         subject = f'Solicitud de autorización para la orden {orden.nombre}'
-        message = (f'Se requiere autorización para la orden {orden.nombre}. Puede cambiar el estado de la orden en el siguiente enlace: '
-                   f'{settings.URL_BASE_PARA_EMAILS}{reverse("cambiar_estado_orden", args=[orden.id])}')
+        message = (
+            f'Se requiere autorización para la orden {orden.nombre}. Puede cambiar el estado de la orden en el siguiente enlace: '
+            f'{settings.URL_BASE_PARA_EMAILS}{reverse("cambiar_estado_orden", args=[orden.id])}')
 
         # Obtener correos de todos los coordinadores
         recipient_list = [coordinador.email for coordinador in Coordinador.objects.all()]
