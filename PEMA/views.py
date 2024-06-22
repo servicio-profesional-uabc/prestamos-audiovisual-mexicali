@@ -448,15 +448,6 @@ class CancelarOrdenView(View):
         )
 
 
-class ReportarOrdenView(View):
-
-    def get(self, request, id):
-        return render(
-            request=request,
-            template_name="reportar_orden.html"
-        )
-
-
 class DetallesOrdenReportadaView(View):
 
     def get(self, request, id):
