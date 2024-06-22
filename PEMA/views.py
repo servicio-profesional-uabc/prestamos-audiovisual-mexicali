@@ -437,12 +437,3 @@ class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         carrito.save()
 
         return redirect("carrito")
-
-
-class CancelarOrdenView(View):
-
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="cancelar_orden.html"
-        )

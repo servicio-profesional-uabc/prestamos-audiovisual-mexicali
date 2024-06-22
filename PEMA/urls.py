@@ -6,8 +6,8 @@ from django.urls import path
 from .forms import UserLoginForm
 from .views import AgregarAlCarritoView
 from .views import AgregarCorresponsablesView
-from .views import AutorizacionSolicitudView, CambiarEstadoOrdenView
-from .views import CancelarOrdenView
+from .views import AutorizacionSolicitudView
+from .views import CambiarEstadoOrdenView
 from .views import CarritoView
 from .views import CatalogoView
 from .views import DetallesArticuloView
@@ -103,12 +103,6 @@ urlpatterns = [
         route='agregar_al_carrito/<int:articulo_id>/',
         view=AgregarAlCarritoView.as_view(),
         name='agregar_al_carrito'
-    ),
-
-    path(
-        route='cancelar_orden',
-        view=CancelarOrdenView.as_view(),
-        name='cancelar_orden'
     ),
 
     path(
