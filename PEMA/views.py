@@ -448,21 +448,6 @@ class CancelarOrdenView(View):
         )
 
 
-class OrdenesDevueltasView(View):
-
-    def get(self, request):
-        ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.DEVUELTA)
-        print("EST 33", ordenes_devueltas)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_devueltas.html",
-            context={
-                'ordenes': ordenes_devueltas
-            }
-        )
-
-
 class DetallesOrdenDevueltaView(View):
 
     def get(self, request, id):

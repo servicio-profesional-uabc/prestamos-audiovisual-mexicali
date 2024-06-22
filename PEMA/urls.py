@@ -17,7 +17,6 @@ from .views import EliminarDelCarritoView
 from .views import FiltrosView
 from .views import HistorialSolicitudesView
 from .views import MenuView, ActualizarPerfilView
-from .views import OrdenesDevueltasView
 from .views import SolicitudView
 
 urlpatterns = [
@@ -132,17 +131,9 @@ urlpatterns = [
     ),
 
     path(
-        route='ordenes_devueltas',
-        view=OrdenesDevueltasView.as_view(),
-        name='ordenes_devueltas',
-
-    ),
-
-    path(
         route='detalles_orden_devuelta',
         view=DetallesOrdenDevueltaView.as_view(),
         name='detalles_orden_devuelta',
-
     ),
 
     path(
