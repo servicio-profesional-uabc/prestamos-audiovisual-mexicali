@@ -4,17 +4,23 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
-from phonenumber_field.formfields import PhoneNumberField
 from django.utils.timezone import make_aware
+from phonenumber_field.formfields import PhoneNumberField
 
-from .models import Carrito, Perfil, Prestatario, Ubicacion
+from .models import Carrito, Perfil, Prestatario, Ubicacion, CorresponsableOrden
+from .models import Orden, EstadoOrden
 
-# tests.py
 
-from django.test import TestCase
-from django.urls import reverse
-from django.contrib.auth.models import User
-from .models import Orden, Materia, EstadoOrden
+class CambiarEstadoCorresponsableOrdenForm(forms.ModelForm):
+    class Meta:
+        model = CorresponsableOrden
+        fields = ['estado']
+        widgets = {
+            'estado': forms.Select(choices=[
+                (EstadoOrden.CANCELADA, 'Cancelada'),
+                (EstadoOrden.APROBADA, 'Aprobada')
+            ])
+        }
 
 
 class CambiarEstadoOrdenForm(forms.ModelForm):

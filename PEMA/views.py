@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -11,7 +10,7 @@ from django.utils.timezone import make_aware
 from django.views import View
 from django.views.generic.edit import UpdateView
 
-from .forms import CorresponsableForm, CambiarEstadoOrdenForm
+from .forms import CorresponsableForm, CambiarEstadoOrdenForm, CambiarEstadoCorresponsableOrdenForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
 from .models import Articulo, Categoria, CorresponsableOrden, Coordinador
 from .models import Carrito, Prestatario
@@ -364,12 +363,41 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         return redirect("catalogo")
 
 
+class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        solicitud = get_object_or_404(CorresponsableOrden, id=self.kwargs['id'])
+        return solicitud.esta_pendiente() and self.request.user in solicitud.orden.corresponsables()
+
+    def get(self, request, id):
+        solicitud = get_object_or_404(CorresponsableOrden, id=self.kwargs['id'])
+        orden = solicitud.orden
+        form = CambiarEstadoCorresponsableOrdenForm(instance=orden)
+        return render(
+            request=request,
+            template_name='cambiar_estado_orden.html',
+            context={
+                'form': form,
+                'orden': orden
+            }
+        )
+
+    def post(self, request, id):
+        solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+        action = request.POST.get('action')
+
+        if action == 'aprobar':
+            solicitud.aceptar()
+        elif action == 'cancelar':
+            solicitud.rechazar()
+
+        return redirect('cambiar_estado_orden', id=solicitud.id)
+
+
 class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         orden = get_object_or_404(Orden, id=self.kwargs['id'])
         materia = orden.materia
         if orden.es_extraordinaria():
-            print(self.request.user.groups.filter(name='coordinador'))
             return self.request.user.groups.filter(name='coordinador').exists()
         elif orden.es_ordinaria():
             return self.request.user in materia._maestros.all()
@@ -414,29 +442,6 @@ class CancelarOrdenView(View):
         return render(
             request=request,
             template_name="cancelar_orden.html"
-        )
-
-
-class AutorizacionSolicitudView(LoginRequiredMixin, View):
-    def get(self, request, id, action=None):
-        solicitud = get_object_or_404(CorresponsableOrden, pk=id)
-
-        if action == "aceptar":
-            solicitud.aceptar()
-
-        if action == "rechazar":
-            solicitud.rechazar()
-
-        if solicitud.autorizador != request.user:
-            raise Http404("No tienes permiso de ver esta Orden")
-
-        return render(
-            request=request,
-            template_name="autorizacion_solicitudes.html",
-            context={
-                "solicitud": solicitud,
-                "orden": solicitud.orden
-            }
         )
 
 

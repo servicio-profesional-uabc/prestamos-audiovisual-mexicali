@@ -115,15 +115,8 @@ urlpatterns = [
         name='cancelar_orden'
     ),
 
-    # TODO: Eliminar estas 2
     path(
         route='autorizacion_solicitudes/<int:id>/',
-        view=AutorizacionSolicitudView.as_view(),
-        name='autorizacion_solicitudes'
-    ),
-
-    path(
-        route='autorizacion_solicitudes/<int:id>/<str:action>',
         view=AutorizacionSolicitudView.as_view(),
         name='autorizacion_solicitudes'
     ),
