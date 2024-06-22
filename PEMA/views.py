@@ -391,6 +391,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
         elif action == 'cancelar':
             solicitud.rechazar()
 
+        # TODO: mostrar mensaje si se aprobó o se canceló
         return redirect('cambiar_estado_orden', id=solicitud.id)
 
 
@@ -418,6 +419,7 @@ class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         elif action == 'cancelar':
             orden.cancelar()
 
+        # TODO: mostrar mensaje si se aprobó o se canceló
         return redirect('cambiar_estado_orden', id=orden.id)
 
 
@@ -443,18 +445,6 @@ class CancelarOrdenView(View):
         return render(
             request=request,
             template_name="cancelar_orden.html"
-        )
-
-
-class DetallesOrdenAutorizadaView(View):
-
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.APROBADA)
-
-        return render(
-            request=request,
-            template_name="detalles_orden_autorizada.html",
-            context={"orden": orden}
         )
 
 

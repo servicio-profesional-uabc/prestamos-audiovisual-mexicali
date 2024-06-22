@@ -143,13 +143,6 @@ urlpatterns = [
     ),
 
     path(
-        route='detalles_orden_autorizada',
-        view=DetallesOrdenAutorizadaView.as_view(),
-        name='detalles_orden_autorizada',
-
-    ),
-
-    path(
         route='ordenes_prestadas',
         view=OrdenesPrestadasView.as_view(),
         name='ordenes_prestadas',
