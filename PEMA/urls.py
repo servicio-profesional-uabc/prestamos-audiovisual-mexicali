@@ -4,9 +4,9 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import AutorizacionSolicitudView, CambiarEstadoOrdenView
 from .views import AgregarAlCarritoView
 from .views import AgregarCorresponsablesView
+from .views import AutorizacionSolicitudView, CambiarEstadoOrdenView
 from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
@@ -16,6 +16,7 @@ from .views import DetallesOrdenDevueltaView
 from .views import DetallesOrdenPrestadaView
 from .views import DetallesOrdenReportadaView
 from .views import DetallesOrdenView
+from .views import EliminarDelCarritoView
 from .views import FiltrosView
 from .views import HistorialSolicitudesView
 from .views import MenuView, ActualizarPerfilView
@@ -23,7 +24,6 @@ from .views import OrdenesDevueltasView
 from .views import OrdenesPrestadasView
 from .views import OrdenesReportadasView
 from .views import SolicitudView
-from .views import EliminarDelCarritoView
 
 urlpatterns = [
     path(
@@ -46,7 +46,11 @@ urlpatterns = [
     ),
 
     # logout
-    path('logout/', LogoutView.as_view(), name='logout'),
+    path(
+        route='logout/',
+        view=LogoutView.as_view(),
+        name='logout'
+    ),
 
     path(
         route='menu',
@@ -102,11 +106,17 @@ urlpatterns = [
         name='detalles_articulo'
     ),
 
+
+
+
     path(
         route='agregar_al_carrito/<int:articulo_id>/',
         view=AgregarAlCarritoView.as_view(),
         name='agregar_al_carrito'
     ),
+
+
+
 
     path(
         route='cancelar_orden',

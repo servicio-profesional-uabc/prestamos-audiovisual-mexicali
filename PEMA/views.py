@@ -374,7 +374,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
         form = CambiarEstadoCorresponsableOrdenForm(instance=orden)
         return render(
             request=request,
-            template_name='cambiar_estado_orden.html',
+            template_name='autorizar_ordenes/cambiar_estado_orden.html',
             context={
                 'form': form,
                 'orden': orden
@@ -387,6 +387,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
 
         if action == 'aprobar':
             solicitud.aceptar()
+
         elif action == 'cancelar':
             solicitud.rechazar()
 
@@ -406,7 +407,7 @@ class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, request, id):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
         form = CambiarEstadoOrdenForm(instance=orden)
-        return render(request, 'cambiar_estado_orden.html', {'form': form, 'orden': orden})
+        return render(request, 'autorizar_ordenes/cambiar_estado_orden.html', {'form': form, 'orden': orden})
 
     def post(self, request, id):
         orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
