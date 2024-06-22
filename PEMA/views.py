@@ -57,12 +57,14 @@ class AgregarCorresponsablesView(UpdateView):
 class ActualizarPerfilView(LoginRequiredMixin, View):
 
     def get(self, request):
+        perfil = Perfil.user_data(user=request.user)
+
         return render(
             request=request,
             template_name="actualizar_perfil_y_usuario.html",
             context={
-                'form_actualizar_perfil': ActualizarPerfil(),
-                'form_actualizar_usuario': UpdateUserForm(),
+                'form_actualizar_perfil': ActualizarPerfil(instance=perfil),
+                'form_actualizar_usuario': UpdateUserForm(instance=request.user),
             }
         )
 
