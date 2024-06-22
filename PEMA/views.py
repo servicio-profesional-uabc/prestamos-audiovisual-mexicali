@@ -448,20 +448,6 @@ class CancelarOrdenView(View):
         )
 
 
-class DetallesOrdenReportadaView(View):
-
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RECHAZADA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_reportada.html",
-            context={
-                "orden": orden
-            }
-        )
-
-
 class OrdenesDevueltasView(View):
 
     def get(self, request):
