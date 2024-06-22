@@ -2,7 +2,13 @@
 {% load static %}
 
 {% block content %}
-    <div class="container my-2 mt-md-5 mt-lg-4">
+    <div class="container mt-2  mb-5 mt-md-5 mt-lg-4">
+
+        <div class="text-center mb-5">
+            <span class="h4 mb-6">{{ user.first_name }}</span><br>
+            <span class="">{{ user.get_username }}</span>
+        </div>
+
         <div class="row gy-3">
             {% for group in user.groups.all %}
                 {% if group.name == "prestatarios" %}
@@ -21,8 +27,27 @@
                 {% include "menu/opcion.html" with option="Admin" icono="bi-database-gear" descripcion="Administrador" href="admin" %}
             {% endif %}
 
-
             {% include "menu/opcion.html" with option="Actualizar" icono="bi-person" descripcion="Actualizar datos" href="actualizar_perfil" %}
+
+            {# El logout es un form en la version mas nueva de django #}
+
+            <div class="col-md-4 col-xl-3">
+                <div class="card h-100 py-2">
+                    <i class="bi bi-door-open display-1 card-img-top text-center mt-4"></i>
+                    <div class="card-body text-center">
+                        <label class="card-text">Cerrar Sesión</label>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button class="btn btn-link link-underline link-underline-opacity-0"
+                                    type="submit">
+                                Cerrar Sesión <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
     </div>
 {% endblock %}
