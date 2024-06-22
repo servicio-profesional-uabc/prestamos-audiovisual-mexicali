@@ -542,21 +542,3 @@ class DetallesOrdenDevueltaView(View):
             template_name="almacen_permisos/detalles_orden_devuelta.html",
             context={"orden": orden}
         )
-
-
-def estado_orden(request, tipo_estado):
-    ordenes_pendientes = Orden.objects.filter(estado="Pendiente")
-    ordenes_listas = Orden.objects.filter(estado="Listo para iniciar")
-    ordenes_canceladas = Orden.objects.filter(estado="Cancelada")
-    ordenes_entregadas = Orden.objects.filter(estado="Entregada")
-    ordenes_devueltas = Orden.objects.filter(estado="Devuelta")
-
-    context = {
-        "ordenes_pendientes": ordenes_pendientes,
-        "ordenes_listas": ordenes_listas,
-        "ordenes_canceladas": ordenes_canceladas,
-        "ordenes_entregadas": ordenes_entregadas,
-        "ordenes_devueltas": ordenes_devueltas,
-    }
-
-    return render(request, "principal.html", context)
