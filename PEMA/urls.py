@@ -12,7 +12,6 @@ from .views import CarritoView
 from .views import CatalogoView
 from .views import DetallesArticuloView
 from .views import DetallesOrdenDevueltaView
-from .views import DetallesOrdenPrestadaView
 from .views import DetallesOrdenReportadaView
 from .views import DetallesOrdenView
 from .views import EliminarDelCarritoView
@@ -132,13 +131,6 @@ urlpatterns = [
         route='actualizar_perfil',
         name='actualizar_perfil',
         view=ActualizarPerfilView.as_view()
-    ),
-
-    path(
-        route='detalles_orden_prestada',
-        view=DetallesOrdenPrestadaView.as_view(),
-        name='detalles_orden_prestada',
-
     ),
 
     path(
