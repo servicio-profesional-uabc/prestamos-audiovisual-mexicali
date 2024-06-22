@@ -544,43 +544,6 @@ class DetallesOrdenDevueltaView(View):
         )
 
 
-class OrdenesReportadasCordinadorView(View):
-
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
-        )
-
-
-def cambiar_estado_ENTREGADO(request, orden_id, estado):
-    if request.method == 'POST':
-        orden_id = request.POST.get('orden_id')
-        try:
-            orden = Orden.objects.get(id=orden_id)
-            orden.estado = EstadoOrden.ENTREGADA
-            orden.save()
-            return redirect('ordenes_prestadas')
-        except Orden.DoesNotExist:
-            return render(request, 'error.html', {'mensaje': 'La orden no existe'})
-    else:
-        return render(request, 'error.html', {'mensaje': 'Método no permitido'})
-
-
-def cambiar_estado_DEVUELTO(request, orden_id, estado):
-    if request.method == 'POST':
-        orden_id = request.POST.get('orden_id')
-        try:
-            orden = Orden.objects.get(id=orden_id)
-            orden.estado = EstadoOrden.DEVUELTA
-            orden.save()
-            return redirect('ordenes_devueltas')
-        except Orden.DoesNotExist:
-            return render(request, 'error.html', {'mensaje': 'La orden no existe'})
-    else:
-        return render(request, 'error.html', {'mensaje': 'Método no permitido'})
-
-
 def estado_orden(request, tipo_estado):
     ordenes_pendientes = Orden.objects.filter(estado="Pendiente")
     ordenes_listas = Orden.objects.filter(estado="Listo para iniciar")
