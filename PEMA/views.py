@@ -448,19 +448,6 @@ class CancelarOrdenView(View):
         )
 
 
-class OrdenesPrestadasView(View):
-
-    def get(self, request):
-        ordenes_prestadas = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
-        print("ESTOOO 2", ordenes_prestadas)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_prestadas.html",
-            context={'ordenes': ordenes_prestadas}
-        )
-
-
 class DetallesOrdenPrestadaView(View):
 
     def get(self, request, id):
