@@ -446,15 +446,3 @@ class CancelarOrdenView(View):
             request=request,
             template_name="cancelar_orden.html"
         )
-
-
-class DetallesOrdenDevueltaView(View):
-
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.DEVUELTA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_devuelta.html",
-            context={"orden": orden}
-        )

@@ -11,7 +11,6 @@ from .views import CancelarOrdenView
 from .views import CarritoView
 from .views import CatalogoView
 from .views import DetallesArticuloView
-from .views import DetallesOrdenDevueltaView
 from .views import DetallesOrdenView
 from .views import EliminarDelCarritoView
 from .views import FiltrosView
@@ -128,12 +127,6 @@ urlpatterns = [
         route='actualizar_perfil',
         name='actualizar_perfil',
         view=ActualizarPerfilView.as_view()
-    ),
-
-    path(
-        route='detalles_orden_devuelta',
-        view=DetallesOrdenDevueltaView.as_view(),
-        name='detalles_orden_devuelta',
     ),
 
     path(
