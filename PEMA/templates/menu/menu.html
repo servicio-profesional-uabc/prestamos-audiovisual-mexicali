@@ -2,7 +2,13 @@
 {% load static %}
 
 {% block content %}
-    <div class="container my-2 mt-md-5 mt-lg-4">
+    <div class="container mt-2  mb-5 mt-md-5 mt-lg-4">
+
+        <div class="text-center mb-5">
+            <span class="h4 mb-6">{{ user.first_name }}</span><br>
+            <span class="">{{ user.get_username }}</span>
+        </div>
+
         <div class="row gy-3">
             {% for group in user.groups.all %}
                 {% if group.name == "prestatarios" %}
