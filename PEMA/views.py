@@ -157,6 +157,7 @@ class FiltrosView(LoginRequiredMixin, View):
         if coordinador is None:
             messages.add_message(request, messages.WARNING,
                                  "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+
         # En caso que falta registrar sus datos
         else:
             perfil = Perfil.objects.get(usuario=coordinador)
