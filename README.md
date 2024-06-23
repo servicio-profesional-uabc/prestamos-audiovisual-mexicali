@@ -1,6 +1,6 @@
 [![Django CI](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/actions/workflows/django.yml/badge.svg)](https://github.com/servicio-profesional-uabc/prestamos-audiovisual-mexicali/actions/workflows/django.yml)
 
-## Sistema de Gestión de Préstamos de Material Audiovisual (PEMA)
+## Sistema de Gestión de Préstamos
 PEMA simplifica la gestión de préstamos de material audiovisual en la Facultad de Artes del campus Mexicali. 
 Desarrollado en Python y Django.
 
