@@ -681,7 +681,8 @@ class Orden(models.Model):
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
-    _corresponsables = models.ManyToManyField(to=User, through='CorresponsableOrden', related_name='corresponsables', verbose_name='Participantes')
+    _corresponsables = models.ManyToManyField(to=User, through='CorresponsableOrden', related_name='corresponsables',
+                                              verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
     emision = models.DateTimeField(auto_now_add=True)
 
@@ -1217,8 +1218,6 @@ class CorresponsableOrden(models.Model):
         self.estado = AutorizacionEstado.RECHAZADA
         self.save()
 
-
-# Clases de relación
 
 class ArticuloCarrito(models.Model):
     """

@@ -47,7 +47,7 @@ class CorresponsableOrdenInline(admin.TabularInline):
 
     Ofrece una interfaz para gestionar unidades vinculadas a los articulos artículos.
     """
-    search_fields = ('autorizador', )
+    autocomplete_fields = ('autorizador', )
     model = CorresponsableOrden
     extra = 1
 
