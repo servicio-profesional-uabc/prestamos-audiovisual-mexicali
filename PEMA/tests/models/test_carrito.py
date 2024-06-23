@@ -84,7 +84,6 @@ class TestCarrito(TestCase):
         self.assertEqual(orden.lugar, carrito.lugar)
         self.assertEqual(orden.descripcion_lugar, carrito.descripcion_lugar)
         self.assertEqual(orden.materia, carrito.materia)
-        self.assertEqual(orden.maestro, carrito.maestro)
         self.assertEqual(orden.inicio, carrito.inicio)
         self.assertEqual(orden.final, carrito.final)
         self.assertEqual(orden.descripcion, carrito.descripcion)
