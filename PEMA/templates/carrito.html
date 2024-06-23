@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container my-5 p-4 bg-white shadow rounded">
+    <div class="container my-5 p-4 bg-light shadow rounded"> <!--CONTENEDORRRR-->
         {% if articulos_carrito %}
             {% if messages %}
                 <div class="alert alert-warning" role="alert">
@@ -25,35 +25,47 @@
                 </div>
             {% endif %}
 
+            <!-- BOTON DE CORRESPONSABLES AQUII -->
             <div class="text-center mt-4">
-                <a href="{% url 'corresponsables' %}" class="btn btn-outline-secondary me-3">Seleccionar Corresponsables</a>
+                <a href="{% url 'corresponsables' %}" class="btn btn-secondary me-3">Seleccionar Corresponsables</a>
             </div>
 
             <div class="table-responsive mt-4">
-                <table class="table table-hover">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th scope="col">Artículos</th>
-                            <th scope="col" class="text-center">Eliminar</th>
+                            <th scope="col">
+                                Artículos
+                            </th>
+                            <th scope="col" class="text-center">
+                                Eliminar
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for articuloCarrito in articulos_carrito %}
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <img class="img-fluid rounded me-3" width="70" src="{{ articuloCarrito.articulo.imagen.url }}" alt="{{ articuloCarrito.articulo.nombre }}">
-                                        <div>
+                                    <div>
+                                        <img class="img-fluid rounded" width="70"
+                                            src="{{ articuloCarrito.articulo.imagen.url }}"
+                                            alt="{{ articuloCarrito.articulo.nombre }}">
+                                        <div class="d-inline-block align-middle">
                                             <h5 class="mb-0">
-                                                <a href="{% url 'detalles_articulo' articuloCarrito.articulo.id %}" class="text-dark text-decoration-none">{{ articuloCarrito.articulo.nombre }}</a>
+                                                <a href="{% url 'detalles_articulo' articuloCarrito.articulo.id %}"
+                                                    class="text-dark link-underline link-underline-opacity-0">
+                                                    {{ articuloCarrito.articulo.nombre }}
+                                                </a>
                                             </h5>
-                                            <span class="text-muted">Unidades: {{ articuloCarrito.unidades }}</span>
+                                            <span class="text-muted">
+                                                Unidades: {{ articuloCarrito.unidades }}
+                                            </span>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="text-center align-middle">
                                     <a href="{% url 'eliminar_del_carrito' articuloCarrito.articulo.id %}" class="text-danger">
-                                        <i class="bi bi-trash-fill"></i>
+                                        <i class="bi bi-trash"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -62,37 +74,25 @@
                 </table>
             </div>
 
-            <form method="POST" action="{% url 'carrito_accion' 'ordenar' %}" id="ordenForm" class="mt-4">
-                {% csrf_token %}
-                <div class="form-floating mb-3">
-                    <select class="form-select" id="maestroSelect" name="maestro" required>
-                        {% for maestro in carrito.materia.maestros %}
-                            {% if maestro.email %}
-                                <option value="{{ maestro.id }}">{{ maestro.username }} - {{ maestro.email }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                    <label for="maestroSelect">Selecciona un Maestro</label>
-                </div>
-                <ul class="list-unstyled mb-4">
-                    <li>Si el correo del maestro no aparece en la lista, no ha registrado su correo al sistema.</li>
-                    <li>Si tu orden se considera préstamo extraordinario, tu coordinador será quien autorizará tu orden.</li>
-                </ul>
+            <form method="POST" action="{% url 'carrito_accion' 'ordenar' %}" id="ordenForm" style="max-width: 50%; margin: auto;">
 
-                <div class="text-center">
+                <div class="text-center mt-4">
                     <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">Ordenar</button>
                 </div>
+
+                {% csrf_token %}
             </form>
 
+            <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="exampleModalLabel">Reglamento</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <embed id="pdfViewer" src="{% static 'img/Reglamento-Interno-de-la-Facultad-de-Artes-2022.pdf' %}" type="application/pdf" width="100%" height="500px">
+                            <embed id="pdfViewer" src="{% static 'img/Reglamento-Interno-de-la-Facultad-de-Artes-2022.pdf' %}" type="application/pdf" width="100%" height="600px">
                             <div class="form-check mt-3">
                                 <input class="form-check-input" type="checkbox" id="cerrarPDF">
                                 <label class="form-check-label" for="cerrarPDF">
@@ -101,12 +101,15 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button id="botonContinuar" type="button" class="btn btn-primary" disabled>Continuar</button>
+                            <button id="botonContinuar" type="button" class="btn btn-primary" disabled>
+                                Continuar
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        {% else %}
+
+        {% else %} <!--MENSAJE DE QUE NO EXISTE NINGUN ARTICULO EN EL CARRITO-->
             <div class="text-center mt-5">
                 <p class="alert alert-info">No hay ningún artículo agregado al carrito.</p>
                 <a href="{% url 'catalogo' %}" class="btn btn-primary">Regresar al Catálogo</a>
@@ -114,6 +117,7 @@
         {% endif %}
     </div>
 
+    <!--PARA LA ACEPTACION DEL REGLAMENTO-->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var checkbox = document.getElementById('cerrarPDF');
