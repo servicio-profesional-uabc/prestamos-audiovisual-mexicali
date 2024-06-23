@@ -19,6 +19,8 @@ from .views import MenuView, ActualizarPerfilView
 from .views import SolicitudView
 from django.shortcuts import render
 
+def custom_403(request, exception):
+    return render(request, '403', status=403)
 
 def custom_404(request, exception):
     return render(request, '404', status=404)
@@ -147,5 +149,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
-
+handler403 = custom_403
 handler404 = custom_404
