@@ -4,28 +4,19 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from .forms import UserLoginForm
-from .views import ActualizarAutorizacion
-from .views import AutorizacionSolicitudView
 from .views import AgregarAlCarritoView
 from .views import AgregarCorresponsablesView
-from .views import CancelarOrdenView
+from .views import AutorizacionSolicitudView
+from .views import CambiarEstadoOrdenView
 from .views import CarritoView
 from .views import CatalogoView
 from .views import DetallesArticuloView
-from .views import DetallesOrdenAutorizadaView
-from .views import DetallesOrdenDevueltaView
-from .views import DetallesOrdenPrestadaView
-from .views import DetallesOrdenReportadaView
 from .views import DetallesOrdenView
+from .views import EliminarDelCarritoView
 from .views import FiltrosView
 from .views import HistorialSolicitudesView
 from .views import MenuView, ActualizarPerfilView
-from .views import OrdenesDevueltasView
-from .views import OrdenesPrestadasView
-from .views import OrdenesReportadasView
-#from .views import PrincipalAlmacenView
 from .views import SolicitudView
-from .views import EliminarDelCarritoView
 
 urlpatterns = [
     path(
@@ -48,7 +39,11 @@ urlpatterns = [
     ),
 
     # logout
-    path('logout/', LogoutView.as_view(), name='logout'),
+    path(
+        route='logout/',
+        view=LogoutView.as_view(),
+        name='logout'
+    ),
 
     path(
         route='menu',
@@ -111,80 +106,21 @@ urlpatterns = [
     ),
 
     path(
-        route='cancelar_orden',
-        view=CancelarOrdenView.as_view(),
-        name='cancelar_orden'
-    ),
-
-    path(
-        route='autorizacion_solicitudes/<str:type>/<int:id>/',
+        route='autorizacion_solicitudes/<int:id>/',
         view=AutorizacionSolicitudView.as_view(),
         name='autorizacion_solicitudes'
     ),
 
     path(
-        route='actualizar_autorizacion/<str:type>/<str:state>/<int:id>',
-        view=ActualizarAutorizacion.as_view(),
-        name='actualizar_autorizacion'
+        route='cambiar_estado_orden/<int:id>/',
+        view=CambiarEstadoOrdenView.as_view(),
+        name='cambiar_estado_orden'
     ),
 
     path(
         route='actualizar_perfil',
         name='actualizar_perfil',
         view=ActualizarPerfilView.as_view()
-    ),
-
-    # path(
-    #     route='principal',
-    #     view=PrincipalAlmacenView.as_view(),
-    #     name='principal',
-    # ),
-
-    path(
-        route='detalles_orden_autorizada',
-        view=DetallesOrdenAutorizadaView.as_view(),
-        name='detalles_orden_autorizada',
-
-    ),
-
-    path(
-        route='ordenes_prestadas',
-        view=OrdenesPrestadasView.as_view(),
-        name='ordenes_prestadas',
-
-    ),
-
-    path(
-        route='detalles_orden_prestada',
-        view=DetallesOrdenPrestadaView.as_view(),
-        name='detalles_orden_prestada',
-
-    ),
-
-    path(
-        route='ordenes_reportadas',
-        view=OrdenesReportadasView.as_view(),
-        name='ordenes_reportadas',
-    ),
-
-    path(
-        route='detalles_orden_reportada',
-        view=DetallesOrdenReportadaView.as_view(),
-        name='detalles_orden_reportada',
-    ),
-
-    path(
-        route='ordenes_devueltas',
-        view=OrdenesDevueltasView.as_view(),
-        name='ordenes_devueltas',
-
-    ),
-
-    path(
-        route='detalles_orden_devuelta',
-        view=DetallesOrdenDevueltaView.as_view(),
-        name='detalles_orden_devuelta',
-
     ),
 
     path(
@@ -196,9 +132,9 @@ urlpatterns = [
     path(
         route='corresponsables',
         view=AgregarCorresponsablesView.as_view(),
-        name='corresponsables'  
+        name='corresponsables'
     ),
-   
+
 ]
 
 # https://github.com/fabiocaccamo/django-admin-interface/issues/4
