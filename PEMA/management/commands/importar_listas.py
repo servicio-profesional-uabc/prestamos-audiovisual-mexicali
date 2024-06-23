@@ -86,13 +86,16 @@ class Command(BaseCommand):
             maestro, created = Maestro.objects.get_or_create(
                 username=maestro_data['no_empleado'],
                 defaults={
-                    'first_name': maestro_data['nombre_empleado'],
-                    'password': str(maestro_data['no_empleado']),
+                    'first_name': maestro_data['nombre_empleado']
                 }
             )
+            if created:
+                maestro.set_password(str(maestro_data['no_empleado']))
+                maestro.save()
             return maestro
         except IntegrityError:
-            self.stdout.write(self.style.ERROR(f"Error: El maestro con número de empleado {maestro_data['no_empleado']} ya existe."))
+            self.stdout.write(
+                self.style.ERROR(f"Error: El maestro con número de empleado {maestro_data['no_empleado']} ya existe."))
             return None
 
     def get_or_create_prestatario(self, nombre, matricula):
@@ -100,11 +103,14 @@ class Command(BaseCommand):
             prestatario, created = Prestatario.objects.get_or_create(
                 username=matricula,
                 defaults={
-                    'first_name': nombre,
-                    'password': str(matricula),
+                    'first_name': nombre
                 }
             )
+            if created:
+                prestatario.set_password(str(matricula))
+                prestatario.save()
             return prestatario
         except IntegrityError:
             self.stdout.write(self.style.ERROR(f"Error: El prestatario con matrícula {matricula} ya existe."))
             return None
+

@@ -42,6 +42,11 @@ class UpdateUserForm(forms.ModelForm):
         model = User
         fields = ['email']
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not email.endswith("@uabc.edu.mx"):
+            raise forms.ValidationError("El correo debe ser institucional de la UABC.")
+        return email
 
 class ActualizarPerfil(forms.ModelForm):
     class Meta:
