@@ -5,8 +5,37 @@ from import_export.admin import ImportExportModelAdmin
 from .models import *
 
 
+class ReportedOrdersFilter(admin.SimpleListFilter):
+    """
+   Permitir a los administradores filtrar las órdenes en función de si han sido reportadas o no.
+
+    Este filtro se añade al panel de administración de Django y proporciona opciones para ver órdenes que han
+    sido reportadas y órdenes que no lo han sido.
+    """
+    title = 'Estado de Reporte'
+    parameter_name = 'reportadas'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('reportadas', 'Reportadas'),
+            ('no_reportadas', 'No Reportadas'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'reportadas':
+            return queryset.filter(reportes__isnull=False).distinct()
+        if self.value() == 'no_reportadas':
+            return queryset.filter(reportes__isnull=True)
+
+
 @admin.register(Materia)
 class MateriaAdmin(admin.ModelAdmin):
+    """
+    Se encarga de administrar las materias.
+
+    Permite buscar materias por nombre y año, mostrar en la lista el nombre, año y semestre de las materias,
+    y gestionar las relaciones Many-to-Many con alumnos, maestros y artículos.
+    """
     search_fields = ('nombre', 'year')
     list_display = ('nombre', 'year', 'semestre')
     filter_horizontal = ('_alumnos', '_maestros', '_articulos')
@@ -14,56 +43,126 @@ class MateriaAdmin(admin.ModelAdmin):
 
 @admin.register(Orden)
 class OrdenAdmin(admin.ModelAdmin):
-    exclude = ('estado',)
+    """
+    Gestionar las ordenes en el panel de administración de Django.
+
+    Proporciona funcionalidades como autocompletado para prestatario y materia,
+    búsqueda por nombre de orden, filtros por estado y tipo de orden, y acciones para marcar órdenes como entregadas,
+    devueltas o canceladas.
+    """
+    exclude = ('estado', 'tipo')
     autocomplete_fields = ('prestatario', 'materia')
     filter_horizontal = ('_unidades', '_corresponsables')
-    list_display = ('__str__', 'tipo', 'estado')
+    list_display = ('nombre', 'prestatario', 'tipo', 'estado', 'id')
     search_fields = ['nombre']
-    list_filter = ('estado', 'tipo')
+    list_filter = ('estado', 'tipo', ReportedOrdersFilter)
+    ordering = ('estado',)
 
     actions = ['entregar', 'devolver', 'cancelar']
 
-    # TODO: implementar estos metodos
-
     @admin.action(description='Marcar como entregado')
     def entregar(self, request, queryset):
+
         for orden in queryset:
-
+            if (orden.entregada()):
+                messages.warning(request, f'La orden {orden.nombre} ya se encuentra entregada.')
+                continue
             orden.entregar(request.user)
-
             if orden.entregada():
-                messages.success(request, f'Orden {orden} entregada')
+                messages.success(request, f'Orden {orden.nombre} entregada.')
             else:
-                messages.warning(request, f'No se pudo entregar la orden {orden}')
+                messages.warning(request, f'No se pudo entregar la orden {orden.nombre}.')
 
     @admin.action(description='Marcar como devuelto')
     def devolver(self, request, queryset):
+
         for orden in queryset:
+            if (orden.devuelta()):
+                messages.warning(request, f'La orden {orden.nombre} ya se encuentra devuelta.')
+                continue
             orden.devolver(request.user)
             if orden.devuelta():
-                messages.success(request, f'Orden {orden} devuelta')
+                messages.success(request, f'Orden {orden.nombre} devuelta')
             else:
-                messages.warning(request, f'No se pudo devolver la orden {orden}')
+                messages.warning(request, f'No se pudo devolver la orden {orden.nombre}')
 
     @admin.action(description='Marcar como cancelado')
     def cancelar(self, request, queryset):
         for orden in queryset:
+            if (orden.cancelada()):
+                messages.warning(request, f'La orden {orden.nombre} ya se encuentra cancelada.')
+                continue
             orden.cancelar()
-
             if orden.cancelada():
-                messages.success(request, f'Orden {orden} cancelada')
+                messages.success(request, f'Orden {orden.nombre} cancelada')
             else:
-                messages.warning(request, f'No se pudo cancelar la orden {orden}')
+                messages.warning(request, f'No se pudo cancelar la orden {orden.nombre}')
 
 
 class ArticuloUnidadInline(admin.TabularInline):
+    """
+    Muestra y gestiona unidades asociadas a un artículo.
+
+    Ofrece una interfaz para gestionar unidades vinculadas a los articulos artículos.
+
+    """
     autocomplete_fields = ['articulo']
     model = Unidad
     extra = 0
 
 
+@admin.register(Entrega)
+class EntregaAdmin(admin.ModelAdmin):
+    """
+    Facilitar la gestión de entregas.
+
+    Muestra detalles de las entregas como nombre de la orden y fecha de emisión,
+    y filtra órdenes disponibles según su estado.
+    """
+    list_display = ('get_orden_nombre', 'emision')
+    list_filter = ('orden',)
+
+    def get_orden_nombre(self, obj):
+        if (obj.orden.estado == EstadoOrden.APROBADA):
+            return obj.orden.nombre
+
+    get_orden_nombre.short_description = 'Nombre producción'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+
+        if db_field.name == "orden":
+            kwargs["queryset"] = Orden.objects.filter(estado=EstadoOrden.APROBADA)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(Devolucion)
+class DevolucionAdmin(admin.ModelAdmin):
+    """
+    Muestra detalles de devoluciones y filtra órdenes disponibles según su estado.
+
+    """
+    list_display = ('get_orden_nombre', 'emision')
+    list_filter = ('orden',)
+
+    def get_orden_nombre(self, obj):
+        if (obj.orden.estado == EstadoOrden.ENTREGADA):
+            return obj.orden.nombre
+
+    get_orden_nombre.short_description = 'Nombre producción'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "orden":
+            kwargs["queryset"] = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 @admin.register(Articulo)
 class ArticuloAdmin(ImportExportModelAdmin):
+    """
+    Permite buscar un articulo por nombre y código, muestra información y
+     gestiona las relaciones con categorías.
+
+    """
     list_display = ('nombre', 'codigo', 'descripcion')
     search_fields = ['nombre', 'codigo']
     filter_horizontal = ('_categorias',)
@@ -71,6 +170,11 @@ class ArticuloAdmin(ImportExportModelAdmin):
 
 
 class ArticuloCarritoInline(admin.TabularInline):
+    """
+    Ofrece una interfaz para seleccionar y gestionar artículos asociados a carritos.
+
+
+    """
     autocomplete_fields = ['articulo']
     model = ArticuloCarrito
     extra = 1
@@ -78,6 +182,11 @@ class ArticuloCarritoInline(admin.TabularInline):
 
 @admin.register(Carrito)
 class CarritoAdmin(admin.ModelAdmin):
+    """
+    Gestiona los carritos mostrando detalles como prestatario y materia,
+     al igual que gestiona relaciones y permite la acción de ordenar artículos en carritos seleccionados.
+
+    """
     actions = ['ordenar']
     list_display = ('prestatario', 'materia')
     inlines = [ArticuloCarritoInline]
@@ -87,11 +196,16 @@ class CarritoAdmin(admin.ModelAdmin):
     def ordenar(self, request, queryset):
         for obj in queryset:
             obj.ordenar()
-            # messages.success(request, "Successfully made uppercase!")
 
 
 @admin.register(Reporte)
 class ReporteAdmin(admin.ModelAdmin):
+    """
+    Se administrna los reportes.
+
+    Muestra detalles como estado del reporte,
+    gestiona relación con órdenes, excluye el campo del emisor y realiza acciones como desactivar reportes.
+        """
     search_fields = ['orden']
     list_display = ('orden', 'estado')
     autocomplete_fields = ('orden',)
@@ -99,8 +213,6 @@ class ReporteAdmin(admin.ModelAdmin):
     actions = ['desactivar_reportes']
 
     def save_model(self, request, obj, form, change):
-        # Registrar el usuario que está usando el admin como el emisor
-        # del reporte
         obj.emisor = request.user
         super().save_model(request, obj, form, change)
 
@@ -116,22 +228,34 @@ class ReporteAdmin(admin.ModelAdmin):
 
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
-    list_display = ('numero_telefono',)
+    """
+    Gestionar perfiles de usuarios en el panel de administración de Django.
+    Mostrando detalles como número de teléfono y permite búsqueda por este campo.
+
+    """
+    list_display = ('usuario',)
     search_fields = ['numero_telefono']
 
 
 class ArticuloInline(admin.TabularInline):
+    """
+    Muestra y gestiona la relación entre artículos y categorías .
+
+    """
     model = Articulo._categorias.through
     extra = 1
 
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
+    """
+    Administra las categorías.
+    Mostrando detalles como nombre de categorías, permite búsqueda por nombre y gestiona relaciones con artículos.
+
+    """
     list_display = ('nombre',)
     search_fields = ['nombre']
     inlines = [ArticuloInline]
 
 
-admin.site.register(Entrega)
-admin.site.register(Devolucion)
-admin.site.register(AutorizacionOrden)
+admin.site.register(CorresponsableOrden)

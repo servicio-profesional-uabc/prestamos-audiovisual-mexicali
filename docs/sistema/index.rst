@@ -13,4 +13,5 @@ efectiva.
    Usuarios
    Modelos
    Señales
+   Admin
    Vistas

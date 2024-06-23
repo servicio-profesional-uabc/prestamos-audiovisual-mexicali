@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -11,14 +10,15 @@ from django.utils.timezone import make_aware
 from django.views import View
 from django.views.generic.edit import UpdateView
 
-from .forms import CorresponsableForm
+from .forms import CorresponsableForm, CambiarEstadoOrdenForm, CambiarEstadoCorresponsableOrdenForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, AutorizacionOrden, Categoria, CorresponsableOrden, Maestro, Materia
+from .models import Articulo, Categoria, CorresponsableOrden, Coordinador
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
 
 class IndexView(View):
+
     def get(self, request):
         return render(
             request=request,
@@ -55,17 +55,16 @@ class AgregarCorresponsablesView(UpdateView):
 
 
 class ActualizarPerfilView(LoginRequiredMixin, View):
-    """
-    Vista para registrar los datos faltantes del usuario
-    """
 
     def get(self, request):
+        perfil = Perfil.user_data(user=request.user)
+
         return render(
             request=request,
             template_name="actualizar_perfil_y_usuario.html",
             context={
-                'form_actualizar_perfil': ActualizarPerfil(),
-                'form_actualizar_usuario': UpdateUserForm(),
+                'form_actualizar_perfil': ActualizarPerfil(instance=perfil),
+                'form_actualizar_usuario': UpdateUserForm(instance=request.user),
             }
         )
 
@@ -91,13 +90,11 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
 
 
 class MenuView(View, LoginRequiredMixin):
+
     def get(self, request):
-        # Todos los usaurios deben tener perfil
-        # TODO: pantalla de error si no existe el Pefil
         datos_usuario = Perfil.user_data(user=request.user)
 
         if datos_usuario.incompleto():
-            # el usuario tiene datos incompletos
             return redirect('actualizar_perfil')
 
         return render(
@@ -113,6 +110,7 @@ class MenuView(View, LoginRequiredMixin):
 class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def test_func(self):
+
         prestatario = Prestatario.get_user(self.request.user)
         return prestatario.tiene_carrito()
 
@@ -122,10 +120,10 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         articulos_no_disponibles = []
 
         for articulo_carrito in carrito.articulos_carrito():
-            # mostrar mensajes sobre el estado del articulo
             if not articulo_carrito.articulo.disponible(carrito.inicio, carrito.final).exists():
                 articulos_no_disponibles.append(articulo_carrito)
-                messages.add_message(request, messages.WARNING, f'El artículo {articulo_carrito.articulo.nombre} no está disponible.')
+                messages.add_message(request, messages.WARNING,
+                                     f'El artículo {articulo_carrito.articulo.nombre} no está disponible.')
 
         return render(
             request=request,
@@ -138,19 +136,13 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
     def post(self, request, accion):
+
         if accion == 'ordenar':
             carrito = Prestatario.get_user(request.user).carrito()
-            maestro_id = request.POST.get('maestro')
-            if maestro_id:
-                maestro = get_object_or_404(Maestro, pk=maestro_id)
-                carrito.maestro = maestro
-                carrito.save()
+            ordenado = carrito.ordenar()
 
-            if carrito.tiene_maestro():
-                ordenado = carrito.ordenar()
-
-                if ordenado:
-                    return redirect("historial_solicitudes")
+            if ordenado:
+                return redirect("historial_solicitudes")
 
         return redirect("carrito")
 
@@ -160,10 +152,26 @@ class FiltrosView(LoginRequiredMixin, View):
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
 
+        coordinador = Coordinador.objects.first()
+        # En caso que no exista ninguno registrado
+        if coordinador is None:
+            messages.add_message(request, messages.WARNING,
+                                 "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+
+        # En caso que falta registrar sus datos
+        else:
+            perfil = Perfil.objects.get(usuario=coordinador)
+            if perfil.incompleto():
+                messages.add_message(request, messages.WARNING,
+                                     "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+
         if prestatario.tiene_carrito():
-            # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
+        for materia in prestatario.materias():
+            if materia.son_correos_vacios():
+                messages.add_message(request, messages.WARNING,
+                                     f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
 
         return render(
             request=request,
@@ -180,24 +188,28 @@ class FiltrosView(LoginRequiredMixin, View):
         form = FiltrosForm(request.POST)
 
         if prestatario.tiene_carrito():
-            # Si ya hay un carrito se borra
             prestatario.carrito().eliminar()
 
         if form.is_valid():
-            # crear carrito
             inicio = form.cleaned_data.get('inicio')
             hora_inicio = form.cleaned_data.get('hora_inicio')
-            duracion = form.cleaned_data.get('duracion')
+            duracion = int(form.cleaned_data.get('duracion'))
 
-            # se crea un nuevo carrito
+            # HORARIO DE ORDENES EXTRAORDINARIAS
+            if duracion in [24, 48, 72, 46]:
+                messages.error(request, "Órdenes extraordinarias no permitidas actualmente. Contacte al coordinador.")
+                return render(request, "filtros.html", {
+                    'prestatario': prestatario,
+                    'form': form,
+                    'materias': prestatario.materias(),
+                })
+
             carrito_nuevo = form.save(commit=False)
             carrito_nuevo.prestatario = request.user
 
-            # TODO: Enhancement - Realizar estas operaciones en sus propios métodos de Carrito
             tiempo_duracion = int(duracion)
             fecha_inicio = datetime.combine(inicio, hora_inicio)
 
-            # Guardar fechas actualizadas
             carrito_nuevo.inicio = make_aware(fecha_inicio)
             carrito_nuevo.final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
 
@@ -216,6 +228,7 @@ class FiltrosView(LoginRequiredMixin, View):
 
 
 class SolicitudView(View):
+
     def get(self, request):
         return render(
             request=request,
@@ -224,31 +237,26 @@ class SolicitudView(View):
 
 
 class HistorialSolicitudesView(View):
+
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
-
-        ordenes_pendientes = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.RESERVADA)
-        ordenes_listas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.APROBADA)
-        ordenes_canceladas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.CANCELADA)
-        ordenes_entregadas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.ENTREGADA)
-        ordenes_devueltas = Orden.objects.filter(prestatario=prestatario, estado=EstadoOrden.DEVUELTA)
-
-        context = {
-            "ordenes_pendientes": ordenes_pendientes,
-            "ordenes_listas": ordenes_listas,
-            "ordenes_canceladas": ordenes_canceladas,
-            "ordenes_entregadas": ordenes_entregadas,
-            "ordenes_devueltas": ordenes_devueltas,
-        }
+        ordenes = prestatario.ordenes()
 
         return render(
             request=request,
             template_name="historial_solicitudes.html",
-            context=context,
+            context={
+                "ordenes_pendientes": ordenes.filter(estado=EstadoOrden.RESERVADA),
+                "ordenes_listas": ordenes.filter(estado=EstadoOrden.APROBADA),
+                "ordenes_canceladas": ordenes.filter(estado=EstadoOrden.CANCELADA),
+                "ordenes_entregadas": ordenes.filter(estado=EstadoOrden.ENTREGADA),
+                "ordenes_devueltas": ordenes.filter(estado=EstadoOrden.DEVUELTA),
+            }
         )
 
 
 class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
+
     def test_func(self):
         prestatario = Prestatario.get_user(self.request.user)
         orden = get_object_or_404(Orden, id=self.kwargs['id'])
@@ -259,8 +267,10 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
         return render(
             request=request,
             template_name="detalles_orden.html",
-            context={"orden": orden,
-                     "EstadoOrden": EstadoOrden}
+            context={
+                "orden": orden,
+                "EstadoOrden": EstadoOrden
+            }
         )
 
     def post(self, request, id):
@@ -272,14 +282,8 @@ class DetallesOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
-    """
-    Vista donde el usuario agrega articulos a su carrito.
-    """
 
     def test_func(self):
-        """
-        :return: Si prestatario ha comenzado el proceso de carrito (debió haber completado Filtro)
-        """
         prestatario = Prestatario.get_user(self.request.user)
         carrito = get_object_or_404(Carrito, prestatario=prestatario)
         return prestatario == carrito.prestatario
@@ -292,6 +296,7 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
         articulos_disponibles = []
         for articulo in carrito.materia.articulos():
             cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+
             if cantidad_disponible > 0:
                 articulos_disponibles.append(articulo)
                 articulo.num_unidades = cantidad_disponible
@@ -330,6 +335,7 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
 
 
 class DetallesArticuloView(View):
+
     def get(self, request, id):
         articulo = get_object_or_404(Articulo, id=id)
 
@@ -353,10 +359,72 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 
         if carrito.existe(articulo):
             carrito.eliminar_articulo(articulo)
+
         carrito.agregar(articulo, cantidad)
         carrito.save()
 
         return redirect("catalogo")
+
+
+class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        solicitud = get_object_or_404(CorresponsableOrden, id=self.kwargs['id'])
+        return solicitud.esta_pendiente() and self.request.user in solicitud.orden.corresponsables()
+
+    def get(self, request, id):
+        solicitud = get_object_or_404(CorresponsableOrden, id=self.kwargs['id'])
+        orden = solicitud.orden
+        form = CambiarEstadoCorresponsableOrdenForm(instance=orden)
+        return render(
+            request=request,
+            template_name='autorizar_ordenes/cambiar_estado_orden.html',
+            context={
+                'form': form,
+                'orden': orden
+            }
+        )
+
+    def post(self, request, id):
+        solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+        action = request.POST.get('action')
+
+        if action == 'aprobar':
+            solicitud.aceptar()
+
+        elif action == 'cancelar':
+            solicitud.rechazar()
+
+        # TODO: mostrar mensaje si se aprobó o se canceló
+        return redirect('cambiar_estado_orden', id=solicitud.id)
+
+
+class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        orden = get_object_or_404(Orden, id=self.kwargs['id'])
+        materia = orden.materia
+        if orden.es_extraordinaria():
+            return self.request.user.groups.filter(name='coordinador').exists()
+        elif orden.es_ordinaria():
+            return self.request.user in materia._maestros.all()
+        return False
+
+    def get(self, request, id):
+        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
+        form = CambiarEstadoOrdenForm(instance=orden)
+        return render(request, 'autorizar_ordenes/cambiar_estado_orden.html', {'form': form, 'orden': orden})
+
+    def post(self, request, id):
+        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RESERVADA)
+        action = request.POST.get('action')
+
+        if action == 'aprobar':
+            orden.aprobar()
+        elif action == 'cancelar':
+            orden.cancelar()
+
+        # TODO: mostrar mensaje si se aprobó o se canceló
+        return redirect('cambiar_estado_orden', id=orden.id)
+
 
 class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 
@@ -372,276 +440,3 @@ class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
         carrito.save()
 
         return redirect("carrito")
-
-class CancelarOrdenView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="cancelar_orden.html"
-        )
-
-
-class ActualizarAutorizacion(LoginRequiredMixin, View):
-    def get(self, request, type, state, id):
-        """
-        Corresponsable puede aceptar o rechazar una orden de otro prestatario
-        Aprobador es Maestro o Coordinador quien puede aprobar o cancelar una la orden de un prestatario o propia en caso de ser Maestro
-        """
-
-        match type:
-            case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
-
-            case "aprobacion":
-                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
-
-            case _:
-                raise Http404("No existe ese tipo de autorizacion")
-
-        if type == "corresponsable":
-            match state:
-                case "aceptar":
-                    solicitud.aceptar()
-
-                case "rechazar":
-                    solicitud.rechazar()
-
-                case _:
-                    raise Http404("No existe ese estado")
-        else:
-            match state:
-                case "aprobar":
-                    # TODO : Solicitud es AutorizarOrden, hace falta que Orden ejecute aprobar
-                    print('here')
-                    solicitud.orden.aprobar()
-                    solicitud.orden.save()
-
-                case "rechazar":
-                    solicitud.orden.cancelar()
-                    solicitud.orden.save()
-
-                case _:
-                    raise Http404("No existe ese estado")
-
-        # regresar a la pagina de autorizaciones 
-        return redirect("autorizacion_solicitudes", type, id)
-
-
-class AutorizacionSolicitudView(LoginRequiredMixin, View):
-    autorizacion_template = "autorizacion_solicitudes.html"
-    aprobacion_template = "aprobacion_solicitudes.html"
-
-    def get(self, request, type, id):
-        match type:
-            case "corresponsable":
-                solicitud = get_object_or_404(CorresponsableOrden, pk=id)
-
-                # si el usuario no es la presona solicitada no lo puede ver
-                if solicitud.autorizador != request.user:
-                    raise Http404("No tienes permiso de ver esta Orden")
-
-                return render(
-                    request=request,
-                    template_name=self.autorizacion_template,
-                    context={
-                        "solicitud": solicitud,
-                        "orden": solicitud.orden
-                    }
-                )
-
-            case "aprobacion":
-                solicitud = get_object_or_404(AutorizacionOrden, orden_id=id)
-
-                # si el usuario no es la presona solicitada no lo puede ver
-                if solicitud.autorizador != request.user:
-                    raise Http404("No tienes permiso de ver esta Orden")
-
-                return render(
-                    request=request,
-                    template_name=self.aprobacion_template,
-                    context={
-                        "solicitud": solicitud,
-                        "orden": solicitud.orden
-                    }
-                )
-
-        raise Http404("No existe ese tipo de autorizacion")
-
-######################ALMACEN###############################
-
-#######################VISTA PRINCIPAL#########################
-
-# class PrincipalAlmacenView(LoginRequiredMixin, View):
-#     def get(self, request):
-#         user = request.user
-
-#         ordenes_pendientes = Orden.objects.filter(prestatario=user, estado=EstadoOrden.RESERVADA)
-#         ordenes_listas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.APROBADA)
-#         ordenes_canceladas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.CANCELADA)
-#         ordenes_entregadas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.ENTREGADA)
-#         ordenes_devueltas = Orden.objects.filter(prestatario=user, estado=EstadoOrden.DEVUELTA)
-
-#         context = {
-#             "ordenes_pendientes": ordenes_pendientes,
-#             "ordenes_listas": ordenes_listas,
-#             "ordenes_canceladas": ordenes_canceladas,
-#             "ordenes_entregadas": ordenes_entregadas,
-#             "ordenes_devueltas": ordenes_devueltas,
-#         }
-
-#         return render(
-#             request=request,
-#             template_name="principal.html",
-#             context=context,
-#         )
-
-
-#########ORDENES AUTORIZADAS#############
-
-
-class DetallesOrdenAutorizadaView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.APROBADA)
-
-        return render(
-            context={"orden": orden}
-
-        )
-
-
-#############ORDENES PRESTADAS#######################
-class OrdenesPrestadasView(View):
-    def get(self, request):
-        ordenes_prestadas = Orden.objects.filter(estado=EstadoOrden.ENTREGADA)
-        print("ESTOOO 2", ordenes_prestadas)  # Comprueba si obtienes resultados aquí
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_prestadas.html",
-            context={'ordenes': ordenes_prestadas}
-        )
-
-
-class DetallesOrdenPrestadaView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.ENTREGADA)
-
-        return render(
-            context={"orden": orden}
-        )
-
-
-##################ORDENES REPORTADAS#########################
-class OrdenesReportadasView(View):
-    def get(self, request):
-        ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.RECHAZADA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_reportadas.html",
-            context={'ordenes': ordenes_devueltas}
-        )
-
-
-#####NOOOOOOOO#############
-class ReportarOrdenView(View):
-    def get(self, request, id):
-        return render(
-            request=request,
-            template_name="reportar_orden.html"
-        )
-
-
-class DetallesOrdenReportadaView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.RECHAZADA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_reportada.html",
-            context={"orden": orden}
-        )
-
-
-# devolucion = recibir
-# prestar = entregar
-
-####################ORDENES DEVUELTAS#######################################
-class OrdenesDevueltasView(View):
-    def get(self, request):
-        ordenes_devueltas = Orden.objects.filter(estado=EstadoOrden.DEVUELTA)
-        print("EST 33", ordenes_devueltas)  # Comprueba si obtienes resultados aquí
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/ordenes_devueltas.html",
-            context={'ordenes': ordenes_devueltas}
-        )
-
-
-class DetallesOrdenDevueltaView(View):
-    def get(self, request, id):
-        orden = get_object_or_404(Orden, id=id, estado=EstadoOrden.DEVUELTA)
-
-        return render(
-            request=request,
-            template_name="almacen_permisos/detalles_orden_devuelta.html",
-            context={"orden": orden}
-        )
-
-
-#########################CORDINADOR########################
-class OrdenesReportadasCordinadorView(View):
-    def get(self, request):
-        return render(
-            request=request,
-            template_name="coordinador_permisos/ordenes_reportadas_cordi.html"
-        )
-
-
-##################################3
-def cambiar_estado_ENTREGADO(request, orden_id, estado):
-    if request.method == 'POST':
-        orden_id = request.POST.get('orden_id')
-        try:
-            orden = Orden.objects.get(id=orden_id)
-            orden.estado = EstadoOrden.ENTREGADA
-            orden.save()
-            return redirect('ordenes_prestadas')
-        except Orden.DoesNotExist:
-            return render(request, 'error.html', {'mensaje': 'La orden no existe'})
-    else:
-        return render(request, 'error.html', {'mensaje': 'Método no permitido'})
-
-
-def cambiar_estado_DEVUELTO(request, orden_id, estado):
-    if request.method == 'POST':
-        orden_id = request.POST.get('orden_id')
-        try:
-            orden = Orden.objects.get(id=orden_id)
-            orden.estado = EstadoOrden.DEVUELTA
-            orden.save()
-            return redirect('ordenes_devueltas')
-        except Orden.DoesNotExist:
-            return render(request, 'error.html', {'mensaje': 'La orden no existe'})
-    else:
-        return render(request, 'error.html', {'mensaje': 'Método no permitido'})
-
-
-def estado_orden(request, tipo_estado):
-    def estado_orden(request):
-        ordenes_pendientes = Orden.objects.filter(estado="Pendiente")
-        ordenes_listas = Orden.objects.filter(estado="Listo para iniciar")
-        ordenes_canceladas = Orden.objects.filter(estado="Cancelada")
-        ordenes_entregadas = Orden.objects.filter(estado="Entregada")
-        ordenes_devueltas = Orden.objects.filter(estado="Devuelta")
-
-        context = {
-            "ordenes_pendientes": ordenes_pendientes,
-            "ordenes_listas": ordenes_listas,
-            "ordenes_canceladas": ordenes_canceladas,
-            "ordenes_entregadas": ordenes_entregadas,
-            "ordenes_devueltas": ordenes_devueltas,
-        }
-
-        return render(request, "principal.html", context)

@@ -145,6 +145,7 @@ class Command(BaseCommand):
 
         # ordenes
         orden1, created = Orden.objects.get_or_create(
+            nombre="Awa1",
             prestatario=user,
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5, 12)),
@@ -153,7 +154,8 @@ class Command(BaseCommand):
             materia=materia1,
         )
 
-        orden2, created = Orden.objects.get_or_create(
+        orden2, created = Orden.objects.get_or_create(            
+            nombre="Awa2",
             prestatario=user,
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5, 11)),
@@ -164,6 +166,7 @@ class Command(BaseCommand):
         )
 
         orden3, created = Orden.objects.get_or_create(
+            nombre="Awa3",
             prestatario=user,
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5, 15)),
@@ -173,6 +176,7 @@ class Command(BaseCommand):
         )
 
         orden4, created = Orden.objects.get_or_create(
+            nombre="Awa4",
             prestatario=user,
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5, 16)),
@@ -182,6 +186,7 @@ class Command(BaseCommand):
         )
 
         orden5, created = Orden.objects.get_or_create(
+            nombre="Awa5",
             prestatario=user,
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5, 13)),
@@ -191,6 +196,7 @@ class Command(BaseCommand):
         )
 
         orden6, created = Orden.objects.get_or_create(
+            nombre="Awa6",
             prestatario=user,
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5, 11)),

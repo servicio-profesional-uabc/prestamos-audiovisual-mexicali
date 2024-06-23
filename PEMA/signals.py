@@ -1,13 +1,10 @@
-import os
-
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
-from PEMA.models import AutorizacionEstado, Coordinador, Devolucion, Entrega, TipoOrden
-from PEMA.models import AutorizacionOrden
+from PEMA.models import AutorizacionEstado, Devolucion, Entrega
 from PEMA.models import CorresponsableOrden
 from PEMA.models import EstadoOrden
 from PEMA.models import Orden
@@ -15,14 +12,17 @@ from PEMA.models import Perfil
 from prestamos import settings
 
 
+# sender: The model class which the signal was called with.
+# instance: The instance of a User, whether this was created or updated.
+# created: A Boolean to determine if the User was updated or created.
+# When the signal is called, none of the parameters will be empty.
+
 @receiver(post_save, sender=User)
 def user_post_save(sender, instance, created, **kwargs):
     """
-    Esta señal se ejecuta cada vez que se guarda un usuario.
-
-    Crea un perfil asociado a ese usuario, el cual contiene información
-    adicional para el modelo estándar de usuario de Django.
+    Crea un perfil asociado a un usuario cada vez que se guarda un usuario nuevo.
     """
+
     if not created:
         return
 
@@ -32,8 +32,8 @@ def user_post_save(sender, instance, created, **kwargs):
 @receiver(m2m_changed, sender=Orden._corresponsables.through)
 def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     """
-    Esta señal se ejecuta cada vez que un corresponsable se actualiza la
-    lista de corresponsables de una orden.
+    Actualiza las instancias de CorresponsableOrden cuando cambia la lista de corresponsables de una orden.
+
     """
 
     if action == 'post_remove':
@@ -43,9 +43,9 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
     if action == 'post_add':
         # crear el corresponsableOrden de cada corresponsable y enviar correo
         for item in instance._corresponsables.all():
-            
+
             object, created = CorresponsableOrden.objects.get_or_create(autorizador=item, orden=instance)
-        
+
             if created:
                 send_mail(
                     subject="Test Email",
@@ -65,16 +65,15 @@ def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
                     ]
                 )
 
+
 @receiver(post_save, sender=CorresponsableOrden)
 def corresponsable_orden_updated(sender, instance, created, **kwargs):
     """
-    Esta función se ejecuta cada vez que se actualiza un CorresponsableOrden.
+    Esta función se activa cuando se modifica un registro de CorresponsableOrden.
+    Verifica si todos los corresponsables han aceptado la orden y ninguno la ha rechazado para que pueda ser aprobada.
+    En caso de ser aprobada, se envía una solicitud de autorización al profesor (si la orden es ordinaria) o al coordinador
+    (si es extraordinaria). Además, actualiza el estado de la orden según los cambios en CorresponsableOrden.
 
-    Durante esta actualización, se verifica el estado de la orden. Para
-    que la orden sea aprobada, todos los corresponsables deben aceptarla
-    y ninguno debe haberla rechazado. Si la orden es aceptada, se envía
-    una solicitud de autorización al profesor si la orden es de tipo
-    ordinaria, o al coordinador si es de tipo extraordinaria.
     """
 
     # TODO: faltan pruebas unitarias para este trigger
@@ -86,90 +85,50 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
         return
 
     # si el registro se modifica
-    # verificar las respuestas de los corresponsables
-    match orden.estado_corresponsables():
-        case AutorizacionEstado.ACEPTADA:
+    # Estado de los corresponsables, si aceptan la orden o no
+    estado_corresponsables = orden.estado_corresponsables()
 
-            orden.estado = EstadoOrden.RESERVADA  # esperando autorización
-            orden.solicitar_autorizacion() # envia solicitud a maestro o coordinador dependiendo del tipo de orden
-            # orden.solicitar_autorizacion(orden)  # enviar solicitudes
+    if estado_corresponsables == AutorizacionEstado.ACEPTADA:
+        # si todos aceptan se envia la solicitud al maestro/coordinador
+        orden.solicitar_autorizacion()
 
-        case AutorizacionEstado.RECHAZADA:
-            orden.estado = EstadoOrden.CANCELADA
+    if estado_corresponsables == AutorizacionEstado.RECHAZADA:
+        # si alguno cancela la solicitud se cancela
+        orden.cancelar()
 
-    # guardar orden actualizada
-    orden.save()
-
-
-@receiver(post_save, sender=AutorizacionOrden)
-def autorizacion_orden_updated(sender, instance, created, **kwargs):
-    # TODO: faltan pruebas unitarias para este trigger
-
-    if created:  # si la autorización se crea
-        return
-
-    # si la autorización cambia de estado
-    # if instance.aceptada():
-    #     instance.orden.autorizar()
-
-    # if instance.rechazada():
-    #     instance.orden.rechazar()
-
-    # instance.orden.save()
-
-
-@receiver(post_save, sender=AutorizacionOrden)
-def autorizacion_orden_created(sender, instance, created, **kwargs):
-    """
-    Esta señal se ejecuta cada vez que se crea una autorización, este envía un correo al usuario maestro o coordinador para aprobar o cancelar dicha orden.
-    orden.solicitar_autorizacion() se crean dichos objetos de AutorizacionOrden (esto sucede en la señal corresponsable_orden_updated)
-    """
-    if not created:  # se crea una autorización
-        return
-
-    orden = instance.orden
-
-    autorizador = instance.autorizador
-    prestatario = instance.orden.prestatario    
-
-    send_mail(
-        subject=f"PEMA - Nueva solicitud de autorización para préstamo de equipo",
-        from_email=settings.EMAIL_HOST_USER,
-        fail_silently=False,
-        message=render_to_string(
-            'emails/aprobar_solicitud.html',
-            {
-                'orden': orden,
-                'user': prestatario,
-                'autorizador': autorizador,
-                'host': settings.URL_BASE_PARA_EMAILS,
-            }
-        ),
-        recipient_list=[autorizador.email]
-    )
 
 @receiver(post_save, sender=Entrega)
 def entrega_created(sender, instance, created, **kwargs):
     """
-    Esta señal se ejecuta cada vez que el usuario Almacen crea una entrega en la vista de /admin modificado a permisos solo para un usuario Almacen.
-    Una entrega solo es posible si la orden esta en estado de APROBADA (Listo para iniciar para la fecha y hora de inicio). entregar() valida si dicho estado.
+    Actualiza automáticamente el estado de la orden asociada a "Entregado" cada vez que se crea una nueva instancia de Entrega.
+
+    El sistema verifica si esta entrega es nueva o si es una actualización de una existente.
+    Si es una entrega nueva , se marcar la orden relacionada como entregada.
+    Utiliza la información del entregador que realizó la entrega para actualizar el estado de la orden,
+    indicando que ha sido entregada satisfactoriamente.
+
+
     """
     if not created:
         return
-    
+
     orden = instance.orden
     entregador = instance.entregador
     orden.entregar(entregador)
 
+
 @receiver(post_save, sender=Devolucion)
 def devolucion_created(sender, instance, created, **kwargs):
     """
-    Esta señal se ejecuta cada vez que el usuario Almacen crea una devolución en la vista de /admin modificado a permisos solo para un usuario Almacen.
-    Una devolución solo es posible si la orden esta en estado de ENTREGADA. devolver() valida si es dicho estado.
+    La señal devolucion_created se activa cada vez que se guarda una instancia del modelo Devolucion en el sistema.
+
+    Se verifica si la instancia de Devolucion acaba de ser creada.
+    Obtener la orden asociada a la devolución.
+    Realizar operaciones relacionadas con la devolución de la orden.
     """
     if not created:
         return
-    
+
     orden = instance.orden
     almacen = instance.almacen
     orden.devolver(almacen)
