@@ -4,10 +4,35 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
-from phonenumber_field.formfields import PhoneNumberField
 from django.utils.timezone import make_aware
+from phonenumber_field.formfields import PhoneNumberField
 
-from .models import Carrito, Perfil, Prestatario, Ubicacion
+from .models import Carrito, Perfil, Prestatario, Ubicacion, CorresponsableOrden
+from .models import Orden, EstadoOrden
+
+
+class CambiarEstadoCorresponsableOrdenForm(forms.ModelForm):
+    class Meta:
+        model = CorresponsableOrden
+        fields = ['estado']
+        widgets = {
+            'estado': forms.Select(choices=[
+                (EstadoOrden.CANCELADA, 'Cancelada'),
+                (EstadoOrden.APROBADA, 'Aprobada')
+            ])
+        }
+
+
+class CambiarEstadoOrdenForm(forms.ModelForm):
+    class Meta:
+        model = Orden
+        fields = ['estado']
+        widgets = {
+            'estado': forms.Select(choices=[
+                (EstadoOrden.CANCELADA, 'Cancelada'),
+                (EstadoOrden.APROBADA, 'Aprobada')
+            ])
+        }
 
 
 class UpdateUserForm(forms.ModelForm):
@@ -48,6 +73,8 @@ class CorresponsableForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         carrito = kwargs.get('instance')
+
+        # TODO: reemplazar este por get_of_404 o similar
         materia = kwargs.pop('materia', None)
         super(CorresponsableForm, self).__init__(*args, **kwargs)
 
@@ -71,7 +98,7 @@ class FiltrosForm(forms.ModelForm):
 
     class Meta:
         model = Carrito
-        fields = ['inicio', 'nombre', 'materia', 'lugar', 'descripcion', 'lugar', 'descripcion_lugar', 'maestro',
+        fields = ['inicio', 'nombre', 'materia', 'lugar', 'descripcion', 'lugar', 'descripcion_lugar',
                   '_corresponsables']
 
     descripcion = forms.CharField(widget=forms.Textarea)
@@ -120,7 +147,6 @@ class FiltrosForm(forms.ModelForm):
         (time(hour=20, minute=0, second=0), '8:00 PM'),
     ))
 
-
     lugar = forms.ChoiceField(required=True, choices=(
         (Ubicacion.CAMPUS, "En el Campus"),
         (Ubicacion.EXTERNO, "Fuera del Campus"),
@@ -149,13 +175,13 @@ class FiltrosForm(forms.ModelForm):
 
         # print(f'clean inicio {inicio}')
         return inicio
-    
+
     def clean(self):
         cleaned_data = super().clean()
         inicio = cleaned_data.get('inicio')
         hora_inicio = cleaned_data.get('hora_inicio')
         duracion = cleaned_data.get('duracion')
-        
+
         if not inicio:
             return
 
@@ -170,9 +196,10 @@ class FiltrosForm(forms.ModelForm):
         fecha_final = make_aware(fecha_inicio + timedelta(hours=tiempo_duracion))
 
         if fecha_final.date().weekday() >= 5:
-            raise(forms.ValidationError("La fecha final del préstamo es en fin de semana. Intente de nuevo."))
-        
+            raise (forms.ValidationError("La fecha final del préstamo es en fin de semana. Intente de nuevo."))
+
         if fecha_final.hour > 20 or fecha_final.hour < 9:
-            raise(forms.ValidationError("La fecha final del préstamo es fuera del horario de atención. Intente de nuevo."))
+            raise (forms.ValidationError(
+                "La fecha final del préstamo es fuera del horario de atención. Intente de nuevo."))
 
         return cleaned_data

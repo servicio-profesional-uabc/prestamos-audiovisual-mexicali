@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Error 404 - Página no encontrada</title>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5 p-4 bg-light shadow rounded text-center">
+    <h1 class="display-4">404</h1>
+    <p class="lead">Lo sentimos, la página que estás buscando no se pudo encontrar.</p>
+    <hr>
+    <p>Verifica la URL o regresa al menu</a>.</p>
+    <a href="{% url 'menu' %}" class="btn btn-primary">Regresar al menu</a>
+</div>
+{% endblock %}
