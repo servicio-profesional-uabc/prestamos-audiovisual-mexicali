@@ -1,7 +1,7 @@
 # Esto Es indispensable
 ## Basico para django
 asgiref==3.7.2
-Django==5.0.3
+Django==5.0.6
 django-phonenumber-field==7.3.0
 phonenumbers==8.13.30
 PyMySQL==1.1.0
