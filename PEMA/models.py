@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -15,8 +16,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from prestamos import settings
 
-
-# Roles de Usuario
 
 class Prestatario(User):
     """
@@ -48,8 +47,8 @@ class Prestatario(User):
             user = None
         return user
 
-    @staticmethod
-    def crear_usuario(*args, **kwargs) -> 'Prestatario':
+    @classmethod
+    def crear_usuario(cls, *args, **kwargs) -> User:
         """
         Crea un usuario de tipo prestatario. Útil para pruebas unitarias.
 
@@ -58,7 +57,7 @@ class Prestatario(User):
         grupo, _ = Prestatario.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
         grupo.user_set.add(user)
-        return Prestatario.get_user(user)
+        return user
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
@@ -681,7 +680,8 @@ class Orden(models.Model):
     inicio = models.DateTimeField(null=False)
     final = models.DateTimeField(null=False)
     descripcion = models.TextField(blank=False, max_length=512, verbose_name='Descripción de la Producción')
-    _corresponsables = models.ManyToManyField(to=User, related_name='corresponsables', verbose_name='Participantes')
+    _corresponsables = models.ManyToManyField(to=User, through='CorresponsableOrden', related_name='corresponsables',
+                                              verbose_name='Participantes')
     _unidades = models.ManyToManyField(to=Unidad, blank=True, verbose_name='Equipo Solicitado')
     emision = models.DateTimeField(auto_now_add=True)
 
@@ -776,7 +776,26 @@ class Orden(models.Model):
 
         :param prestatario: El prestatario que se quiere agregar como corresponsable.
         """
-        self._corresponsables.add(prestatario)
+        CorresponsableOrden.objects.get_or_create(autorizador=prestatario, orden=self)
+
+    def notificar_corresponsables(self):
+        """
+        #TODO: Falta documentacion
+        :return:
+        """
+        send_mail(
+            subject="Autorizar corresponsables",
+            from_email=settings.EMAIL_HOST_USER,
+            fail_silently=False,
+            recipient_list=[c.email for c in self._corresponsables.all()],
+            message=render_to_string(
+                template_name="emails/aceptar_corresponsable.html",
+                context={
+                    'orden': self,
+                    'host': settings.URL_BASE_PARA_EMAILS,
+                }
+            )
+        )
 
     def es_ordinaria(self) -> bool:
         """
@@ -847,10 +866,13 @@ class Orden(models.Model):
 
         if AutorizacionEstado.RECHAZADA in estados:
             return AutorizacionEstado.RECHAZADA
+
+        if len(estados) == 1 and AutorizacionEstado.ACEPTADA in estados:
+            # si hay mas de 1 corresponsable
+            return AutorizacionEstado.ACEPTADA
+
         if AutorizacionEstado.PENDIENTE in estados:
             return AutorizacionEstado.PENDIENTE
-        if len(estados) == 1 and AutorizacionEstado.ACEPTADA in estados:
-            return AutorizacionEstado.ACEPTADA
 
     def recibir(self, almacen: 'Almacen') -> tuple['Devolucion', bool]:
         """
@@ -1000,8 +1022,6 @@ class Carrito(models.Model):
             with transaction.atomic():
                 orden = self.crear_orden_desde_carrito()
                 orden.save()
-
-                orden.agregar_corresponsable(self.prestatario)
 
                 for corresponsable in self._corresponsables.all():
                     orden.agregar_corresponsable(corresponsable)
@@ -1217,8 +1237,6 @@ class CorresponsableOrden(models.Model):
         self.estado = AutorizacionEstado.RECHAZADA
         self.save()
 
-
-# Clases de relación
 
 class ArticuloCarrito(models.Model):
     """
