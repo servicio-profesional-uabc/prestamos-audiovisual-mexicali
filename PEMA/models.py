@@ -257,9 +257,14 @@ class Maestro(User):
 
         :returns: El usuario creado en el grupo Maestro.
         """
-        grupo, _ = Maestro.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
-        grupo.user_set.add(user)
+
+        grupo_maestro, _ = Maestro.crear_grupo()
+        grupo_prestatario, _ = Prestatario.crear_grupo()
+
+        grupo_maestro.user_set.add(user)
+        grupo_prestatario.user_set.add(user)
+
         return user
 
     def __str__(self):
