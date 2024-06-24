@@ -28,6 +28,7 @@ def user_post_save(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Orden)
 def orden_after_create(sender, instance, created, **kwargs):
     if created:
+        instance.agregar_corresponsable(instance.prestatario)
         instance.notificar_corresponsables()
 
 

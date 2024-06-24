@@ -859,10 +859,13 @@ class Orden(models.Model):
 
         if AutorizacionEstado.RECHAZADA in estados:
             return AutorizacionEstado.RECHAZADA
+
+        if len(estados) == 1 and AutorizacionEstado.ACEPTADA in estados:
+            # si hay mas de 1 corresponsable
+            return AutorizacionEstado.ACEPTADA
+
         if AutorizacionEstado.PENDIENTE in estados:
             return AutorizacionEstado.PENDIENTE
-        if len(estados) == 1 and AutorizacionEstado.ACEPTADA in estados:
-            return AutorizacionEstado.ACEPTADA
 
     def recibir(self, almacen: 'Almacen') -> tuple['Devolucion', bool]:
         """
@@ -1012,8 +1015,6 @@ class Carrito(models.Model):
             with transaction.atomic():
                 orden = self.crear_orden_desde_carrito()
                 orden.save()
-
-                orden.agregar_corresponsable(self.prestatario)
 
                 for corresponsable in self._corresponsables.all():
                     orden.agregar_corresponsable(corresponsable)
