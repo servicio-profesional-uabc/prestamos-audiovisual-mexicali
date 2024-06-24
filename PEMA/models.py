@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -786,8 +787,14 @@ class Orden(models.Model):
             subject="Autorizar corresponsables",
             from_email=settings.EMAIL_HOST_USER,
             fail_silently=False,
-            message="bla bla, autoriza la orden de corresponsables",
-            recipient_list=[c.email for c in self._corresponsables.all()]
+            recipient_list=[c.email for c in self._corresponsables.all()],
+            message=render_to_string(
+                template_name="emails/aceptar_corresponsable.html",
+                context={
+                    'orden': self,
+                    'host': settings.URL_BASE_PARA_EMAILS,
+                }
+            )
         )
 
     def es_ordinaria(self) -> bool:

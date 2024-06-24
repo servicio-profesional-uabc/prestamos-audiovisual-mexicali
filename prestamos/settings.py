@@ -146,7 +146,7 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
 # para enviar las urls en los emails
-URL_BASE_PARA_EMAILS = "http://127.0.0.1:8000/" # "http://10.32.213.157" #"http://localhost:8000/"
+URL_BASE_PARA_EMAILS = "http://127.0.0.1:8000" # "http://10.32.213.157" #"http://localhost:8000/"
 
 # django extra settings
 # EXTRA_SETTINGS_ADMIN_APP = "extra_settings"
