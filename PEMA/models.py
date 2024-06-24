@@ -47,8 +47,8 @@ class Prestatario(User):
             user = None
         return user
 
-    @staticmethod
-    def crear_usuario(*args, **kwargs) -> 'Prestatario':
+    @classmethod
+    def crear_usuario(cls, *args, **kwargs) -> User:
         """
         Crea un usuario de tipo prestatario. Útil para pruebas unitarias.
 
@@ -57,7 +57,7 @@ class Prestatario(User):
         grupo, _ = Prestatario.crear_grupo()
         user = User.objects.create_user(*args, **kwargs)
         grupo.user_set.add(user)
-        return Prestatario.get_user(user)
+        return user
 
     @staticmethod
     def crear_grupo() -> tuple[Any, bool]:
