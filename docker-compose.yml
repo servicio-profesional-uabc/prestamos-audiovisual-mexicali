@@ -1,0 +1,37 @@
+services:
+  db:
+    container_name: pema-db
+    build:
+      dockerfile: Dockerfile.mysql
+      context: .
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'P@ssword123' # Ingresar una contrasena segura para usuario root de la base de datos mysql
+      MYSQL_DATABASE: 'pema-db' # Dejar a pema-db
+      MYSQL_USER: 'admin' # Ingresar un nombre de usuario administrador
+      MYSQL_PASSWORD: 'P@ssword123' # Ingresar una contrasena segura para usuario admin de la base de datos mysql
+    ports:
+      - "3307:3306" # Si host 3306 esta ocupado, solo cambiar a 3307:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    container_name: pema-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py crear_roles && python manage.py developer_setup && python manage.py collectstatic --noinput && service apache2 start && apache2ctl configtest && python manage.py runserver"
+    restart: always
+    ports:
+      # *IMPORTANTE* Web server (Nginx o Apache) de host debe configurar para que escuche en puerto 80 y haga reverse proxy al contenedor localhost:81
+      - "80:80" # Mapea puerto 81 del host al 80 del contenedor (Apache Producción)
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - ./pema.conf:/etc/apache2/sites-available/000-default.conf
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
