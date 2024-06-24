@@ -1,9 +1,11 @@
-import pandas as pd
 import re
-from django.core.management.base import BaseCommand
-from django.db import IntegrityError
-from PEMA.models import Maestro, Materia, Prestatario
+
+import pandas as pd
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+
+from PEMA.models import Maestro, Materia, Prestatario
+
 
 class Command(BaseCommand):
     help = 'Importa datos desde un archivo xls (2003)'
@@ -82,35 +84,28 @@ class Command(BaseCommand):
         )[0]
 
     def get_or_create_maestro(self, maestro_data):
-        try:
-            maestro, created = Maestro.objects.get_or_create(
-                username=maestro_data['no_empleado'],
-                defaults={
-                    'first_name': maestro_data['nombre_empleado']
-                }
-            )
-            if created:
-                maestro.set_password(str(maestro_data['no_empleado']))
-                maestro.save()
-            return maestro
-        except IntegrityError:
+
+        numero_empleado = maestro_data['no_empleado']
+
+        if User.objects.filter(username=numero_empleado).exists():
             self.stdout.write(
-                self.style.ERROR(f"Error: El maestro con número de empleado {maestro_data['no_empleado']} ya existe."))
+                self.style.ERROR(f"Error: El maestro con número de empleado {numero_empleado} ya existe."))
             return None
 
+        return Maestro.crear_usuario(
+            username=numero_empleado,
+            first_name=maestro_data['nombre_empleado'],
+            password=str(numero_empleado)
+        )
+
     def get_or_create_prestatario(self, nombre, matricula):
-        try:
-            prestatario, created = Prestatario.objects.get_or_create(
-                username=matricula,
-                defaults={
-                    'first_name': nombre
-                }
-            )
-            if created:
-                prestatario.set_password(str(matricula))
-                prestatario.save()
-            return prestatario
-        except IntegrityError:
+
+        if User.objects.filter(username=matricula).exists():
             self.stdout.write(self.style.ERROR(f"Error: El prestatario con matrícula {matricula} ya existe."))
             return None
 
+        return Prestatario.crear_usuario(
+            username=matricula,
+            first_name=nombre,
+            password=str(matricula)
+        )
