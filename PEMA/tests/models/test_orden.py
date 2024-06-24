@@ -83,15 +83,21 @@ class TestOrden(TestCase):
     def test_estado_corresponsables(self):
         prest1 = Prestatario.crear_usuario("P1", "password")
         prest2 = Prestatario.crear_usuario("P2", "password")
+
         self.orden_ordinaria.agregar_corresponsable(prest2)
         self.orden_ordinaria.agregar_corresponsable(prest1)
+
         autorizaciones_corresponsables = CorresponsableOrden.objects.all()
+
         self.assertEqual(autorizaciones_corresponsables.count(), 2)
         self.assertEqual(self.orden_ordinaria.estado_corresponsables(), AutorizacionEstado.PENDIENTE)
+
         cualquiera = autorizaciones_corresponsables.first()
         cualquiera.estado = AutorizacionEstado.RECHAZADA
         cualquiera.save()
+
         self.assertEqual(self.orden_ordinaria.estado_corresponsables(), AutorizacionEstado.RECHAZADA)
+
         autorizaciones_corresponsables.update(estado=AutorizacionEstado.ACEPTADA)
         self.assertEqual(self.orden_ordinaria.estado_corresponsables(), AutorizacionEstado.ACEPTADA)
 

@@ -16,8 +16,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 from prestamos import settings
 
 
-# Roles de Usuario
-
 class Prestatario(User):
     """
     Un tipo de usuario con permisos específicos para solicitar
@@ -777,7 +775,20 @@ class Orden(models.Model):
 
         :param prestatario: El prestatario que se quiere agregar como corresponsable.
         """
-        self._corresponsables.add(prestatario)
+        CorresponsableOrden.objects.get_or_create(autorizador=prestatario, orden=self)
+
+    def notificar_corresponsables(self):
+        """
+        #TODO: Falta documentacion
+        :return:
+        """
+        send_mail(
+            subject="Autorizar corresponsables",
+            from_email=settings.EMAIL_HOST_USER,
+            fail_silently=False,
+            message="bla bla, autoriza la orden de corresponsables",
+            recipient_list=[c.email for c in self._corresponsables.all()]
+        )
 
     def es_ordinaria(self) -> bool:
         """
