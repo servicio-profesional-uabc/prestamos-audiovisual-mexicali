@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container col-12 mb-3 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4">
+    <div class="container col-12 mb-3 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4" >
 
 
         <ul class="list-group mb-4">
@@ -35,13 +35,13 @@
 
 
         {% if not prestatario.suspendido %}
-            <div class="container py-2 border border-1 rounded bg-white">
+            <div class="container py-2 border border-1 rounded bg-white " style="border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
                 <h4 class="my-3 text-center">Detalles de la Producción</h4>
 
                 <form class="" method="POST" action="{% url 'filtros' %}">
                     {% csrf_token %}
 
-                    <div class="form-floating mb-3">
+                    <div class="form-floating mb-3" >
                         {% render_field form.nombre type="text" class="form-control" %}
                         <label>Nombre de la producción</label>
                     </div>
@@ -76,9 +76,9 @@
                         <select class="form-select" id="materiaSelect" name="materia" required>
                             {% for materia in prestatario.materias %}
                                 {% if not materia.son_correos_vacios %}
-                                    <option class="dropdown-item" value="{{ materia.pk }}"
+                                    <option class="" value="{{ materia.pk }}"
                                             {% if materia == materia_elegida %}selected{% endif %}>{{ materia }}</option>
-                                {% endif %}
+                                {% endif %}dropdown-item
                             {% endfor %}
                         </select>
                         <label for="materiaSelect">Materia</label>
@@ -93,17 +93,19 @@
                         </div>
                     </div>
 
-                    <button id="boton_aceptar" type="submit" class="w-100 btn btn-primary btn-lg mt-2 mt-3">
-                        Continuar al Cátalogo
+
+                <div class="text-center">
+                    <button id="boton_aceptar" type="submit" class="btn btn-primary btn-lg mb-2" style="border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
+                        Continuar al Catálogo
                     </button>
 
-
-                    <div class="text-center">
-                        <a href="menu" button id="boton_regresar" type="submit" class="btn btn-primary btn-lg mt-2 mt-3" style="background-color: #DD971A; color: white;">
+                    <div class="mt-2">
+                        <a href="menu" id="boton_regresar" class="btn btn-primary" style="background-color: #DD971A; color: white; border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
                             Regresar
-                        </button>
                         </a>
                     </div>
+                </div>
+
 
                 </form>
             </div>
