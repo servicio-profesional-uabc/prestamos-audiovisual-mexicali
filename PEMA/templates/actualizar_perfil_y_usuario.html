@@ -2,15 +2,15 @@
 {% load widget_tweaks %}
 
 {% block content %}
-    <div class="container col-12 col-md-6 col-xl-5 mb-3 mt-2 mt-md-5 mt-lg-4">
-
-        <div class="card">
-
-            <h5 class="card-header">Actualizar Perfil</h5>
-
-            <div class="card-body">
-                <form method="POST" action="{% url 'actualizar_perfil' %}">
-                    {% csrf_token %}
+<div class="container col-12 col-md-6 col-xl-5 mb-3 mt-2 mt-md-5 mt-lg-4">
+    <div class="card" style="border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
+        <h5 class="card-header">Actualizar Perfil</h5>
+        <div class="card-body">
+            <div class="alert alert-info" role="alert" style="border: none; border-radius: 8px; text-align: center">
+                Para actualizar la información, ingrese los nuevos datos en los campos correspondientes.
+            </div>
+            <form method="POST" action="{% url 'actualizar_perfil' %}">
+                {% csrf_token %}
 
                     {% if form_actualizar_perfil.errors or form_actualizar_usuario.errors %}
                         <div class="alert alert-danger">
