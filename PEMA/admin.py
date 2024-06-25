@@ -1,9 +1,43 @@
 from django.contrib import admin
 from django.contrib import messages
+from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
 from .models import *
 
+
+class UserResource(resources.ModelResource):
+    class Meta:
+        model = User
+        fields = ('NOMBRE DEL ALUMNO                      ', 'MATRÍCULA')
+
+    def before_import(self, dataset, **kwargs):
+        """
+        Override to add additional logic. Does nothing by default.
+
+        :param dataset: A ``tablib.Dataset``.
+
+        :param \**kwargs:
+            See :meth:`import_row`
+        """
+        super().before_import(dataset, **kwargs)
+        # Cortar el dataset desde la línea 29 (índice 28)
+
+        f = open("demofile3.txt", "w")
+
+        for row in dataset[23:(len(dataset)-4)]:
+            f.write(str(row))
+            f.write("\n")
+
+        f.close()
+        pass
+
+
+
+@admin.register(Prestatario)
+class UserAdmin(ImportExportModelAdmin):
+    list_display = ('username', 'first_name', 'last_name', 'email')
+    resource_class = UserResource
 
 class ReportedOrdersFilter(admin.SimpleListFilter):
     """
@@ -47,7 +81,7 @@ class CorresponsableOrdenInline(admin.TabularInline):
 
     Ofrece una interfaz para gestionar unidades vinculadas a los articulos artículos.
     """
-    autocomplete_fields = ('autorizador', )
+    autocomplete_fields = ('autorizador',)
     model = CorresponsableOrden
     extra = 1
 
@@ -264,5 +298,3 @@ class CategoriaAdmin(admin.ModelAdmin):
     list_display = ('nombre',)
     search_fields = ['nombre']
     inlines = [ArticuloInline]
-
-# admin.site.register(CorresponsableOrden)
