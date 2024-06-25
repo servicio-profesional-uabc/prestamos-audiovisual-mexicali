@@ -1,49 +1,15 @@
-import tablib
 from django.contrib import admin
 from django.contrib import messages
-from import_export import resources, fields
 from import_export.admin import ImportExportModelAdmin
 
 from .models import *
-
-
-class UserResource(resources.ModelResource):
-    # Define los campos y los nombres de los headers personalizados
-    username = fields.Field(attribute='username', column_name='MATRICULA')
-    first_name = fields.Field(attribute='first_name', column_name='NOMBRE_DEL_ALUMNO')
-
-    class Meta:
-        model = User
-        skip_unchanged = True
-        report_skipped = False
-        import_id_fields = ('username',)
-        fields = ('NOMBRE_DEL_ALUMNO', 'MATRICULA')
-
-    def import_data(self, dataset, **kwargs):
-        """
-        Limpiar los datos de la lista, solo se extraen a los usuarios
-        """
-        subseccion = dataset[23:len(dataset) - 4]
-
-        data = tablib.Dataset()
-        data.headers = ['NOMBRE_DEL_ALUMNO', 'MATRICULA']
-        for i in subseccion:
-            data.append([i[1], str(i[8])])
-
-        cleaned_data = data
-        return super().import_data(cleaned_data, **kwargs)
-
-    def after_save_instance(self, instance, row, **kwargs):
-        print(instance)
-        grupo, _ = Prestatario.crear_grupo()
-        grupo.user_set.add(instance)
-
+from .resources import PrestatarioResource
 
 
 @admin.register(Prestatario)
-class UserAdmin(ImportExportModelAdmin):
+class PrestatarioAdmin(ImportExportModelAdmin):
     list_display = ('username', 'first_name', 'last_name', 'email')
-    resource_class = UserResource
+    resource_class = PrestatarioResource
 
 
 class ReportedOrdersFilter(admin.SimpleListFilter):
