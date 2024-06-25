@@ -1,6 +1,8 @@
 from datetime import datetime
+
 from django.test import TestCase
 from django.utils.timezone import make_aware
+
 from PEMA.models import Prestatario, Articulo, Orden, Reporte, Almacen, Materia, Ubicacion, EstadoOrden, \
     AutorizacionEstado, \
     CorresponsableOrden, TipoOrden
@@ -26,7 +28,8 @@ class TestOrden(TestCase):
 
         materia = Materia.objects.create(nombre="Fotografia", year=2022, semestre=1)
 
-        self.orden_ordinaria = Orden.objects.create(prestatario=self.prestatario, materia=materia,
+        self.orden_ordinaria = Orden.objects.create(prestatario=self.prestatario,
+                                                    materia=materia,
                                                     inicio=self.generar_fechas(0),
                                                     final=self.generar_fechas(6),
                                                     tipo=TipoOrden.ORDINARIA)
@@ -83,36 +86,51 @@ class TestOrden(TestCase):
     def test_estado_corresponsables(self):
         prest1 = Prestatario.crear_usuario("P1", "password")
         prest2 = Prestatario.crear_usuario("P2", "password")
+
+        # deben ser 2 porque el prestatario se agrega automaticamente
         self.orden_ordinaria.agregar_corresponsable(prest2)
+        self.assertEqual(self.orden_ordinaria.corresponsables().count(), 2)
+
+        # deben ser 3 porque el prestatario se agrega automaticamente
         self.orden_ordinaria.agregar_corresponsable(prest1)
+        self.assertEqual(self.orden_ordinaria.corresponsables().count(), 3)
+
         autorizaciones_corresponsables = CorresponsableOrden.objects.all()
-        self.assertEqual(autorizaciones_corresponsables.count(), 2)
         self.assertEqual(self.orden_ordinaria.estado_corresponsables(), AutorizacionEstado.PENDIENTE)
+
         cualquiera = autorizaciones_corresponsables.first()
         cualquiera.estado = AutorizacionEstado.RECHAZADA
         cualquiera.save()
+
         self.assertEqual(self.orden_ordinaria.estado_corresponsables(), AutorizacionEstado.RECHAZADA)
+
         autorizaciones_corresponsables.update(estado=AutorizacionEstado.ACEPTADA)
         self.assertEqual(self.orden_ordinaria.estado_corresponsables(), AutorizacionEstado.ACEPTADA)
 
     def test_asignar_tipo(self):
         self.prestatario = Prestatario.crear_usuario(id="123", username="test", password="<PASSWORD>")
         self.materia1 = Materia.objects.create(nombre='Cinematografia', year=2024, semestre=1)
+
         orden1 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario, lugar=Ubicacion.CAMPUS,
                                       estado=EstadoOrden.RESERVADA, inicio=self.generar_fechas(-2),
                                       final=self.generar_fechas(8))
+
         orden2 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario, lugar=Ubicacion.CAMPUS,
                                       estado=EstadoOrden.RESERVADA, inicio=self.generar_fechas(0),
                                       final=self.generar_fechas(8))
+
         orden3 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario, lugar=Ubicacion.EXTERNO,
                                       estado=EstadoOrden.RESERVADA, inicio=self.generar_fechas(0),
                                       final=self.generar_fechas(4))
+
         orden4 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario, lugar=Ubicacion.EXTERNO,
                                       estado=EstadoOrden.RESERVADA, inicio=self.generar_fechas(0),
                                       final=self.generar_fechas(9))
+
         orden5 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario, lugar=Ubicacion.CAMPUS,
                                       estado=EstadoOrden.RESERVADA, inicio=self.generar_fechas(0),
                                       final=self.generar_fechas(4))
+
         orden6 = Orden.objects.create(materia=self.materia1, prestatario=self.prestatario, lugar=Ubicacion.CAMPUS,
                                       estado=EstadoOrden.RESERVADA, inicio=self.generar_fechas(0),
                                       final=make_aware(datetime(2024, 5, 27, 12)))

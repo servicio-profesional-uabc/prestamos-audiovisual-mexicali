@@ -3,6 +3,4 @@ Solicitador: {{ orden.prestatario }}
 Materia: {{ orden.materia }}
 
 Para ver más detalles de la solicitud de préstamo, aceptar o rechazar la solicitud, visita el siguiente enlace e inicie sesión:
-{{ host }}{% url 'autorizacion_solicitudes' invitacion.id %}
-
-{{ request.scheme }}
+{{ host }}{% url 'autorizacion_solicitudes' orden.id %}

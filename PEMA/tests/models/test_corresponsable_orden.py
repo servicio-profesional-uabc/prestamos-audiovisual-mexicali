@@ -11,8 +11,9 @@ class TestCorresponsableOrden(TestCase):
         self.orden = Orden.objects.create(materia=self.materia,prestatario=self.user, inicio=timezone.now(), final=timezone.now())
 
     def test_orden_updated_signal(self):
-        # no hay coppesponsables
-        self.assertEqual(CorresponsableOrden.objects.all().count(), 0)
+        # no hay corresponsables
+        # el unico corresponsable es el propio solicitador
+        self.assertEqual(CorresponsableOrden.objects.all().count(), 1)
 
         # crear CorresponsableOrden cada vez que se agrega un corresponsable
         self.orden.agregar_corresponsable(self.user)
