@@ -1,43 +1,44 @@
+import tablib
 from django.contrib import admin
 from django.contrib import messages
-from import_export import resources
+from import_export import resources, fields
 from import_export.admin import ImportExportModelAdmin
 
 from .models import *
 
 
 class UserResource(resources.ModelResource):
+    # Define los campos y los nombres de los headers personalizados
+    username = fields.Field(attribute='first_name', column_name='NOMBRE_DEL_ALUMNO')
+    first_name = fields.Field(attribute='username', column_name='MATRICULA')
+
     class Meta:
         model = User
-        fields = ('NOMBRE DEL ALUMNO                      ', 'MATRÍCULA')
+        skip_unchanged = True
+        report_skipped = False
+        header_row = 23
+        import_id_fields = ('username',)
+        fields = ('NOMBRE_DEL_ALUMNO', 'MATRICULA')
 
-    def before_import(self, dataset, **kwargs):
-        """
-        Override to add additional logic. Does nothing by default.
+    def import_data(self, dataset, dry_run=False, raise_errors=False, use_transactions=None, collect_failed_rows=False,
+                    **kwargs):
+        subseccion = dataset[23:len(dataset) - 4]
 
-        :param dataset: A ``tablib.Dataset``.
+        data = tablib.Dataset()
+        data.headers = ['NOMBRE_DEL_ALUMNO', 'MATRICULA']
+        for i in subseccion:
+            data.append([i[1], i[8]])
 
-        :param \**kwargs:
-            See :meth:`import_row`
-        """
-        super().before_import(dataset, **kwargs)
-        # Cortar el dataset desde la línea 29 (índice 28)
-
-        f = open("demofile3.txt", "w")
-
-        for row in dataset[23:(len(dataset)-4)]:
-            f.write(str(row))
-            f.write("\n")
-
-        f.close()
-        pass
-
+        cleaned_data = data
+        print(cleaned_data)
+        return super().import_data(cleaned_data, dry_run, raise_errors, use_transactions, collect_failed_rows, **kwargs)
 
 
 @admin.register(Prestatario)
 class UserAdmin(ImportExportModelAdmin):
     list_display = ('username', 'first_name', 'last_name', 'email')
     resource_class = UserResource
+
 
 class ReportedOrdersFilter(admin.SimpleListFilter):
     """
