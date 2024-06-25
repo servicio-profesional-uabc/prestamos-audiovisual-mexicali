@@ -9,29 +9,35 @@ from .models import *
 
 class UserResource(resources.ModelResource):
     # Define los campos y los nombres de los headers personalizados
-    username = fields.Field(attribute='first_name', column_name='NOMBRE_DEL_ALUMNO')
-    first_name = fields.Field(attribute='username', column_name='MATRICULA')
+    username = fields.Field(attribute='username', column_name='MATRICULA')
+    first_name = fields.Field(attribute='first_name', column_name='NOMBRE_DEL_ALUMNO')
 
     class Meta:
         model = User
         skip_unchanged = True
         report_skipped = False
-        header_row = 23
         import_id_fields = ('username',)
         fields = ('NOMBRE_DEL_ALUMNO', 'MATRICULA')
 
-    def import_data(self, dataset, dry_run=False, raise_errors=False, use_transactions=None, collect_failed_rows=False,
-                    **kwargs):
+    def import_data(self, dataset, **kwargs):
+        """
+        Limpiar los datos de la lista, solo se extraen a los usuarios
+        """
         subseccion = dataset[23:len(dataset) - 4]
 
         data = tablib.Dataset()
         data.headers = ['NOMBRE_DEL_ALUMNO', 'MATRICULA']
         for i in subseccion:
-            data.append([i[1], i[8]])
+            data.append([i[1], str(i[8])])
 
         cleaned_data = data
-        print(cleaned_data)
-        return super().import_data(cleaned_data, dry_run, raise_errors, use_transactions, collect_failed_rows, **kwargs)
+        return super().import_data(cleaned_data, **kwargs)
+
+    def after_save_instance(self, instance, row, **kwargs):
+        print(instance)
+        grupo, _ = Prestatario.crear_grupo()
+        grupo.user_set.add(instance)
+
 
 
 @admin.register(Prestatario)
