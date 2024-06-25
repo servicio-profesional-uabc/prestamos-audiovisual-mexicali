@@ -1,12 +1,6 @@
-<div class="col-md-4 col-xl-3">
-    <div class="card h-100 py-2">
-        <i class="bi {{ icono }} display-1 card-img-top text-center mt-4"></i>
-        <div class="card-body text-center">
-            <label class="card-text">{{ descripcion }}</label>
-            <br>
-            <a href="{{ href }}" class="btn btn-link link-offset-2 link-underline link-underline-opacity-0">{{ option }}
-                <i class="bi bi-chevron-right"></i>
-            </a>
-        </div>
-    </div>
+<div class="col-md-4 col-xl-3" data-width="100">
+    <a href="{{ href }}" class="btn btn-lg btn-primary d-flex flex-column justify-content-center align-items-center text-center w-100 h-100" role="button" style="background-color: #ffffff; color: black; border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
+        <i class="bi {{ icono }} display-1"></i>
+        <div class="mt-2">{{ descripcion }}</div>
+    </a>
 </div>

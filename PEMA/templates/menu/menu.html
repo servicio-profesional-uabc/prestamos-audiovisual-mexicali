@@ -12,7 +12,7 @@
         <div class="row gy-3">
             {% for group in user.groups.all %}
                 {% if group.name == "prestatarios" %}
-                    {% include "menu/opcion.html" with option="Solicitar equipo" icono="bi-file-earmark-plus" descripcion="Haz una solicitud al almacen" href="filtros" %}
+                    {% include "menu/opcion.html" with option="Solicitar equipo" icono="bi-file-earmark-plus" descripcion="Nueva solicitud" href="filtros" %}
                     {% include "menu/opcion.html" with option="Historial de solicitudes" icono="bi-clock-history" descripcion="Ordenes anteriores" href="historial_solicitudes" %}
                 {% elif group.name == "maestro" %}
                     <!-- Añade aquí las opciones para el grupo "maestro" -->
