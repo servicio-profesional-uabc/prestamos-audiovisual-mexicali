@@ -1,6 +1,21 @@
-Nombre de producción: {{ orden.nombre }}
-Solicitador: {{ orden.prestatario }}
-Materia: {{ orden.materia }}
+Se ha registrado una nueva solicitud de préstamo en el sistema PEMA:
 
-Para ver más detalles de la solicitud de préstamo, aceptar o rechazar la solicitud, visita el siguiente enlace e inicie sesión:
+- Nombre de producción: {{ orden.nombre }}
+- Solicitante: {{ orden.prestatario }}
+- Materia: {{ orden.materia }}
+
+Se requiere tu acción para aceptar o rechazar la corresponsabilidad de este préstamo.
+Para procesar esta solicitud:
+
+1. Accede al siguiente enlace:
 {{ host }}{% url 'autorizacion_solicitudes' orden.id %}
+
+2. Inicia sesión con tus credenciales del sistema.
+
+3. Revisa los detalles de la solicitud.
+
+4. Presiona "Aprobar" o "Rechazar".
+
+Una vez que todos los corresponsables hayan aprobado la solicitud, el préstamo será considerada como aprobada para comenzar tu entrega en almacen, en la fecha y hora de inicio acordada.
+Te invitamos completar esta acción en cuanto sea posible para evitar retrasos en el proceso de préstamo del solicitante.
+Este es un mensaje automático. Por favor, no responda a este correo.
