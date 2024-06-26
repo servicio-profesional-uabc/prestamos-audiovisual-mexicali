@@ -163,14 +163,14 @@ class FiltrosView(LoginRequiredMixin, View):
         # En caso que no exista ninguno registrado
         if coordinador is None:
             messages.add_message(request, messages.WARNING,
-                                 "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+                                 "Órdenes extraordinarias no disponibles. El coordinador debe registrar sus datos de contacto.")
 
         # En caso que falta registrar sus datos
         else:
             perfil = Perfil.objects.get(usuario=coordinador)
             if perfil.incompleto():
                 messages.add_message(request, messages.WARNING,
-                                     "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+                                     "Órdenes extraordinarias no disponibles. El coordinador debe registrar sus datos de contacto.")
 
         if prestatario.tiene_carrito():
             prestatario.carrito().eliminar()
