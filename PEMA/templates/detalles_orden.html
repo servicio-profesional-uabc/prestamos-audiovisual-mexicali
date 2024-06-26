@@ -89,7 +89,8 @@
         {% endif %}
 
         <div class="text-center mt-4">
-            <a href="{% url 'historial_solicitudes' %}" class="btn btn-secondary">Regresar</a>
+          <a href="{% url 'historial_solicitudes' %}?state={{ request.GET.state }}" class="btn btn-secondary">Regresar</a>
         </div>
+
     </main>
 {% endblock %}

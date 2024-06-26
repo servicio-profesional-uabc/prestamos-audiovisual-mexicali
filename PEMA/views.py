@@ -12,7 +12,7 @@ from django.views.generic.edit import UpdateView
 
 from .forms import CorresponsableForm, CambiarEstadoOrdenForm, CambiarEstadoCorresponsableOrdenForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, Categoria, CorresponsableOrden, Coordinador
+from .models import Articulo, Categoria, CorresponsableOrden, Coordinador, Maestro, Ubicacion
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
@@ -151,6 +151,7 @@ class FiltrosView(LoginRequiredMixin, View):
 
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
+        materias = prestatario.materias()
 
         coordinador = Coordinador.objects.first()
         # En caso que no exista ninguno registrado
@@ -172,6 +173,10 @@ class FiltrosView(LoginRequiredMixin, View):
             if materia.son_correos_vacios():
                 messages.add_message(request, messages.WARNING,
                                      f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
+        
+        if request.user.groups.filter(name='maestro'):
+            maestro = Maestro.get_user(request.user)
+            materias = maestro.materias()
 
         return render(
             request=request,
@@ -179,29 +184,36 @@ class FiltrosView(LoginRequiredMixin, View):
             context={
                 'prestatario': prestatario,
                 'form': FiltrosForm(),
-                'materias': prestatario.materias(),
+                'materias': materias,
             },
         )
 
     def post(self, request):
         prestatario = Prestatario.get_user(request.user)
+        materias = prestatario.materias()
+
         form = FiltrosForm(request.POST)
 
         if prestatario.tiene_carrito():
             prestatario.carrito().eliminar()
 
+        if request.user.groups.filter(name='maestro'):
+            maestro = Maestro.get_user(request.user)
+            materias = maestro.materias()
+
         if form.is_valid():
             inicio = form.cleaned_data.get('inicio')
             hora_inicio = form.cleaned_data.get('hora_inicio')
             duracion = int(form.cleaned_data.get('duracion'))
+            lugar = form.cleaned_data.get('lugar')
 
             # HORARIO DE ORDENES EXTRAORDINARIAS
-            if duracion in [24, 48, 72, 46]:
+            if duracion in [24, 48, 72, 96] or lugar == Ubicacion.EXTERNO:
                 messages.error(request, "Órdenes extraordinarias no permitidas actualmente. Contacte al coordinador.")
                 return render(request, "filtros.html", {
                     'prestatario': prestatario,
                     'form': form,
-                    'materias': prestatario.materias(),
+                    'materias': materias,
                 })
 
             carrito_nuevo = form.save(commit=False)
@@ -222,7 +234,7 @@ class FiltrosView(LoginRequiredMixin, View):
             context={
                 'prestatario': prestatario,
                 'form': form,
-                'materias': prestatario.materias(),
+                'materias': materias,
             },
         )
 
@@ -323,11 +335,22 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
             categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
             articulos = articulos.filter(id__in=categoria_instance.articulos())
 
+        # Filtrar las unidades disponibles para cada artículo
+        articulos_disponibles = []
+        for articulo in articulos:
+            cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+
+            if cantidad_disponible > 0:
+                articulos_disponibles.append(articulo)
+                articulo.num_unidades = cantidad_disponible
+            else:
+                articulo.num_unidades = 0
+
         return render(
             request=request,
             template_name="catalogo.html",
             context={
-                "articulos": articulos,
+                "articulos": articulos_disponibles,
                 "carrito": prestatario.carrito(),
                 "categorias": Categoria.objects.all()
             },
