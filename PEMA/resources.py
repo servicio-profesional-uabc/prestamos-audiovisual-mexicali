@@ -1,8 +1,42 @@
 import pandas as pd
+import tablib
+from django.contrib.auth.models import User
 from import_export.fields import Field
 from import_export.widgets import ForeignKeyWidget
 from import_export import resources
-from PEMA.models import Maestro, Articulo, Unidad
+from PEMA.models import Maestro, Articulo, Unidad, Prestatario
+
+
+class PrestatarioResource(resources.ModelResource):
+    # Define los campos y los nombres de los headers personalizados
+    username = Field(attribute='username', column_name='MATRICULA')
+    first_name = Field(attribute='first_name', column_name='NOMBRE_DEL_ALUMNO')
+
+    class Meta:
+        model = User
+        skip_unchanged = True
+        report_skipped = False
+        import_id_fields = ('username',)
+        fields = ('NOMBRE_DEL_ALUMNO', 'MATRICULA')
+
+    def import_data(self, dataset, **kwargs):
+        """
+        Limpiar los datos de la lista, solo se extraen a los usuarios
+        """
+        subseccion = dataset[23:len(dataset) - 4]
+
+        data = tablib.Dataset()
+        data.headers = ['NOMBRE_DEL_ALUMNO', 'MATRICULA']
+        for i in subseccion:
+            data.append([i[1], str(i[8])])
+
+        cleaned_data = data
+        return super().import_data(cleaned_data, **kwargs)
+
+    def after_save_instance(self, instance, row, **kwargs):
+        print(instance)
+        grupo, _ = Prestatario.crear_grupo()
+        grupo.user_set.add(instance)
 
 
 class MaestroResource(resources.ModelResource):

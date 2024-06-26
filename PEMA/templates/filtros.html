@@ -74,7 +74,7 @@
                     {# Lista de materias #}
                     <div class="form-floating mb-3">
                         <select class="form-select" id="materiaSelect" name="materia" required>
-                            {% for materia in prestatario.materias %}
+                            {% for materia in materias %}
                                 {% if not materia.son_correos_vacios %}
                                     <option class="" value="{{ materia.pk }}"
                                             {% if materia == materia_elegida %}selected{% endif %}>{{ materia }}</option>
