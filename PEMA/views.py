@@ -323,11 +323,22 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
             categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
             articulos = articulos.filter(id__in=categoria_instance.articulos())
 
+        # Filtrar las unidades disponibles para cada artículo
+        articulos_disponibles = []
+        for articulo in articulos:
+            cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+
+            if cantidad_disponible > 0:
+                articulos_disponibles.append(articulo)
+                articulo.num_unidades = cantidad_disponible
+            else:
+                articulo.num_unidades = 0
+
         return render(
             request=request,
             template_name="catalogo.html",
             context={
-                "articulos": articulos,
+                "articulos": articulos_disponibles,
                 "carrito": prestatario.carrito(),
                 "categorias": Categoria.objects.all()
             },
