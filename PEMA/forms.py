@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
 from django.utils.timezone import make_aware
 from phonenumber_field.formfields import PhoneNumberField
-
+from django.contrib.auth.forms import PasswordChangeForm 
 from .models import Carrito, Perfil, Prestatario, Ubicacion, CorresponsableOrden
 from .models import Orden, EstadoOrden
 
@@ -54,6 +54,16 @@ class ActualizarPerfil(forms.ModelForm):
         fields = ['numero_telefono']
 
     numero_telefono = PhoneNumberField(region="MX")
+
+
+class CambiarContrasenaForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña actual'}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Nueva contraseña'}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar nueva contraseña'}))
+
+    class Meta:
+        model = User
+        fields = ['old_password', 'new_password1', 'new_password2']
 
 
 class UserLoginForm(AuthenticationForm):

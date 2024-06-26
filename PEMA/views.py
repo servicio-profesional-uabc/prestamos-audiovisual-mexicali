@@ -9,8 +9,8 @@ from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 from django.views import View
 from django.views.generic.edit import UpdateView
-
-from .forms import CorresponsableForm, CambiarEstadoOrdenForm, CambiarEstadoCorresponsableOrdenForm
+from django.contrib.auth import update_session_auth_hash
+from .forms import CorresponsableForm, CambiarEstadoOrdenForm, CambiarEstadoCorresponsableOrdenForm,CambiarContrasenaForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
 from .models import Articulo, Categoria, CorresponsableOrden, Coordinador, Maestro, Ubicacion
 from .models import Carrito, Prestatario
@@ -58,6 +58,7 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
 
     def get(self, request):
         perfil = Perfil.user_data(user=request.user)
+        cambiar_contrasena_form = CambiarContrasenaForm(user=request.user)
 
         return render(
             request=request,
@@ -65,18 +66,22 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
             context={
                 'form_actualizar_perfil': ActualizarPerfil(instance=perfil),
                 'form_actualizar_usuario': UpdateUserForm(instance=request.user),
+                'cambiar_contrasena_form': cambiar_contrasena_form
             }
         )
 
     def post(self, request):
         perfil = Perfil.user_data(user=request.user)
-
         perfil_form = ActualizarPerfil(request.POST, instance=perfil)
         usuario = UpdateUserForm(request.POST, instance=request.user)
+        cambiar_contrasena_form = CambiarContrasenaForm(request.user, request.POST)
 
-        if perfil_form.is_valid() and usuario.is_valid():
+        if perfil_form.is_valid() and usuario.is_valid() and cambiar_contrasena_form.is_valid():
             perfil_form.save()
             usuario.save()
+            user = cambiar_contrasena_form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Perfil actualizado y contraseña cambiada con éxito.")
             return redirect('menu')
 
         return render(
@@ -85,6 +90,7 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
             context={
                 'form_actualizar_perfil': perfil_form,
                 'form_actualizar_usuario': usuario,
+                'cambiar_contrasena_form': cambiar_contrasena_form
             }
         )
 
