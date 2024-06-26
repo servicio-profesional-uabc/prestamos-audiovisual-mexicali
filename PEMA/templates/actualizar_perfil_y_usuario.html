@@ -12,54 +12,69 @@
             <form method="POST" action="{% url 'actualizar_perfil' %}">
                 {% csrf_token %}
 
-                    {% if form_actualizar_perfil.errors or form_actualizar_usuario.errors %}
-                        <div class="alert alert-danger">
-                            <ul>
-                                {% for error_list in form_actualizar_perfil.errors.values %}
-                                    {% for error in error_list %}
-                                        <li>{{ error }}</li>
-                                    {% endfor %}
+                {% if form_actualizar_perfil.errors or form_actualizar_usuario.errors or cambiar_contrasena_form.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for error_list in form_actualizar_perfil.errors.values %}
+                                {% for error in error_list %}
+                                    <li>{{ error }}</li>
                                 {% endfor %}
-                                {% for error_list in form_actualizar_usuario.errors.values %}
-                                    {% for error in error_list %}
-                                        <li>{{ error }}</li>
-                                    {% endfor %}
+                            {% endfor %}
+                            {% for error_list in form_actualizar_usuario.errors.values %}
+                                {% for error in error_list %}
+                                    <li>{{ error }}</li>
                                 {% endfor %}
-                            </ul>
+                            {% endfor %}
+                            {% for error_list in cambiar_contrasena_form.errors.values %}
+                                {% for error in error_list %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="form-floating mb-3">
+                    {% render_field form_actualizar_perfil.numero_telefono class="form-control" placeholder="Número de teléfono" %}
+                    <label>Número de teléfono</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    {% render_field form_actualizar_usuario.email class="form-control" placeholder="Correo electrónico" %}
+                    <label>Correo electrónico</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    {% render_field cambiar_contrasena_form.old_password class="form-control" placeholder="Contraseña actual" %}
+                    <label>Contraseña actual</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    {% render_field cambiar_contrasena_form.new_password1 class="form-control" placeholder="Nueva contraseña" %}
+                    <label>Nueva contraseña</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    {% render_field cambiar_contrasena_form.new_password2 class="form-control" placeholder="Confirmar nueva contraseña" %}
+                    <label>Confirmar nueva contraseña</label>
+                </div>
+
+                <div class="container mt-4">
+                    <div class="row justify-content-center">
+                        <div class="col-auto">
+                            <a href="menu" id="boton_regresar" class="btn btn-primary btn-lg mb-2" style="background-color: #DD971A; color: white; border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
+                                Regresar
+                            </a>
                         </div>
-                    {% endif %}
-
-                    <div class="form-floating mb-3">
-                        {% render_field form_actualizar_perfil.numero_telefono class="form-control" placeholder="Número de teléfono" %}
-                        <label>Número de teléfono</label>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary btn-lg mb-2" style="border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
+                                Actualizar
+                            </button>
+                        </div>
                     </div>
-
-                    <div class="form-floating mb-3">
-                        {% render_field form_actualizar_usuario.email class="form-control" placeholder="Correo electrónico" %}
-                        <label>Correo electrónico</label>
-                    </div>
-
-
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary btn-lg mb-2" style="border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
-                Actualizar
-            </button>
-        </div>
-        <div class="col-auto">
-            <a href="menu" id="boton_regresar" class="btn btn-primary btn-lg mb-2" style="background-color: #DD971A; color: white; border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
-                Regresar
-            </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-
-
-
-                </form>
-            </div>
-        </div>
-    </div>
 {% endblock %}
