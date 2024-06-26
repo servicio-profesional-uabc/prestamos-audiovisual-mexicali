@@ -368,12 +368,12 @@ class AgregarAlCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):
 
 class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        solicitud = get_object_or_404(CorresponsableOrden, id=self.kwargs['id'])
-        return solicitud.esta_pendiente() and self.request.user in solicitud.orden.corresponsables()
+        orden = get_object_or_404(Orden, id=self.kwargs['id'])
+        solicitud = get_object_or_404(CorresponsableOrden, orden=orden, autorizador=self.request.user)
+        return solicitud.esta_pendiente() and self.request.user in orden.corresponsables()
 
     def get(self, request, id):
-        solicitud = get_object_or_404(CorresponsableOrden, id=self.kwargs['id'])
-        orden = solicitud.orden
+        orden = get_object_or_404(Orden, id=id)
         form = CambiarEstadoCorresponsableOrdenForm(instance=orden)
         return render(
             request=request,
@@ -385,7 +385,8 @@ class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
     def post(self, request, id):
-        solicitud = get_object_or_404(CorresponsableOrden, pk=id)
+        orden = get_object_or_404(Orden, id=id)
+        solicitud = get_object_or_404(CorresponsableOrden, orden=orden, autorizador=self.request.user)
         action = request.POST.get('action')
 
         if action == 'aprobar':
@@ -395,7 +396,7 @@ class AutorizacionSolicitudView(LoginRequiredMixin, UserPassesTestMixin, View):
             solicitud.rechazar()
 
         # TODO: mostrar mensaje si se aprobó o se canceló
-        return redirect('cambiar_estado_orden', id=solicitud.id)
+        return redirect('autorizacion_solicitudes', id=id)
 
 
 class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -423,7 +424,7 @@ class CambiarEstadoOrdenView(LoginRequiredMixin, UserPassesTestMixin, View):
             orden.cancelar()
 
         # TODO: mostrar mensaje si se aprobó o se canceló
-        return redirect('cambiar_estado_orden', id=orden.id)
+        return redirect('cambiar_estado_orden', id=id)
 
 
 class EliminarDelCarritoView(View, UserPassesTestMixin, LoginRequiredMixin):

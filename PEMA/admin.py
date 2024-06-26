@@ -41,6 +41,17 @@ class MateriaAdmin(admin.ModelAdmin):
     filter_horizontal = ('_alumnos', '_maestros', '_articulos')
 
 
+class CorresponsableOrdenInline(admin.TabularInline):
+    """
+    Muestra y gestiona unidades asociadas a un artículo.
+
+    Ofrece una interfaz para gestionar unidades vinculadas a los articulos artículos.
+    """
+    autocomplete_fields = ('autorizador', )
+    model = CorresponsableOrden
+    extra = 1
+
+
 @admin.register(Orden)
 class OrdenAdmin(admin.ModelAdmin):
     """
@@ -52,9 +63,10 @@ class OrdenAdmin(admin.ModelAdmin):
     """
     exclude = ('estado', 'tipo')
     autocomplete_fields = ('prestatario', 'materia')
-    filter_horizontal = ('_unidades', '_corresponsables')
+    filter_horizontal = ('_unidades',)
     list_display = ('nombre', 'prestatario', 'tipo', 'estado', 'id')
     search_fields = ['nombre']
+    inlines = [CorresponsableOrdenInline]
     list_filter = ('estado', 'tipo', ReportedOrdersFilter)
     ordering = ('estado',)
 
@@ -89,7 +101,7 @@ class OrdenAdmin(admin.ModelAdmin):
     @admin.action(description='Marcar como cancelado')
     def cancelar(self, request, queryset):
         for orden in queryset:
-            if (orden.cancelada()):
+            if orden.cancelada():
                 messages.warning(request, f'La orden {orden.nombre} ya se encuentra cancelada.')
                 continue
             orden.cancelar()
@@ -139,7 +151,6 @@ class EntregaAdmin(admin.ModelAdmin):
 class DevolucionAdmin(admin.ModelAdmin):
     """
     Muestra detalles de devoluciones y filtra órdenes disponibles según su estado.
-
     """
     list_display = ('get_orden_nombre', 'emision')
     list_filter = ('orden',)
@@ -172,8 +183,6 @@ class ArticuloAdmin(ImportExportModelAdmin):
 class ArticuloCarritoInline(admin.TabularInline):
     """
     Ofrece una interfaz para seleccionar y gestionar artículos asociados a carritos.
-
-
     """
     autocomplete_fields = ['articulo']
     model = ArticuloCarrito
@@ -184,8 +193,7 @@ class ArticuloCarritoInline(admin.TabularInline):
 class CarritoAdmin(admin.ModelAdmin):
     """
     Gestiona los carritos mostrando detalles como prestatario y materia,
-     al igual que gestiona relaciones y permite la acción de ordenar artículos en carritos seleccionados.
-
+    al igual que gestiona relaciones y permite la acción de ordenar artículos en carritos seleccionados.
     """
     actions = ['ordenar']
     list_display = ('prestatario', 'materia')
@@ -257,5 +265,4 @@ class CategoriaAdmin(admin.ModelAdmin):
     search_fields = ['nombre']
     inlines = [ArticuloInline]
 
-
-admin.site.register(CorresponsableOrden)
+# admin.site.register(CorresponsableOrden)

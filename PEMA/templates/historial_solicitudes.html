@@ -2,193 +2,199 @@
 {% load static %}
 
 {% block content %}
-<style>
-  .nav-tabs .nav-link {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  @media (max-width: 768px) {
-    .tab-text {
-      display: none;
-    }
-    .tab-important {
-      display: inline;
-    }
-  }
-  @media (min-width: 769px) {
-    .tab-important {
-      display: none;
-    }
-    .tab-text {
-      display: inline;
-    }
-  }
-  .no-underline {
-    text-decoration: none;
-  }
-</style>
 
-<nav>
-  <div class="nav nav-tabs nav-justified" id="nav-tab" role="tablist">
-    <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">
-      <span class="tab-important">Pendiente</span>
-      <span class="tab-text">Ordenes Pendientes</span>
-    </button>
-    <button class="nav-link" id="nav-ready-tab" data-bs-toggle="tab" data-bs-target="#nav-ready" type="button" role="tab" aria-controls="nav-ready" aria-selected="false">
-      <span class="tab-important">Lista</span>
-      <span class="tab-text">Ordenes Listas para iniciar</span>
-    </button>
-    <button class="nav-link" id="nav-cancelled-tab" data-bs-toggle="tab" data-bs-target="#nav-cancelled" type="button" role="tab" aria-controls="nav-cancelled" aria-selected="false">
-      <span class="tab-important">Cancelada</span>
-      <span class="tab-text">Ordenes Canceladas</span>
-    </button>
-    <button class="nav-link" id="nav-delivered-tab" data-bs-toggle="tab" data-bs-target="#nav-delivered" type="button" role="tab" aria-controls="nav-delivered" aria-selected="false">
-      <span class="tab-important">Entregada</span>
-      <span class="tab-text">Ordenes Entregadas</span>
-    </button>
-    <button class="nav-link" id="nav-returned-tab" data-bs-toggle="tab" data-bs-target="#nav-returned" type="button" role="tab" aria-controls="nav-returned" aria-selected="false">
-      <span class="tab-important">Devuelta</span>
-      <span class="tab-text">Ordenes Devueltas</span>
-    </button>
-  </div>
-</nav>
-
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-
-
-<div class="tab-content" id="nav-tabContent">
-  <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-    <div class="container mt-auto">
-        {% if ordenes_pendientes %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Nombre de la practica</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for orden in ordenes_pendientes %}
-                        <tr>
-                            <td>{{ orden.id }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p>No tienes solicitudes.</p>
-        {% endif %}
-    </div>
-  </div>
-  <div class="tab-pane fade" id="nav-ready" role="tabpanel" aria-labelledby="nav-ready-tab">
-    <div class="container mt-auto">
-        {% if ordenes_listas %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Nombre de la practica</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for orden in ordenes_listas %}
-                        <tr>
-                            <td>{{ orden.id }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p>No tienes solicitudes.</p>
-        {% endif %}
-    </div>
-  </div>
-  <div class="tab-pane fade" id="nav-cancelled" role="tabpanel" aria-labelledby="nav-cancelled-tab">
-    <div class="container mt-auto">
-        {% if ordenes_canceladas %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Nombre de la practica</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for orden in ordenes_canceladas %}
-                        <tr>
-                            <td>{{ orden.id }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p>No tienes solicitudes.</p>
-        {% endif %}
-    </div>
-  </div>
-  <div class="tab-pane fade" id="nav-delivered" role="tabpanel" aria-labelledby="nav-delivered-tab">
-    <div class="container mt-auto">
-        {% if ordenes_entregadas %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Nombre de la practica</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for orden in ordenes_entregadas %}
-                        <tr>
-                            <td>{{ orden.id }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p>No tienes solicitudes.</p>
-        {% endif %}
-    </div>
-  </div>
-  <div class="tab-pane fade" id="nav-returned" role="tabpanel" aria-labelledby="nav-returned-tab">
-    <div class="container mt-auto">
-        {% if ordenes_devueltas %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Nombre de la practica</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for orden in ordenes_devueltas %}
-                        <tr>
-                            <td>{{ orden.id }}</td>
-                            <td><a href="{% url 'detalles_orden' orden.id %}" class="no-underline">{{ orden.nombre }}</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p>No tienes solicitudes.</p>
-        {% endif %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+      <div class="form-floating mb-3">
+        <select id="estados" class="form-select">
+          <option value="#nav-home">Pendiente</option>
+          <option value="#nav-ready">Lista</option>
+          <option value="#nav-cancelled">Cancelada</option>
+          <option value="#nav-delivered">Entregada</option>
+          <option value="#nav-returned">Devuelta</option>
+        </select>
+        <label for="estados">Estado de órdenes</label>
+      </div>
     </div>
   </div>
 </div>
 
-</body>
+
+  <div class="tab-content" id="nav-tabContent">
+    <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+      <div class="container mt-auto">
+        {% if ordenes_pendientes %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre de la práctica</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for orden in ordenes_pendientes %}
+              <tr class="table-row" data-href="{% url 'detalles_orden' orden.id %}?state=home">
+                <td>{{ orden.id }}</td>
+                <td>{{ orden.nombre }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+          No tienes solicitudes pendientes.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="nav-ready" role="tabpanel" aria-labelledby="nav-ready-tab">
+      <div class="container mt-auto">
+        {% if ordenes_listas %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre de la práctica</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for orden in ordenes_listas %}
+              <tr class="table-row" data-href="{% url 'detalles_orden' orden.id %}?state=ready">
+                <td>{{ orden.id }}</td>
+                <td>{{ orden.nombre }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+          No tienes solicitudes listas.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="nav-cancelled" role="tabpanel" aria-labelledby="nav-cancelled-tab">
+      <div class="container mt-auto">
+        {% if ordenes_canceladas %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre de la práctica</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for orden in ordenes_canceladas %}
+              <tr class="table-row" data-href="{% url 'detalles_orden' orden.id %}?state=cancelled">
+                <td>{{ orden.id }}</td>
+                <td>{{ orden.nombre }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+          No tienes solicitudes canceladas.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="nav-delivered" role="tabpanel" aria-labelledby="nav-delivered-tab">
+      <div class="container mt-auto">
+        {% if ordenes_entregadas %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre de la práctica</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for orden in ordenes_entregadas %}
+              <tr class="table-row" data-href="{% url 'detalles_orden' orden.id %}?state=delivered">
+                <td>{{ orden.id }}</td>
+                <td>{{ orden.nombre }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+          No tienes solicitudes entregadas.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="nav-returned" role="tabpanel" aria-labelledby="nav-returned-tab">
+      <div class="container mt-auto">
+        {% if ordenes_devueltas %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre de la práctica</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for orden in ordenes_devueltas %}
+              <tr class="table-row" data-href="{% url 'detalles_orden' orden.id %}?state=returned">
+                <td>{{ orden.id }}</td>
+                <td>{{ orden.nombre }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+          No tienes solicitudes devueltas.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function() {
+    // Cambiar de pestaña al seleccionar una opción
+    $('#estados').change(function() {
+      var target = $(this).val();
+      $('.tab-pane').removeClass('show active');
+      $(target).addClass('show active');
+    });
+
+    // Hacer que cada fila de la tabla sea clicable
+    $('.table-row').click(function() {
+      window.location = $(this).data('href');
+    }).css('cursor', 'pointer');
+
+    // Obtener el parámetro de estado de la URL y activar la pestaña correcta
+    function getParameterByName(name) {
+      var url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+
+    var state = getParameterByName('state');
+    if (state) {
+      $('#estados').val('#nav-' + state).change();
+    }
+  });
+</script>
+
 {% endblock %}

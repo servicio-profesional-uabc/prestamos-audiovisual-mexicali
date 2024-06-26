@@ -1,15 +1,11 @@
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
-from django.template.loader import render_to_string
 
 from PEMA.models import AutorizacionEstado, Devolucion, Entrega
 from PEMA.models import CorresponsableOrden
-from PEMA.models import EstadoOrden
 from PEMA.models import Orden
 from PEMA.models import Perfil
-from prestamos import settings
 
 
 # sender: The model class which the signal was called with.
@@ -29,41 +25,14 @@ def user_post_save(sender, instance, created, **kwargs):
     Perfil.objects.create(usuario=instance)
 
 
-@receiver(m2m_changed, sender=Orden._corresponsables.through)
-def update_corresponsable_orden(sender, instance, action, *args, **kwargs):
-    """
-    Actualiza las instancias de CorresponsableOrden cuando cambia la lista de corresponsables de una orden.
+@receiver(post_save, sender=Orden)
+def orden_after_create(sender, instance, created, **kwargs):
 
-    """
+    # TODO: falta documentación
 
-    if action == 'post_remove':
-        # eliminar todos los CorresponsableOrden que no sean corresponsables
-        CorresponsableOrden.objects.exclude(id__in=instance.corresponsables()).delete()
-
-    if action == 'post_add':
-        # crear el corresponsableOrden de cada corresponsable y enviar correo
-        for item in instance._corresponsables.all():
-
-            object, created = CorresponsableOrden.objects.get_or_create(autorizador=item, orden=instance)
-
-            if created:
-                send_mail(
-                    subject="Test Email",
-                    from_email=settings.EMAIL_HOST_USER,
-                    fail_silently=False,
-                    message=render_to_string(
-                        'emails/aceptar_corresponsable.html',
-                        {
-                            'invitacion': object,
-                            'orden': object.orden,
-                            'user': object.autorizador,
-                            'host': settings.URL_BASE_PARA_EMAILS,
-                        }
-                    ),
-                    recipient_list=[
-                        object.autorizador.email
-                    ]
-                )
+    if created:
+        instance.agregar_corresponsable(instance.prestatario)
+        instance.notificar_corresponsables()
 
 
 @receiver(post_save, sender=CorresponsableOrden)
@@ -73,7 +42,6 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
     Verifica si todos los corresponsables han aceptado la orden y ninguno la ha rechazado para que pueda ser aprobada.
     En caso de ser aprobada, se envía una solicitud de autorización al profesor (si la orden es ordinaria) o al coordinador
     (si es extraordinaria). Además, actualiza el estado de la orden según los cambios en CorresponsableOrden.
-
     """
 
     # TODO: faltan pruebas unitarias para este trigger
@@ -106,9 +74,8 @@ def entrega_created(sender, instance, created, **kwargs):
     Si es una entrega nueva , se marcar la orden relacionada como entregada.
     Utiliza la información del entregador que realizó la entrega para actualizar el estado de la orden,
     indicando que ha sido entregada satisfactoriamente.
-
-
     """
+
     if not created:
         return
 
@@ -126,6 +93,7 @@ def devolucion_created(sender, instance, created, **kwargs):
     Obtener la orden asociada a la devolución.
     Realizar operaciones relacionadas con la devolución de la orden.
     """
+
     if not created:
         return
 
