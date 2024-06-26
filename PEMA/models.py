@@ -147,11 +147,14 @@ class Coordinador(User):
         :param orden: La orden para la cual se solicita autorización.
         """
 
-        subject = f'Solicitud de autorización para la orden {orden.nombre}'
-        message = (
-            f'Se requiere autorización para la orden {orden.nombre}. Puede cambiar el estado de la orden en el siguiente enlace: '
-            f'{settings.URL_BASE_PARA_EMAILS}{reverse("cambiar_estado_orden", args=[orden.id])}')
-
+        subject = f'Solicitud de autorización para préstamo "{orden.nombre}" a Coordinador'
+        message=render_to_string(
+            template_name="emails/autorizar_orden.html",
+            context={
+                'host': f'{settings.URL_BASE_PARA_EMAILS}{reverse("cambiar_estado_orden", args=[orden.id])}',
+                'orden': orden,
+            }
+        )
         # Obtener correos de todos los coordinadores
         recipient_list = [coordinador.email for coordinador in Coordinador.objects.all()]
 
@@ -225,9 +228,14 @@ class Maestro(User):
         :param orden: La orden para la cual se solicita autorización.
         """
 
-        subject = f'Solicitud de autorización para la orden {orden.nombre}'
-        message = (f'Se requiere autorización para la orden {orden.nombre}. Puede cambiar el estado de la orden en el '
-                   f'siguiente enlace: {settings.URL_BASE_PARA_EMAILS}{reverse("cambiar_estado_orden", args=[orden.id])}')
+        subject = f'Solicitud de autorización para préstamo "{orden.nombre}" a Maestro'
+        message=render_to_string(
+            template_name="emails/autorizar_orden.html",
+            context={
+                'host': f'{settings.URL_BASE_PARA_EMAILS}{reverse("cambiar_estado_orden", args=[orden.id])}',
+                'orden': orden,
+            }
+        )
 
         # Obtener correos de todos los maestros de la materia
         recipient_list = [maestro.email for maestro in orden.materia.maestros()]
@@ -269,6 +277,12 @@ class Maestro(User):
 
     def __str__(self):
         return f"{self.first_name}"
+    
+    def materias(self):
+        """
+        Obtiene las materias que imparte el maestro.
+        """
+        return Materia.objects.filter(_maestros__in=[self])
 
 
 class Almacen(User):
@@ -789,7 +803,7 @@ class Orden(models.Model):
         :return:
         """
         send_mail(
-            subject="Autorizar corresponsables",
+            subject=f'Solicitud de corresponsabilidad para préstamo "{self.nombre}"',
             from_email=settings.EMAIL_HOST_USER,
             fail_silently=False,
             recipient_list=[c.email for c in self._corresponsables.all()],
