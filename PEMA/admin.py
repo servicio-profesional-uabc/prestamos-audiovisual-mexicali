@@ -3,6 +3,13 @@ from django.contrib import messages
 from import_export.admin import ImportExportModelAdmin
 
 from .models import *
+from .resources import PrestatarioResource
+
+
+@admin.register(Prestatario)
+class PrestatarioAdmin(ImportExportModelAdmin):
+    list_display = ('username', 'first_name', 'last_name', 'email')
+    resource_class = PrestatarioResource
 
 
 class ReportedOrdersFilter(admin.SimpleListFilter):
@@ -47,7 +54,7 @@ class CorresponsableOrdenInline(admin.TabularInline):
 
     Ofrece una interfaz para gestionar unidades vinculadas a los articulos artículos.
     """
-    autocomplete_fields = ('autorizador', )
+    autocomplete_fields = ('autorizador',)
     model = CorresponsableOrden
     extra = 1
 
@@ -264,5 +271,3 @@ class CategoriaAdmin(admin.ModelAdmin):
     list_display = ('nombre',)
     search_fields = ['nombre']
     inlines = [ArticuloInline]
-
-# admin.site.register(CorresponsableOrden)
