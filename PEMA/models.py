@@ -277,6 +277,12 @@ class Maestro(User):
 
     def __str__(self):
         return f"{self.first_name}"
+    
+    def materias(self):
+        """
+        Obtiene las materias que imparte el maestro.
+        """
+        return Materia.objects.filter(_maestros__in=[self])
 
 
 class Almacen(User):
