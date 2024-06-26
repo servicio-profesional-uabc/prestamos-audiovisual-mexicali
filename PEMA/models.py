@@ -147,7 +147,7 @@ class Coordinador(User):
         :param orden: La orden para la cual se solicita autorización.
         """
 
-        subject = f'Solicitud de autorización para préstamo "{orden.nombre}"'
+        subject = f'Solicitud de autorización para préstamo "{orden.nombre}" a Coordinador'
         message=render_to_string(
             template_name="emails/autorizar_orden.html",
             context={
@@ -228,7 +228,7 @@ class Maestro(User):
         :param orden: La orden para la cual se solicita autorización.
         """
 
-        subject = f'Solicitud de autorización para préstamo "{orden.nombre}"'
+        subject = f'Solicitud de autorización para préstamo "{orden.nombre}" a Maestro'
         message=render_to_string(
             template_name="emails/autorizar_orden.html",
             context={
