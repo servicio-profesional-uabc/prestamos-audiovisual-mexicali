@@ -31,21 +31,18 @@
 
             {# El logout es un form en la version mas nueva de django #}
 
-            <div class="col-md-4 col-xl-3">
-                <div class="card h-100 py-2">
-                    <i class="bi bi-door-open display-1 card-img-top text-center mt-4"></i>
-                    <div class="card-body text-center">
-                        <label class="card-text">Cerrar Sesión</label>
-                        <form method="post" action="{% url 'logout' %}">
-                            {% csrf_token %}
-                            <button class="btn btn-link link-underline link-underline-opacity-0"
-                                    type="submit">
-                                Cerrar Sesión <i class="bi bi-chevron-right"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+
+<div class="col-md-4 col-xl-3" data-width="100">
+    <form method="post" action="{% url 'logout' %}" class="w-100 h-100">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-lg btn-primary d-flex flex-column justify-content-center align-items-center text-center w-100 h-100" style="background-color: #ffffff; color: black; border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
+            <i class="bi bi-door-open display-2"></i>
+            <div class="mt-2">Cerrar Sesión</div>
+        </button>
+    </form>
+</div>
+
+
 
 
         </div>
