@@ -9,10 +9,10 @@ from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 from django.views import View
 from django.views.generic.edit import UpdateView
-
-from .forms import CorresponsableForm, CambiarEstadoOrdenForm, CambiarEstadoCorresponsableOrdenForm
+from django.contrib.auth import update_session_auth_hash
+from .forms import CorresponsableForm, CambiarEstadoOrdenForm, CambiarEstadoCorresponsableOrdenForm,CambiarContrasenaForm
 from .forms import FiltrosForm, ActualizarPerfil, UpdateUserForm
-from .models import Articulo, Categoria, CorresponsableOrden, Coordinador
+from .models import Articulo, Categoria, CorresponsableOrden, Coordinador, Maestro, Ubicacion
 from .models import Carrito, Prestatario
 from .models import Orden, EstadoOrden, Perfil
 
@@ -58,6 +58,7 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
 
     def get(self, request):
         perfil = Perfil.user_data(user=request.user)
+        cambiar_contrasena_form = CambiarContrasenaForm(user=request.user)
 
         return render(
             request=request,
@@ -65,18 +66,22 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
             context={
                 'form_actualizar_perfil': ActualizarPerfil(instance=perfil),
                 'form_actualizar_usuario': UpdateUserForm(instance=request.user),
+                'cambiar_contrasena_form': cambiar_contrasena_form
             }
         )
 
     def post(self, request):
         perfil = Perfil.user_data(user=request.user)
-
         perfil_form = ActualizarPerfil(request.POST, instance=perfil)
         usuario = UpdateUserForm(request.POST, instance=request.user)
+        cambiar_contrasena_form = CambiarContrasenaForm(request.user, request.POST)
 
-        if perfil_form.is_valid() and usuario.is_valid():
+        if perfil_form.is_valid() and usuario.is_valid() and cambiar_contrasena_form.is_valid():
             perfil_form.save()
             usuario.save()
+            user = cambiar_contrasena_form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Perfil actualizado y contraseña cambiada con éxito.")
             return redirect('menu')
 
         return render(
@@ -85,6 +90,7 @@ class ActualizarPerfilView(LoginRequiredMixin, View):
             context={
                 'form_actualizar_perfil': perfil_form,
                 'form_actualizar_usuario': usuario,
+                'cambiar_contrasena_form': cambiar_contrasena_form
             }
         )
 
@@ -119,6 +125,13 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         carrito = prestatario.carrito()
         articulos_no_disponibles = []
 
+        if accion == 'ordenar':
+            carrito = Prestatario.get_user(request.user).carrito()
+            ordenado = carrito.ordenar()
+
+            if ordenado:
+                return redirect("historial_solicitudes")
+
         for articulo_carrito in carrito.articulos_carrito():
             if not articulo_carrito.articulo.disponible(carrito.inicio, carrito.final).exists():
                 articulos_no_disponibles.append(articulo_carrito)
@@ -136,21 +149,14 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
     def post(self, request, accion):
-
-        if accion == 'ordenar':
-            carrito = Prestatario.get_user(request.user).carrito()
-            ordenado = carrito.ordenar()
-
-            if ordenado:
-                return redirect("historial_solicitudes")
-
-        return redirect("carrito")
+        pass
 
 
 class FiltrosView(LoginRequiredMixin, View):
 
     def get(self, request):
         prestatario = Prestatario.get_user(request.user)
+        materias = prestatario.materias()
 
         coordinador = Coordinador.objects.first()
         # En caso que no exista ninguno registrado
@@ -172,6 +178,10 @@ class FiltrosView(LoginRequiredMixin, View):
             if materia.son_correos_vacios():
                 messages.add_message(request, messages.WARNING,
                                      f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
+        
+        if request.user.groups.filter(name='maestro'):
+            maestro = Maestro.get_user(request.user)
+            materias = maestro.materias()
 
         return render(
             request=request,
@@ -179,29 +189,36 @@ class FiltrosView(LoginRequiredMixin, View):
             context={
                 'prestatario': prestatario,
                 'form': FiltrosForm(),
-                'materias': prestatario.materias(),
+                'materias': materias,
             },
         )
 
     def post(self, request):
         prestatario = Prestatario.get_user(request.user)
+        materias = prestatario.materias()
+
         form = FiltrosForm(request.POST)
 
         if prestatario.tiene_carrito():
             prestatario.carrito().eliminar()
 
+        if request.user.groups.filter(name='maestro'):
+            maestro = Maestro.get_user(request.user)
+            materias = maestro.materias()
+
         if form.is_valid():
             inicio = form.cleaned_data.get('inicio')
             hora_inicio = form.cleaned_data.get('hora_inicio')
             duracion = int(form.cleaned_data.get('duracion'))
+            lugar = form.cleaned_data.get('lugar')
 
             # HORARIO DE ORDENES EXTRAORDINARIAS
-            if duracion in [24, 48, 72, 46]:
+            if duracion in [24, 48, 72, 96] or lugar == Ubicacion.EXTERNO:
                 messages.error(request, "Órdenes extraordinarias no permitidas actualmente. Contacte al coordinador.")
                 return render(request, "filtros.html", {
                     'prestatario': prestatario,
                     'form': form,
-                    'materias': prestatario.materias(),
+                    'materias': materias,
                 })
 
             carrito_nuevo = form.save(commit=False)
@@ -222,7 +239,7 @@ class FiltrosView(LoginRequiredMixin, View):
             context={
                 'prestatario': prestatario,
                 'form': form,
-                'materias': prestatario.materias(),
+                'materias': materias,
             },
         )
 
@@ -323,11 +340,22 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
             categoria_instance = get_object_or_404(Categoria, pk=request.POST["categoria"])
             articulos = articulos.filter(id__in=categoria_instance.articulos())
 
+        # Filtrar las unidades disponibles para cada artículo
+        articulos_disponibles = []
+        for articulo in articulos:
+            cantidad_disponible = articulo.disponible(carrito.inicio, carrito.final).count()
+
+            if cantidad_disponible > 0:
+                articulos_disponibles.append(articulo)
+                articulo.num_unidades = cantidad_disponible
+            else:
+                articulo.num_unidades = 0
+
         return render(
             request=request,
             template_name="catalogo.html",
             context={
-                "articulos": articulos,
+                "articulos": articulos_disponibles,
                 "carrito": prestatario.carrito(),
                 "categorias": Categoria.objects.all()
             },
@@ -337,7 +365,11 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
 class DetallesArticuloView(View):
 
     def get(self, request, id):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
         articulo = get_object_or_404(Articulo, id=id)
+
+        articulo.num_unidades = articulo.disponible(carrito.inicio, carrito.final).count()
 
         return render(
             request=request,

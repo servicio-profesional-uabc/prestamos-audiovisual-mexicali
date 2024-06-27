@@ -25,11 +25,6 @@
                 </div>
             {% endif %}
 
-            <!-- BOTON DE CORRESPONSABLES AQUII -->
-            <div class="text-center mt-4">
-                <a href="{% url 'corresponsables' %}" class="btn btn-secondary me-3">Seleccionar Corresponsables</a>
-            </div>
-
             <div class="table-responsive mt-4">
                 <table class="table">
                     <thead>
@@ -73,15 +68,18 @@
                     </tbody>
                 </table>
             </div>
-
-            <form method="POST" action="{% url 'carrito_accion' 'ordenar' %}" id="ordenForm" style="max-width: 50%; margin: auto;">
-
-                <div class="text-center mt-4">
-                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">Ordenar</button>
+            
+            <!-- BOTON DE CORRESPONSABLES AQUII -->
+            <div class="text-center mt-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-auto">
+                        <a href="{% url 'corresponsables' %}" class="btn btn-secondary me-md-3" style="background-color: #DD971A; border-color: #DD971A;">Seleccionar Corresponsables</a>
+                    </div>
+                    <div class="col-md-auto">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">Ordenar</button>
+                    </div>
                 </div>
-
-                {% csrf_token %}
-            </form>
+            </div>
 
             <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -101,9 +99,9 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button id="botonContinuar" type="button" class="btn btn-primary" disabled>
-                                Continuar
-                            </button>
+
+                            <a class="btn btn-primary" id="botonContinuar" href="{% url 'carrito_accion' 'ordenar' %}" role="button" disabled>Link</a>
+
                         </div>
                     </div>
                 </div>
@@ -128,14 +126,6 @@
                 botonContinuar.disabled = !this.checked;
             });
 
-            botonContinuar.addEventListener('click', function (event) {
-                if (!checkbox.checked) {
-                    event.preventDefault();
-                    alert('Debes aceptar los términos y condiciones para continuar.');
-                } else {
-                    form.submit();
-                }
-            });
         });
     </script>
 {% endblock %}

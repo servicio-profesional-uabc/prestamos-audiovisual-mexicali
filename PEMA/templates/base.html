@@ -14,11 +14,6 @@
     <script src="{% static 'js/bootstrap.bundle.min.js' %}" defer></script>
     <script src="{% static 'js/bootstrap.bundle.min.js' %}" defer></script>
 
-    <style>
-        .navbar-brand-margin {
-            margin-right: 29rem;
-        }
-    </style>
 
     {% block head %}
     {% endblock %}
@@ -60,7 +55,7 @@
                         {% block nav-items %}
 
                             <li class="nav-item">
-                                <a class="nav-link" href="menu">Volver al Menú</a>
+                                <a class="nav-link" href="{% url 'menu' %}">Volver al Menú</a>
                             </li>
 
                             <li class="nav-item">

@@ -27,6 +27,9 @@ def user_post_save(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Orden)
 def orden_after_create(sender, instance, created, **kwargs):
+
+    # TODO: falta documentación
+
     if created:
         instance.agregar_corresponsable(instance.prestatario)
         instance.notificar_corresponsables()
@@ -39,7 +42,6 @@ def corresponsable_orden_updated(sender, instance, created, **kwargs):
     Verifica si todos los corresponsables han aceptado la orden y ninguno la ha rechazado para que pueda ser aprobada.
     En caso de ser aprobada, se envía una solicitud de autorización al profesor (si la orden es ordinaria) o al coordinador
     (si es extraordinaria). Además, actualiza el estado de la orden según los cambios en CorresponsableOrden.
-
     """
 
     # TODO: faltan pruebas unitarias para este trigger
@@ -72,9 +74,8 @@ def entrega_created(sender, instance, created, **kwargs):
     Si es una entrega nueva , se marcar la orden relacionada como entregada.
     Utiliza la información del entregador que realizó la entrega para actualizar el estado de la orden,
     indicando que ha sido entregada satisfactoriamente.
-
-
     """
+
     if not created:
         return
 
@@ -92,6 +93,7 @@ def devolucion_created(sender, instance, created, **kwargs):
     Obtener la orden asociada a la devolución.
     Realizar operaciones relacionadas con la devolución de la orden.
     """
+
     if not created:
         return
 
