@@ -19,23 +19,41 @@
                         <div class="input-group-prepend">
                             <button class="btn btn-outline-secondary" type="button" id="button-addon1" onclick="decrementValue()">-</button>
                         </div>
-                        <input type="text" name="cantidad" class="form-control text-center" value="1" id="number" min="1" max="99" style="width: 40px;">
+                        <input disabled type="text" name="cantidad" class="form-control text-center" value="1" id="number" min="1" max="99" style="width: 40px;">
                         <div class="input-group-append">
                             <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="incrementValue()">+</button>
                         </div>
                     </div>
                     <a href="{% url 'catalogo' %}" class="btn btn-secondary" style="background-color: #DD971A; border: #DD971A;">Regresar</a>
-                    <button type="submit" class="btn btn-primary">Agregar</button>
+                    <button type="submit" class="btn btn-primary" onclick="verifyValue()">Agregar</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 <script>
+    function verifyValue() {
+        var value = parseInt(document.getElementById('number').value, 10);
+        var max = {{ articulo.num_unidades }}
+        if(value>max) {
+            value = max;
+        }
+        if(value<1) {
+            value = 1;
+        }
+        document.getElementById('number').value = value;
+    }
+
     function incrementValue() {
         var value = parseInt(document.getElementById('number').value, 10);
+        var max = {{ articulo.num_unidades }}
         value = isNaN(value) ? 1 : value;
-        value++;
+        if(value < max) {
+            value++;
+        }
+        if(value>max) {
+            value = max;
+        }
         document.getElementById('number').value = value;
     }
 

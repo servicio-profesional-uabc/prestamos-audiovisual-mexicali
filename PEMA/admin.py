@@ -163,7 +163,7 @@ class DevolucionAdmin(admin.ModelAdmin):
     list_filter = ('orden',)
 
     def get_orden_nombre(self, obj):
-        if (obj.orden.estado == EstadoOrden.ENTREGADA):
+        if (obj.orden.estado == EstadoOrden.DEVUELTA):
             return obj.orden.nombre
 
     get_orden_nombre.short_description = 'Nombre producción'

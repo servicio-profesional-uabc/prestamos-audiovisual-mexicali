@@ -366,7 +366,11 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
 class DetallesArticuloView(View):
 
     def get(self, request, id):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
         articulo = get_object_or_404(Articulo, id=id)
+
+        articulo.num_unidades = articulo.disponible(carrito.inicio, carrito.final).count()
 
         return render(
             request=request,
