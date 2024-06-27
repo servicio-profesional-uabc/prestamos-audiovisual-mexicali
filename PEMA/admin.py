@@ -3,7 +3,7 @@ from django.contrib import messages
 from import_export.admin import ImportExportModelAdmin
 
 from .models import *
-from .resources import PrestatarioResource
+from .resources import *
 
 
 @admin.register(Prestatario)
@@ -57,6 +57,17 @@ class CorresponsableOrdenInline(admin.TabularInline):
     autocomplete_fields = ('autorizador',)
     model = CorresponsableOrden
     extra = 1
+
+
+@admin.register(Maestro)
+class MaestroAdmin(ImportExportModelAdmin):
+    #resource_class = EmpleadoResource
+
+    def import_data(self, dataset, *args, **kwargs):
+        # Procesar el conjunto de datos según tus necesidades
+        print(dataset.dict)
+        result = super().import_data(dataset, *args, **kwargs)
+        return result
 
 
 @admin.register(Orden)
@@ -163,7 +174,7 @@ class DevolucionAdmin(admin.ModelAdmin):
     list_filter = ('orden',)
 
     def get_orden_nombre(self, obj):
-        if (obj.orden.estado == EstadoOrden.ENTREGADA):
+        if (obj.orden.estado == EstadoOrden.DEVUELTA):
             return obj.orden.nombre
 
     get_orden_nombre.short_description = 'Nombre producción'
@@ -185,6 +196,20 @@ class ArticuloAdmin(ImportExportModelAdmin):
     search_fields = ['nombre', 'codigo']
     filter_horizontal = ('_categorias',)
     inlines = [ArticuloUnidadInline]
+
+    resource_class = UnidadResource
+
+
+@admin.register(Unidad)
+class UnidadAdmin(ImportExportModelAdmin):
+    """
+        Permite buscar un articulo por nombre y código, muestra información y
+         gestiona las relaciones con categorías.
+
+        """
+    list_display = ('num_control', 'num_serie', 'articulo')
+
+    resource_class = UnidadResource
 
 
 class ArticuloCarritoInline(admin.TabularInline):
