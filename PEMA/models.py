@@ -341,7 +341,7 @@ class Almacen(User):
         group.permissions.add(Permission.objects.get(codename='delete_reporte'))
         group.permissions.add(Permission.objects.get(codename='view_reporte'))
         group.permissions.add(Permission.objects.get(codename='view_unidad'))
-        group.permissions.add(Permission.objects.get(codeneme='view_user'))
+        group.permissions.add(Permission.objects.get(codename='view_user'))
 
         return group, created
 
