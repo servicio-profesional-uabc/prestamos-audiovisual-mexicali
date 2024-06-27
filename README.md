@@ -15,9 +15,12 @@ código**:
 
 - Pruebas unitarias: 
   - `python manage.py test PEMA/tests`
-- Cobertura de código: 
-  - `coverage run manage.py test PEMA`
-  - `coverage report`
+  
+Cobertura de código: 
+```shell
+coverage run manage.py test PEMA
+coverage report
+```
 
 ### Modo Porducción
 - Preparar el entorno
