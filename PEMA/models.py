@@ -13,8 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
-
-from prestamos import settings
+from django.conf import settings
 
 
 class Prestatario(User):
@@ -1058,8 +1057,7 @@ class Carrito(models.Model):
                 for articulo_carrito in self.articulos_carrito():
                     unidades = articulo_carrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)
-                    # print(len_unidades)
-                    # print(articulo_carrito.unidades)
+
                     if len_unidades < articulo_carrito.unidades:
                         raise Exception("No hay suficientes unidades disponibles")
 

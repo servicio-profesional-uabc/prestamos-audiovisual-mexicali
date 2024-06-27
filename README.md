@@ -19,6 +19,18 @@ código**:
   - `coverage run manage.py test PEMA`
   - `coverage report`
 
+### Modo Porducción
+- Preparar el entorno
+```shell
+python manage.py makemigrations PEMA --settings=prestamos.settings.prod
+python manage.py migrate --settings=prestamos.settings.prod
+python manage.py crear_roles --settings=prestamos.settings.prod
+python manage.py loaddata tema_cepa.json --settings=prestamos.settings.prod
+```
+  
+- Ejecutar el servidor
+  - `python manage.py runserver --settings=prestamos.settings.prod`
+
 ### Setup para Desarolladores
 - Crear entorno virtual: 
   - `python -m venv .venv`
