@@ -694,7 +694,7 @@ class Orden(models.Model):
         ordering = ("emision",)
         verbose_name_plural = "Órdenes"
 
-    nombre = models.CharField(blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
+    nombre = models.CharField(default='',blank=False, null=False, max_length=250, verbose_name='Nombre Producción')
     prestatario = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Emisor')
     materia = models.ForeignKey(to=Materia, on_delete=models.DO_NOTHING)
     tipo = models.CharField(default=TipoOrden.ORDINARIA, choices=TipoOrden.choices, max_length=2,
@@ -712,6 +712,8 @@ class Orden(models.Model):
     emision = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        if(self.nombre==''):
+            self.nombre = self.prestatario.username
         self.tipo = self.__tipo_de_orden()
         super().save(*args, **kwargs)
 

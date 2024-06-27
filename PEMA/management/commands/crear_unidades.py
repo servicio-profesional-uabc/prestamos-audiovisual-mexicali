@@ -166,7 +166,6 @@ class Command(BaseCommand):
         )
 
         orden3, created = Orden.objects.get_or_create(
-            nombre="Awa3",
             prestatario=user,
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5, 15)),
@@ -186,7 +185,6 @@ class Command(BaseCommand):
         )
 
         orden5, created = Orden.objects.get_or_create(
-            nombre="Awa5",
             prestatario=user,
             lugar=Ubicacion.CAMPUS,
             inicio=make_aware(datetime(2024, 10, 5, 13)),
@@ -249,24 +247,31 @@ class Command(BaseCommand):
         print('Se guardaron las ordenes...')
 
         print('orden1:')
+        print(orden1.nombre)
         print(orden1.inicio)
         print(orden1.final)
         print('orden2:')
+        print(orden2.nombre)
+
         print(orden2.inicio)
         print(orden2.final)
         print('orden3:')
+        print(orden3.nombre)
         print(orden3.inicio)
         print(orden3.final)
         print('orden4:')
+        print(orden4.nombre)
         print(orden4.inicio)
         print(orden4.final)
         print('orden5:')
+        print(orden5.nombre)
         print(orden5.inicio)
         print(orden5.final)
         print('orden6:')
+        print(orden6.nombre)
         print(orden6.inicio)
         print(orden6.final)
-        print("articulo1")
+        """ print("articulo1")
         print("Disponible:", articulo1.disponible(make_aware(datetime(2024, 10, 5, 12)), make_aware(datetime(2024, 10, 5, 14))))
 
         print("articulo1")
@@ -283,4 +288,4 @@ class Command(BaseCommand):
         print(Unidad.Estado.ACTIVO)
         for u in unidades:
             print(u.articulo)
-            print(u.estado)
+            print(u.estado) """
