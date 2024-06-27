@@ -142,12 +142,7 @@ urlpatterns = [
         view=AgregarCorresponsablesView.as_view(),
         name='corresponsables'
     ),
-
 ]
 
-# https://github.com/fabiocaccamo/django-admin-interface/issues/4
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL,
-                          document_root=settings.MEDIA_ROOT)
 handler403 = custom_403
 handler404 = custom_404

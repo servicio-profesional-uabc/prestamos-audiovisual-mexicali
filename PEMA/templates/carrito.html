@@ -99,9 +99,9 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button id="botonContinuar" type="button" class="btn btn-primary" disabled>
-                                Continuar
-                            </button>
+
+                            <a class="btn btn-primary" id="botonContinuar" href="{% url 'carrito_accion' 'ordenar' %}" role="button" disabled>Link</a>
+
                         </div>
                     </div>
                 </div>
@@ -126,14 +126,6 @@
                 botonContinuar.disabled = !this.checked;
             });
 
-            botonContinuar.addEventListener('click', function (event) {
-                if (!checkbox.checked) {
-                    event.preventDefault();
-                    alert('Debes aceptar los términos y condiciones para continuar.');
-                } else {
-                    form.submit();
-                }
-            });
         });
     </script>
 {% endblock %}
