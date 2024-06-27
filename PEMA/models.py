@@ -171,9 +171,11 @@ class Coordinador(User):
         :returns: El grupo de Coordinadores y si se creó el grupo.
         """
         group, created = Group.objects.get_or_create(name='coordinador')
+
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='view_orden'))
-        group.permissions.add(Permission.objects.get(codename='change_reporte'))
+        group.permissions.add(Permission.objects.get(codename='view_reporte'))
+
         return group, created
 
     @classmethod
@@ -308,12 +310,15 @@ class Almacen(User):
 
         :returns: El grupo creado y si se creó el grupo.
         """
+
         group, created = Group.objects.get_or_create(name='almacen')
+
         group.permissions.add(Permission.objects.get(codename='view_articulo'))
         group.permissions.add(Permission.objects.get(codename='add_devolucion'))
         group.permissions.add(Permission.objects.get(codename='view_devolucion'))
         group.permissions.add(Permission.objects.get(codename='add_entrega'))
         group.permissions.add(Permission.objects.get(codename='view_entrega'))
+        group.permissions.add(Permission.objects.get(codename='view_materia'))
         group.permissions.add(Permission.objects.get(codename='add_orden'))
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='view_orden'))
@@ -322,6 +327,8 @@ class Almacen(User):
         group.permissions.add(Permission.objects.get(codename='delete_reporte'))
         group.permissions.add(Permission.objects.get(codename='view_reporte'))
         group.permissions.add(Permission.objects.get(codename='view_unidad'))
+        group.permissions.add(Permission.objects.get(codeneme='view_user'))
+
         return group, created
 
     @staticmethod
