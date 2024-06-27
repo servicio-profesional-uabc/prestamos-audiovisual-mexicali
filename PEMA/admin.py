@@ -61,13 +61,8 @@ class CorresponsableOrdenInline(admin.TabularInline):
 
 @admin.register(Maestro)
 class MaestroAdmin(ImportExportModelAdmin):
-    #resource_class = EmpleadoResource
-
-    def import_data(self, dataset, *args, **kwargs):
-        # Procesar el conjunto de datos según tus necesidades
-        print(dataset.dict)
-        result = super().import_data(dataset, *args, **kwargs)
-        return result
+    # resource_class = EmpleadoResource
+    pass
 
 
 @admin.register(Orden)
@@ -189,8 +184,7 @@ class DevolucionAdmin(admin.ModelAdmin):
 class ArticuloAdmin(ImportExportModelAdmin):
     """
     Permite buscar un articulo por nombre y código, muestra información y
-     gestiona las relaciones con categorías.
-
+    gestiona las relaciones con categorías.
     """
     list_display = ('nombre', 'codigo', 'descripcion')
     search_fields = ['nombre', 'codigo']
@@ -203,10 +197,9 @@ class ArticuloAdmin(ImportExportModelAdmin):
 @admin.register(Unidad)
 class UnidadAdmin(ImportExportModelAdmin):
     """
-        Permite buscar un articulo por nombre y código, muestra información y
-         gestiona las relaciones con categorías.
-
-        """
+    Permite buscar un articulo por nombre y código, muestra información y
+    gestiona las relaciones con categorías.
+    """
     list_display = ('num_control', 'num_serie', 'articulo')
 
     resource_class = UnidadResource
@@ -245,7 +238,7 @@ class ReporteAdmin(admin.ModelAdmin):
 
     Muestra detalles como estado del reporte,
     gestiona relación con órdenes, excluye el campo del emisor y realiza acciones como desactivar reportes.
-        """
+    """
     search_fields = ['orden']
     list_display = ('orden', 'estado')
     autocomplete_fields = ('orden',)
@@ -271,7 +264,6 @@ class PerfilAdmin(admin.ModelAdmin):
     """
     Gestionar perfiles de usuarios en el panel de administración de Django.
     Mostrando detalles como número de teléfono y permite búsqueda por este campo.
-
     """
     list_display = ('usuario',)
     search_fields = ['numero_telefono']
@@ -280,7 +272,6 @@ class PerfilAdmin(admin.ModelAdmin):
 class ArticuloInline(admin.TabularInline):
     """
     Muestra y gestiona la relación entre artículos y categorías .
-
     """
     model = Articulo._categorias.through
     extra = 1
@@ -291,7 +282,6 @@ class CategoriaAdmin(admin.ModelAdmin):
     """
     Administra las categorías.
     Mostrando detalles como nombre de categorías, permite búsqueda por nombre y gestiona relaciones con artículos.
-
     """
     list_display = ('nombre',)
     search_fields = ['nombre']
