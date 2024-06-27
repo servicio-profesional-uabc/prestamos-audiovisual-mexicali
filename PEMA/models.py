@@ -13,8 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
-
-from prestamos import settings
+from django.conf import settings
 
 
 class Prestatario(User):
@@ -174,9 +173,11 @@ class Coordinador(User):
         :returns: El grupo de Coordinadores y si se creó el grupo.
         """
         group, created = Group.objects.get_or_create(name='coordinador')
+
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='view_orden'))
-        group.permissions.add(Permission.objects.get(codename='change_reporte'))
+        group.permissions.add(Permission.objects.get(codename='view_reporte'))
+
         return group, created
 
     @classmethod
@@ -322,12 +323,15 @@ class Almacen(User):
 
         :returns: El grupo creado y si se creó el grupo.
         """
+
         group, created = Group.objects.get_or_create(name='almacen')
+
         group.permissions.add(Permission.objects.get(codename='view_articulo'))
         group.permissions.add(Permission.objects.get(codename='add_devolucion'))
         group.permissions.add(Permission.objects.get(codename='view_devolucion'))
         group.permissions.add(Permission.objects.get(codename='add_entrega'))
         group.permissions.add(Permission.objects.get(codename='view_entrega'))
+        group.permissions.add(Permission.objects.get(codename='view_materia'))
         group.permissions.add(Permission.objects.get(codename='add_orden'))
         group.permissions.add(Permission.objects.get(codename='delete_orden'))
         group.permissions.add(Permission.objects.get(codename='view_orden'))
@@ -336,6 +340,8 @@ class Almacen(User):
         group.permissions.add(Permission.objects.get(codename='delete_reporte'))
         group.permissions.add(Permission.objects.get(codename='view_reporte'))
         group.permissions.add(Permission.objects.get(codename='view_unidad'))
+        group.permissions.add(Permission.objects.get(codename='view_user'))
+
         return group, created
 
     @staticmethod
@@ -1051,8 +1057,7 @@ class Carrito(models.Model):
                 for articulo_carrito in self.articulos_carrito():
                     unidades = articulo_carrito.articulo.disponible(self.inicio, self.final)
                     len_unidades = len(unidades)
-                    # print(len_unidades)
-                    # print(articulo_carrito.unidades)
+
                     if len_unidades < articulo_carrito.unidades:
                         raise Exception("No hay suficientes unidades disponibles")
 

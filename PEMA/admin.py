@@ -3,7 +3,7 @@ from django.contrib import messages
 from import_export.admin import ImportExportModelAdmin
 
 from .models import *
-from .resources import PrestatarioResource
+from .resources import *
 
 
 @admin.register(Prestatario)
@@ -57,6 +57,12 @@ class CorresponsableOrdenInline(admin.TabularInline):
     autocomplete_fields = ('autorizador',)
     model = CorresponsableOrden
     extra = 1
+
+
+@admin.register(Maestro)
+class MaestroAdmin(ImportExportModelAdmin):
+    # resource_class = EmpleadoResource
+    pass
 
 
 @admin.register(Orden)
@@ -163,7 +169,7 @@ class DevolucionAdmin(admin.ModelAdmin):
     list_filter = ('orden',)
 
     def get_orden_nombre(self, obj):
-        if (obj.orden.estado == EstadoOrden.ENTREGADA):
+        if (obj.orden.estado == EstadoOrden.DEVUELTA):
             return obj.orden.nombre
 
     get_orden_nombre.short_description = 'Nombre producción'
@@ -178,13 +184,25 @@ class DevolucionAdmin(admin.ModelAdmin):
 class ArticuloAdmin(ImportExportModelAdmin):
     """
     Permite buscar un articulo por nombre y código, muestra información y
-     gestiona las relaciones con categorías.
-
+    gestiona las relaciones con categorías.
     """
     list_display = ('nombre', 'codigo', 'descripcion')
     search_fields = ['nombre', 'codigo']
     filter_horizontal = ('_categorias',)
     inlines = [ArticuloUnidadInline]
+
+    resource_class = UnidadResource
+
+
+@admin.register(Unidad)
+class UnidadAdmin(ImportExportModelAdmin):
+    """
+    Permite buscar un articulo por nombre y código, muestra información y
+    gestiona las relaciones con categorías.
+    """
+    list_display = ('num_control', 'num_serie', 'articulo')
+
+    resource_class = UnidadResource
 
 
 class ArticuloCarritoInline(admin.TabularInline):
@@ -220,7 +238,7 @@ class ReporteAdmin(admin.ModelAdmin):
 
     Muestra detalles como estado del reporte,
     gestiona relación con órdenes, excluye el campo del emisor y realiza acciones como desactivar reportes.
-        """
+    """
     search_fields = ['orden']
     list_display = ('orden', 'estado')
     autocomplete_fields = ('orden',)
@@ -246,7 +264,6 @@ class PerfilAdmin(admin.ModelAdmin):
     """
     Gestionar perfiles de usuarios en el panel de administración de Django.
     Mostrando detalles como número de teléfono y permite búsqueda por este campo.
-
     """
     list_display = ('usuario',)
     search_fields = ['numero_telefono']
@@ -255,7 +272,6 @@ class PerfilAdmin(admin.ModelAdmin):
 class ArticuloInline(admin.TabularInline):
     """
     Muestra y gestiona la relación entre artículos y categorías .
-
     """
     model = Articulo._categorias.through
     extra = 1
@@ -266,7 +282,6 @@ class CategoriaAdmin(admin.ModelAdmin):
     """
     Administra las categorías.
     Mostrando detalles como nombre de categorías, permite búsqueda por nombre y gestiona relaciones con artículos.
-
     """
     list_display = ('nombre',)
     search_fields = ['nombre']

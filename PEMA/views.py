@@ -125,6 +125,13 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         carrito = prestatario.carrito()
         articulos_no_disponibles = []
 
+        if accion == 'ordenar':
+            carrito = Prestatario.get_user(request.user).carrito()
+            ordenado = carrito.ordenar()
+
+            if ordenado:
+                return redirect("historial_solicitudes")
+
         for articulo_carrito in carrito.articulos_carrito():
             if not articulo_carrito.articulo.disponible(carrito.inicio, carrito.final).exists():
                 articulos_no_disponibles.append(articulo_carrito)
@@ -142,15 +149,7 @@ class CarritoView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
     def post(self, request, accion):
-
-        if accion == 'ordenar':
-            carrito = Prestatario.get_user(request.user).carrito()
-            ordenado = carrito.ordenar()
-
-            if ordenado:
-                return redirect("historial_solicitudes")
-
-        return redirect("carrito")
+        pass
 
 
 class FiltrosView(LoginRequiredMixin, View):
@@ -366,7 +365,11 @@ class CatalogoView(View, LoginRequiredMixin, UserPassesTestMixin):
 class DetallesArticuloView(View):
 
     def get(self, request, id):
+        prestatario = Prestatario.get_user(request.user)
+        carrito = prestatario.carrito()
         articulo = get_object_or_404(Articulo, id=id)
+
+        articulo.num_unidades = articulo.disponible(carrito.inicio, carrito.final).count()
 
         return render(
             request=request,
