@@ -2,11 +2,12 @@ from datetime import date, timedelta, datetime, time
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
 from django.utils.timezone import make_aware
 from phonenumber_field.formfields import PhoneNumberField
-from django.contrib.auth.forms import PasswordChangeForm 
+
 from .models import Carrito, Perfil, Prestatario, Ubicacion, CorresponsableOrden
 from .models import Orden, EstadoOrden
 
@@ -48,6 +49,7 @@ class UpdateUserForm(forms.ModelForm):
             raise forms.ValidationError("El correo debe ser institucional de la UABC.")
         return email
 
+
 class ActualizarPerfil(forms.ModelForm):
     class Meta:
         model = Perfil
@@ -57,9 +59,12 @@ class ActualizarPerfil(forms.ModelForm):
 
 
 class CambiarContrasenaForm(PasswordChangeForm):
-    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña actual'}))
-    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Nueva contraseña'}))
-    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar nueva contraseña'}))
+    old_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña actual'}))
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Nueva contraseña'}))
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar nueva contraseña'}))
 
     class Meta:
         model = User
