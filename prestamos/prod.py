@@ -30,11 +30,13 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+IP_LOCALHOST = "127.0.0.1"
+LOCALHOST = "localhost"
 HOST = os.getenv('APP_RUN_HOST')
 DOMAIN = os.getenv('APP_RUN_DOMAIN')
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", HOST, DOMAIN]
-print(f'HOSTS: {ALLOWED_HOSTS}')
+ALLOWED_HOSTS = [IP_LOCALHOST, LOCALHOST, HOST, DOMAIN]
+#print(f'HOSTS: {ALLOWED_HOSTS}')
 
 # Application definition
 
@@ -94,13 +96,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DATABASE_NAME'),
-        'USER': 'root', # Dejar a puerto root
+        'USER': 'root', # Dejar a user root
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
         'HOST': 'db', # Dejar a db (el nombre del servicio del docker-compose es el host)
         'PORT': '3306' # Dejar a puerto 3306,
     }
 }
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
@@ -160,7 +161,7 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
 # para enviar las urls en los emails
-URL_BASE_PARA_EMAILS = "http://", "127.0.0.1"
+URL_BASE_PARA_EMAILS = "http://", IP_LOCALHOST # No es necesario especificar puerto ya que es puerto 80. En cuanto haya dominio es necesario cambiar de IP_LOCALHOST a DOMAIN
 #URL_BASE_PARA_EMAILS = "http://192.168.1.93:8080" # "http://10.32.213.157" #"http://localhost:8000/"
 
 # django extra settings
