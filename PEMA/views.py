@@ -213,7 +213,7 @@ class FiltrosView(LoginRequiredMixin, View):
             lugar = form.cleaned_data.get('lugar')
 
             # HORARIO DE ORDENES EXTRAORDINARIAS
-            if duracion in [24, 48, 72, 96] or lugar == Ubicacion.EXTERNO:
+            if Coordinador.son_correos_vacios():
                 messages.error(request, "Órdenes extraordinarias no permitidas actualmente. Contacte al coordinador.")
                 return render(request, "filtros.html", {
                     'prestatario': prestatario,
