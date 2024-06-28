@@ -7,8 +7,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container col-12 mb-3 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4" >
-
+    <div class="container col-12 col-md-8 col-xl-6 mt-2 mt-md-5 mt-lg-4 mb-3">
 
         <ul class="list-group mb-4">
             {% if prestatario.suspendido %}
@@ -19,41 +18,42 @@
             {% else %}
                 {% comment %} Mensajes de alerta para el usuario {% endcomment %}
                 {% for message in messages %}
-                    <li class="list-group-item list-group-item-warning"><i
-                            class="bi bi-exclamation-circle"></i> {{ message }}</li>
+                    <li class="list-group-item list-group-item-warning">
+                        <i class="bi bi-exclamation-circle"></i> {{ message }}
+                    </li>
                 {% endfor %}
 
                 {% comment %} Mensajes de error para el usuario {% endcomment %}
                 {% for field, error_list in form.errors.items %}
                     {% for error in error_list %}
-                        <li class="list-group-item list-group-item-danger"><i
-                                class="bi bi-exclamation-circle"></i> {{ error }}</li>
+                        <li class="list-group-item list-group-item-danger">
+                            <i class="bi bi-exclamation-circle"></i> {{ error }}
+                        </li>
                     {% endfor %}
                 {% endfor %}
             {% endif %}
         </ul>
 
-
         {% if not prestatario.suspendido %}
-            <div class="container py-2 border border-1 rounded bg-white " style="border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
+            <div class="container py-2 border border-1 rounded bg-white" style="box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">
                 <h4 class="my-3 text-center">Detalles de la Producción</h4>
 
-                <form class="" method="POST" action="{% url 'filtros' %}">
+                <form method="POST" action="{% url 'filtros' %}">
                     {% csrf_token %}
 
-                    <div class="form-floating mb-3" >
+                    <div class="form-floating mb-3">
                         {% render_field form.nombre type="text" class="form-control" %}
                         <label>Nombre de la producción</label>
                     </div>
 
                     <div class="form-floating mb-3">
                         {% render_field form.lugar class="form-control" %}
-                        <label for="">Lugar de la producción</label>
+                        <label>Lugar de la producción</label>
                     </div>
 
                     <div class="form-floating mb-3">
                         {% render_field form.descripcion_lugar class="form-control" %}
-                        <label for="">Lugar exacto</label>
+                        <label>Lugar exacto</label>
                     </div>
 
                     <div class="form-floating mb-3">
@@ -63,7 +63,7 @@
 
                     <div class="form-floating mb-3">
                         {% render_field form.hora_inicio id="horaInicio" class="form-control" %}
-                        <label for="">Hora de inicio</label>
+                        <label>Hora de inicio</label>
                     </div>
 
                     <div class="form-floating mb-3">
@@ -71,14 +71,12 @@
                         <label for="duracion">Duración</label>
                     </div>
 
-                    {# Lista de materias #}
                     <div class="form-floating mb-3">
                         <select class="form-select" id="materiaSelect" name="materia" required>
                             {% for materia in materias %}
                                 {% if not materia.son_correos_vacios %}
-                                    <option class="" value="{{ materia.pk }}"
-                                            {% if materia == materia_elegida %}selected{% endif %}>{{ materia }}</option>
-                                {% endif %}dropdown-item
+                                    <option value="{{ materia.pk }}" {% if materia == materia_elegida %}selected{% endif %}>{{ materia }}</option>
+                                {% endif %}
                             {% endfor %}
                         </select>
                         <label for="materiaSelect">Materia</label>
@@ -87,12 +85,10 @@
                     <div class="form-floating mt-4 mb-3">
                         {% render_field form.descripcion id="floatingTextarea2Disabled" style="height: 8em;" class="form-control" rows="3" placeholder="Descripción de la producción" %}
                         <label for="floatingTextarea2Disabled">Descripción de actividades</label>
-
                         <div id="passwordHelpBlock" class="form-text">
                             Ingresa información sobre las actividades que se realizarán con los artículos solicitados.
                         </div>
                     </div>
-
 
                     <div class="container mt-4">
                         <div class="row justify-content-center">

@@ -2,94 +2,113 @@
 {% load static %}
 
 {% block head %}
-    <title>Detalles de orden</title>
+    <title>Detalles de la Orden</title>
 {% endblock %}
 
 {% block content %}
-    <main class="container order-details-container my-4">
-        <h2 class="text-center">Detalles de la orden</h2>
-        <hr class="hr"/>
+<main class="container my-4 d-flex justify-content-center">
+    <div class="col-md-6">
+        <div class="order-info p-4 border rounded bg-white shadow-sm">
+            <h2 class="text-center mb-4">{{ orden.nombre }}</h2>
 
-        <div class="order-info">
+<div class="container my-4 d-flex justify-content-center">
+    <table class="table" style="border: none;">
+        <tr class="mb-4">
+            <td class="col-md-6" style="border: none;text-align: center;">
+                <strong class="fs-4">Inicio</strong>
+            </td>
+            <td class="col-md-6" style="border: none;text-align: center;">
+                <strong class="fs-4">Final</strong>
+            </td>
+        </tr>
+        <tr class="mb-3">
+            <td class="col-md-6" style="border: none; text-align: center;">
+                {{ orden.inicio|date:"d b" }}, {{ orden.inicio|time:"H:i" }}
+            </td>
+            <td class="col-md-6" style="border: none; text-align: center;">
+                {{ orden.final|date:"d b" }}, {{ orden.final|time:"H:i" }}
+            </td>
+        </tr>
+    </table>
+</div>
+
+
             <div class="row mb-3">
-                <div class="col-md-4"><strong>Nombre de la práctica o producción:</strong></div>
-                <div class="col-md-8">{{ orden.nombre }}</div>
+                <div class="col-md-4"><strong>Lugar</strong></div>
+                <div class="col-md-8 text-end" >{{ orden.get_lugar_display }}</div>
+            </div>
+
+                    <div class="row mb-3">
+                <div class="col-md-4"><strong>Materia</strong></div>
+                <div class="col-md-8 text-end" >{{ orden.materia.nombre }}</div>
             </div>
 
             <div class="row mb-3">
-                <div class="col-md-4"><strong>Materia:</strong></div>
-                <div class="col-md-8">{{ orden.materia.nombre }}</div>
+                <div class="col-md-4"><strong>Tipo</strong></div>
+                <div class="col-md-8 text-end" >{{ orden.get_tipo_display }}</div>
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-4"><strong>Lugar:</strong></div>
-                <div class="col-md-8">{{ orden.get_lugar_display }}</div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4"><strong>Fecha y hora de recepción:</strong></div>
-                <div class="col-md-8">{{ orden.inicio }}</div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4"><strong>Fecha y hora de devolución:</strong></div>
-                <div class="col-md-8">{{ orden.final }}</div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4"><strong>Descripción:</strong></div>
-                <div class="col-md-8">
+<div class="container my-4 d-flex justify-content-center">
+    <table class="table">
+        <tr class="mb-4">
+            <td class="col-md-6" style="border: none; text-align: center;">
+                <strong class="fs-4">Artículos</strong>
+            </td>
+            <td class="col-md-6" style="border: none; text-align: center;">
+                <strong class="fs-4">Descripción</strong>
+            </td>
+        </tr>
+        <tr class="mb-3">
+            <td class="col-md-6" style="border: none; text-align: center;">
+                    {% for articulo in orden.articulos.all %}
+                        <li class="list-group-item">{{ articulo }}</li>
+                    {% endfor %}
+            </td>
+            <td class="col-md-6" style="border: none; text-align: center;">
                     {% if orden.descripcion %}
                         {{ orden.descripcion }}
                     {% else %}
                         No existe una descripción.
                     {% endif %}
-                </div>
-            </div>
 
-            <div class="row mb-3">
-                <div class="col-md-4"><strong>Tipo:</strong></div>
-                <div class="col-md-8">{{ orden.get_tipo_display }}</div>
-            </div>
-        </div>
-        <div class="order-items mb-4">
-            <div class="col-md-4"><strong>Artículos:</strong></div>
-            <ul class="list-group">
-                {% for articulo in orden.articulos.all %}
-                    <li class="list-group-item">{{ articulo }}</li>
-                {% endfor %}
-            </ul>
-        </div>
+            </td>
+        </tr>
+    </table>
+</div>
 
-        <div class="row mt-4 justify-content-center">
-            <div class="col-auto">
-                <a href="{% url 'historial_solicitudes' %}?state={{ request.GET.state }}" class="btn btn-secondary"style="background-color: #DD971A; color: white; border: #DD971A;">Regresar</a>
-            </div>
-            {% if orden.estado == EstadoOrden.RESERVADA or orden.estado == EstadoOrden.APROBADA %}
+
+
+            <div class="row mt-4 justify-content-center">
+                {% if orden.estado == EstadoOrden.RESERVADA or orden.estado == EstadoOrden.APROBADA %}
+                    <div class="col-auto">
+                        <button id="boton_cancelar" type="button" class="btn btn-danger"  style="border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)" data-bs-toggle="modal" data-bs-target="#modalCancelar">Cancelar Solicitud</button>
+                    </div>
+                {% endif %}
                 <div class="col-auto">
-                    <button id="boton_cancelar" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalCancelar">Cancelar Solicitud</button>
+                    <a href="{% url 'historial_solicitudes' %}?state={{ request.GET.state }}" class="btn btn-secondary"  style="background-color: #DD971A; color: white; border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)" >Regresar</a>
                 </div>
-            {% endif %}
-        </div>
+            </div>
 
-        <div class="modal fade" id="modalCancelar" tabindex="-1" aria-labelledby="cancelarModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="cancelarModalLabel">Confirmar cancelación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        No podrás recuperar tu orden una vez que hayas cancelado. ¿Desea continuar?
-                    </div>
-                    <div class="modal-footer">
-                        <form action="{% url 'detalles_orden' orden.id %}" method="POST" name="cancelarOrden">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">Cancelar</button>
-                        </form>
+            <div class="modal fade" id="modalCancelar" tabindex="-1" aria-labelledby="cancelarModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cancelarModalLabel"  style="border: none; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2)">Confirmar Cancelación</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            No podrás recuperar tu orden una vez que hayas cancelado. ¿Deseas continuar?
+                        </div>
+                        <div class="modal-footer">
+                            <form action="{% url 'detalles_orden' orden.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Cancelar</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     </main>
 {% endblock %}
