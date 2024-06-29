@@ -6,19 +6,13 @@
 {% endblock %}
 
 {% block nav-end %}
-    <!-- TODO: Hacer que el numero se actualice -->
-    <a class="btn btn-md ms-auto text-white bg-success rounded-pill" href="{% url 'carrito' %}">
+    <a class="btn btn-md btn-outline-success text-white bg-success rounded-pill d-block d-sm-inline-block mb-3 mb-sm-0 me-sm-3" href="{% url 'carrito' %}">
         <i class="bi bi-cart"></i> {{ carrito.numero_total_unidades }}
     </a>
 
+
 {% endblock %}
 
-{% block first-nav-items %}
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'carrito' %}">Ver Carrito</a>
-    </li>
-    <hr>
-{% endblock %}
 
 {% block content %}
 
