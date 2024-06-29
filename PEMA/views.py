@@ -162,14 +162,14 @@ class FiltrosView(LoginRequiredMixin, View):
         # En caso que no exista ninguno registrado
         if coordinador is None:
             messages.add_message(request, messages.WARNING,
-                                 "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+                                 "Órdenes extraordinarias no disponibles. El coordinador debe registrar sus datos de contacto.")
 
         # En caso que falta registrar sus datos
         else:
             perfil = Perfil.objects.get(usuario=coordinador)
             if perfil.incompleto():
                 messages.add_message(request, messages.WARNING,
-                                     "Órdenes extraordinarias pendientes por actualización de información del coordinador. Le recomendamos contactarlo para proceder.")
+                                     "Órdenes extraordinarias no disponibles. El coordinador debe registrar sus datos de contacto.")
 
         if prestatario.tiene_carrito():
             prestatario.carrito().eliminar()
@@ -177,7 +177,7 @@ class FiltrosView(LoginRequiredMixin, View):
         for materia in prestatario.materias():
             if materia.son_correos_vacios():
                 messages.add_message(request, messages.WARNING,
-                                     f'La materia {materia.nombre} no está disponible porque no hay maestro con sus datos registrados como es su correo electrónico y/o número de celular. Por favor contacta al maestro para que actualice sus datos.')
+                                     f'{materia.nombre} no está disponible. Es necesario que el maestro actualice sus datos de contacto.')
         
         if request.user.groups.filter(name='maestro'):
             maestro = Maestro.get_user(request.user)
