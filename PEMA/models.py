@@ -192,6 +192,13 @@ class Coordinador(User):
         grupo.user_set.add(user)
         return user
 
+    @classmethod
+    def son_correos_vacios(cls) -> bool:
+        """
+        Revisa si todos los correos de los maestros están completos.
+        """
+        return all([Perfil.user_data(coordinador).email().strip() == "" for coordinador in Prestatario.objects.all()])
+
 
 class Maestro(User):
     """

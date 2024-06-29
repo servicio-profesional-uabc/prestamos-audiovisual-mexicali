@@ -194,17 +194,6 @@ class ArticuloAdmin(ImportExportModelAdmin):
     resource_class = UnidadResource
 
 
-@admin.register(Unidad)
-class UnidadAdmin(ImportExportModelAdmin):
-    """
-    Permite buscar un articulo por nombre y código, muestra información y
-    gestiona las relaciones con categorías.
-    """
-    list_display = ('num_control', 'num_serie', 'articulo')
-
-    resource_class = UnidadResource
-
-
 class ArticuloCarritoInline(admin.TabularInline):
     """
     Ofrece una interfaz para seleccionar y gestionar artículos asociados a carritos.
