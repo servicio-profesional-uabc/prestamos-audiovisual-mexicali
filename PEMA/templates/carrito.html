@@ -99,7 +99,8 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <a class="btn btn-primary" id="botonContinuar" href="{% url 'carrito_accion' 'ordenar' %}" role="button" disabled>Link</a>
+                            <a class="btn btn-primary" id="botonContinuar" data-href="{% url 'carrito_accion' 'ordenar' %}" role="button">Continuar</a>
+
                         </div>
 
                     </div>
@@ -115,5 +116,32 @@
         {% endif %}
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var checkbox = document.getElementById('cerrarPDF');
+            var botonContinuar = document.getElementById('botonContinuar');
 
+            // Deshabilitar el botón al cargar la página
+            botonContinuar.classList.add('disabled');
+            botonContinuar.setAttribute('aria-disabled', 'true');
+
+            checkbox.addEventListener('change', function() {
+                if (checkbox.checked) {
+                    botonContinuar.classList.remove('disabled');
+                    botonContinuar.removeAttribute('aria-disabled');
+                    botonContinuar.setAttribute('href', "{% url 'carrito_accion' 'ordenar' %}");
+                } else {
+                    botonContinuar.classList.add('disabled');
+                    botonContinuar.setAttribute('aria-disabled', 'true');
+                    botonContinuar.removeAttribute('href');
+                }
+            });
+
+            botonContinuar.addEventListener('click', function(event) {
+                if (botonContinuar.classList.contains('disabled')) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
 {% endblock %}
